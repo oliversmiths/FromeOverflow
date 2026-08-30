@@ -1,0 +1,525 @@
+{
+ "polled_at": 1788121619306,
+ "window_days": 90,
+ "place": "Frome",
+ "monitors": [
+  {
+   "id": "WXW00051",
+   "label": "WXW00051",
+   "lat": 51.23196096940266,
+   "lon": -2.320596862259275,
+   "watercourse": "RIVER FROME VIA SWS",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012000000,
+     "end": 1788012360000
+    }
+   ]
+  },
+  {
+   "id": "WXW00062",
+   "label": "WXW00062",
+   "lat": 51.22335859765987,
+   "lon": -2.312891623999638,
+   "watercourse": "RIVER FROME (VIA SWS)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788046560000,
+     "end": 1788047280000
+    }
+   ]
+  },
+  {
+   "id": "WXW00120",
+   "label": "WXW00120",
+   "lat": 51.26658909645268,
+   "lon": -2.293428501270845,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00307",
+   "label": "WXW00307",
+   "lat": 51.23867967299156,
+   "lon": -2.4429746619720656,
+   "watercourse": "MELLS RIVER",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788048240000,
+     "end": 1788048360000
+    }
+   ]
+  },
+  {
+   "id": "WXW00308",
+   "label": "WXW00308",
+   "lat": 51.23867967299156,
+   "lon": -2.4429746619720656,
+   "watercourse": "MELLS RIVER",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788014760000,
+     "end": 1788015000000
+    },
+    {
+     "start": 1788014760020,
+     "end": 1788015000020
+    }
+   ]
+  },
+  {
+   "id": "WXW00333",
+   "label": "WXW00333",
+   "lat": 51.23151658696091,
+   "lon": -2.318690206828017,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012000000,
+     "end": 1788012720000
+    }
+   ]
+  },
+  {
+   "id": "WXW00366",
+   "label": "WXW00366",
+   "lat": 51.24791674051937,
+   "lon": -2.2209571213160793,
+   "watercourse": "TRIB OF ALLEBOURNE BROOK(S)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788013080000,
+     "end": 1788013800000
+    }
+   ]
+  },
+  {
+   "id": "WXW00367",
+   "label": "WXW00367",
+   "lat": 51.24987117672755,
+   "lon": -2.2318253304802886,
+   "watercourse": "FAIRBOURNE STREAM (S)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012420000,
+     "end": 1788015540000
+    },
+    {
+     "start": 1788012420020,
+     "end": 1788015540020
+    }
+   ]
+  },
+  {
+   "id": "WXW00369",
+   "label": "WXW00369",
+   "lat": 51.2218504095369,
+   "lon": -2.249228312569296,
+   "watercourse": "RODDEN BROOK",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00401",
+   "label": "WXW00401",
+   "lat": 51.23705600445347,
+   "lon": -2.470780494255622,
+   "watercourse": "MELLS RIVER (S)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788006060000,
+     "end": 1788006120000
+    }
+   ]
+  },
+  {
+   "id": "WXW00402",
+   "label": "WXW00402",
+   "lat": 51.23703856809265,
+   "lon": -2.4703705472258575,
+   "watercourse": "MELLS RIVER (S)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1782166380000,
+     "end": 1782166500000
+    }
+   ]
+  },
+  {
+   "id": "WXW00420",
+   "label": "WXW00420",
+   "lat": 51.222418111286665,
+   "lon": -2.3181977384896366,
+   "watercourse": "ADDERWELL BROOK",
+   "status": 0,
+   "events": [
+    {
+     "start": 1787931120000,
+     "end": 1787931840000
+    }
+   ]
+  },
+  {
+   "id": "WXW00453",
+   "label": "WXW00453",
+   "lat": 51.236789656085044,
+   "lon": -2.325207064662251,
+   "watercourse": "RIVER FROME(S)",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00454",
+   "label": "WXW00454",
+   "lat": 51.236672874520295,
+   "lon": -2.325772866343715,
+   "watercourse": "RIVER FROME(S)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012720000,
+     "end": 1788015720000
+    }
+   ]
+  },
+  {
+   "id": "WXW00490",
+   "label": "WXW00490",
+   "lat": 51.24378356248126,
+   "lon": -2.52657348358895,
+   "watercourse": "MELLS STREAM(S)",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00596",
+   "label": "WXW00596",
+   "lat": 51.23671141235839,
+   "lon": -2.4481811888337943,
+   "watercourse": "MELLS STREAM",
+   "status": 0,
+   "events": [
+    {
+     "start": 1787220240000,
+     "end": 1787220360000
+    },
+    {
+     "start": 1787220240010,
+     "end": 1787220360010
+    }
+   ]
+  },
+  {
+   "id": "WXW00627",
+   "label": "WXW00627",
+   "lat": 51.22364418663895,
+   "lon": -2.432120911787855,
+   "watercourse": "LEIGH STREAM",
+   "status": 0,
+   "events": [
+    {
+     "start": 1780366020000,
+     "end": 1780371840000
+    },
+    {
+     "start": 1780366020050,
+     "end": 1780371840050
+    }
+   ]
+  },
+  {
+   "id": "WXW00654",
+   "label": "WXW00654",
+   "lat": 51.22248074285668,
+   "lon": -2.3203562382422147,
+   "watercourse": "TRIB OF RIVER FROME (VIA SWS)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012000000,
+     "end": 1788013560000
+    }
+   ]
+  },
+  {
+   "id": "WXW00693",
+   "label": "WXW00693",
+   "lat": 51.217952918424885,
+   "lon": -2.339517792061503,
+   "watercourse": "TRIBUTARY OF NUNNEY BROOK",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00709",
+   "label": "WXW00709",
+   "lat": 51.239319834025146,
+   "lon": -2.3877459790553175,
+   "watercourse": "MELLS STREAM(S)",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00710",
+   "label": "WXW00710",
+   "lat": 51.23861757443163,
+   "lon": -2.382554619747746,
+   "watercourse": "MELLS STREAM",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00711",
+   "label": "WXW00711",
+   "lat": 51.23151658696091,
+   "lon": -2.318690206828017,
+   "watercourse": "RIVER FROME (VIA SWS)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012120000,
+     "end": 1788012720000
+    }
+   ]
+  },
+  {
+   "id": "WXW00788",
+   "label": "WXW00788",
+   "lat": 51.33838070599378,
+   "lon": -2.301523368946632,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00805",
+   "label": "WXW00805",
+   "lat": 51.23036785472475,
+   "lon": -2.307987630705506,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1787931840000,
+     "end": 1787932440000
+    }
+   ]
+  },
+  {
+   "id": "WXW00816",
+   "label": "WXW00816",
+   "lat": 51.21679784688173,
+   "lon": -2.3789720992634633,
+   "watercourse": "NUNNEY BROOK",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788027120000,
+     "end": 1788036840000
+    },
+    {
+     "start": 1788027120020,
+     "end": 1788036840020
+    }
+   ]
+  },
+  {
+   "id": "WXW00818",
+   "label": "WXW00818",
+   "lat": 51.233271517085925,
+   "lon": -2.5020395729608147,
+   "watercourse": "MELLS STREAM",
+   "status": 0,
+   "events": [
+    {
+     "start": 1782154200000,
+     "end": 1782155280000
+    },
+    {
+     "start": 1782154200020,
+     "end": 1782155280020
+    }
+   ]
+  },
+  {
+   "id": "WXW00880",
+   "label": "WXW00880",
+   "lat": 51.228742426687305,
+   "lon": -2.3071185407229637,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1787931360000,
+     "end": 1787932320000
+    }
+   ]
+  },
+  {
+   "id": "WXW00934",
+   "label": "WXW00934",
+   "lat": 51.2319829835231,
+   "lon": -2.3124632017256186,
+   "watercourse": "RIVER FROME(VIA SWS)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1782149280000,
+     "end": 1782149880000
+    }
+   ]
+  },
+  {
+   "id": "WXW00935",
+   "label": "WXW00935",
+   "lat": 51.286514392967895,
+   "lon": -2.284382684617836,
+   "watercourse": "TRIB OF THE RIVER FROME",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW00936",
+   "label": "WXW00936",
+   "lat": 51.28973628656941,
+   "lon": -2.282538828925128,
+   "watercourse": "SOMERSET FROME(S)",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788012240000,
+     "end": 1788016200000
+    },
+    {
+     "start": 1788012240090,
+     "end": 1788016200200
+    }
+   ]
+  },
+  {
+   "id": "WXW00979",
+   "label": "WXW00979",
+   "lat": 51.33480112153891,
+   "lon": -2.3090577021304663,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788027480000,
+     "end": 1788027600000
+    }
+   ]
+  },
+  {
+   "id": "WXW01068",
+   "label": "WXW01068",
+   "lat": 51.22257759307373,
+   "lon": -2.4788410201928195,
+   "watercourse": "TRIB OF MELLS STREAM",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW01156",
+   "label": "WXW01156",
+   "lat": 51.19204881487381,
+   "lon": -2.3575510218065885,
+   "watercourse": "TRIBUTARY OF RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788007680000,
+     "end": 1788008160000
+    },
+    {
+     "start": 1788007680070,
+     "end": 1788008160070
+    }
+   ]
+  },
+  {
+   "id": "WXW01185",
+   "label": "WXW01185",
+   "lat": 51.22894219927468,
+   "lon": -2.3071246234194933,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW01242",
+   "label": "WXW01242",
+   "lat": 51.23245279901936,
+   "lon": -2.321589828733902,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1782149160000,
+     "end": 1782149400000
+    }
+   ]
+  },
+  {
+   "id": "WXW01243",
+   "label": "WXW01243",
+   "lat": 51.32580657935782,
+   "lon": -2.2808840545723057,
+   "watercourse": "TRIBUTARY OF RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1782150480000,
+     "end": 1782201000000
+    }
+   ]
+  },
+  {
+   "id": "WXW01245",
+   "label": "WXW01245",
+   "lat": 51.23627957291062,
+   "lon": -2.3262001094499616,
+   "watercourse": "RIVER FROME VIA SWS",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788011760000,
+     "end": 1788013080000
+    }
+   ]
+  },
+  {
+   "id": "WXW01272",
+   "label": "WXW01272",
+   "lat": 51.16939965466654,
+   "lon": -2.3642345359583516,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": []
+  },
+  {
+   "id": "WXW01297",
+   "label": "WXW01297",
+   "lat": 51.237257527148465,
+   "lon": -2.3287540305315617,
+   "watercourse": "RIVER FROME",
+   "status": 0,
+   "events": [
+    {
+     "start": 1788011640000,
+     "end": 1788012840000
+    }
+   ]
+  }
+ ]
+}

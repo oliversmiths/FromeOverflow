@@ -1,0 +1,16 @@
+{
+  "name": "frome-overflow-watch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Single-town storm-overflow monitor for Frome, Somerset",
+  "engines": {
+    "node": ">=23.4"
+  },
+  "scripts": {
+    "poll": "node --no-warnings poll.js",
+    "serve": "node --no-warnings serve.js",
+    "dev": "node --no-warnings poll.js && node --no-warnings serve.js",
+    "basemap": "node --no-warnings scripts/build-basemap.js"
+  }
+}

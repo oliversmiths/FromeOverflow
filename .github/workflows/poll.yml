@@ -1,0 +1,56 @@
+name: Poll storm overflows
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # GitHub runs this late when busy; that's fine
+  workflow_dispatch:          # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: poll
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      # No install step — poll.js has no dependencies.
+      - name: Fetch a reading
+        run: node poll.js
+
+      - name: Commit the new reading
+        run: |
+          git config user.name  "overflow-bot"
+          git config user.email "actions@github.com"
+          git add overflows.db docs/data.json
+          git diff --staged --quiet || git commit -m "Reading at $(date -u +'%Y-%m-%d %H:%M')"
+          git push
+
+      # --- Deploy to SiteGround --------------------------------------------
+      # Skipped until you add the SG_SSH_KEY secret, so polling works on its
+      # own from day one and you can wire up hosting whenever you're ready.
+
+      - name: Deploy docs/ to SiteGround
+        if: ${{ vars.DEPLOY_TO_SITEGROUND == 'true' }}
+        env:
+          SG_HOST: ${{ secrets.SG_HOST }}
+          SG_USER: ${{ secrets.SG_USER }}
+          SG_PATH: ${{ secrets.SG_PATH }}
+          SG_PORT: ${{ secrets.SG_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SG_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${SG_PORT:-18765}" "$SG_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${SG_PORT:-18765} -o StrictHostKeyChecking=yes" \
+            docs/ "$SG_USER@$SG_HOST:$SG_PATH/"

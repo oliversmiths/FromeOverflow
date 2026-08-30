@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Node — this project has no dependencies, but just in case
+node_modules/
+npm-debug.log*
+
+# Local env / editor scratch
+.env
+*.local
+
+# NOTE: overflows.db and docs/*.json are generated but *committed on purpose*
+# (the repo is the database; the GitHub Action commits new readings back).

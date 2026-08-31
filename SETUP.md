@@ -105,9 +105,10 @@ If it asks you to stage the changes first, say yes to staging all.
 ### Push it up
 
 After committing, the button changes to **Publish Branch**. Click it. VS Code
-asks whether to publish public or private — **choose public**. Two reasons:
-GitHub Actions minutes are unlimited on public repos and metered on private
-ones, and this is public-interest data about a public river.
+asks whether to publish public or private — **choose public** unless you have a
+reason not to. On a public repo, GitHub Actions minutes are unlimited and GitHub
+Pages is free; on a **private** repo both are restricted (see "Going private"
+below), and this is public-interest data about a public river anyway.
 
 If VS Code hasn't got your GitHub credentials yet it'll open a browser to
 authorise. Let it.
@@ -128,9 +129,40 @@ the same output you saw locally.
 **Settings → Actions → General → Workflow permissions** and select **Read and
 write permissions**.
 
-After that it runs every 15 minutes on its own. Expect it to be late sometimes —
-GitHub deprioritises scheduled jobs when it's busy. Occasionally a run is skipped
-entirely. It doesn't matter; the next one catches up.
+### Make the 15-minute cadence reliable
+
+The workflow's `schedule:` block is set to `7,22,37,52 * * * *` — deliberately
+off the hour, because GitHub drops or badly delays scheduled runs around `:00`.
+Even so, `schedule:` is best-effort: on a new, low-traffic repo GitHub silently
+skips most 15-minute ticks. Treat it as a fallback only.
+
+For the real cadence, have something outside GitHub call the `workflow_dispatch`
+API every 15 minutes. [cron-job.org](https://cron-job.org) does this free:
+
+1. **Make a token.** GitHub → **Settings → Developer settings → Personal access
+   tokens → Fine-grained tokens → Generate new token**. Scope it to *only* the
+   `FromeOverflow` repo, and under **Permissions → Repository permissions** set
+   **Actions** to **Read and write**. Nothing else. Give it a 1-year expiry and
+   copy the `github_pat_…` string.
+2. **Create the cron job** at cron-job.org (free account):
+   - URL: `https://api.github.com/repos/oliversmiths/FromeOverflow/actions/workflows/poll.yml/dispatches`
+   - Schedule: every 15 minutes
+   - Request method: **POST**
+   - Under advanced / headers, add:
+     - `Authorization: Bearer github_pat_…`
+     - `Accept: application/vnd.github+json`
+     - `X-GitHub-Api-Version: 2022-11-28`
+   - Request body: `{"ref":"main"}`
+3. **Save and hit "Test run."** A 204 (no content) response is success — check
+   the repo's Actions tab and you'll see a `poll` run that was triggered by
+   `workflow_dispatch`. If you get 401/403, the token scope is wrong.
+
+The `concurrency: poll` block in the workflow means a stray double-trigger just
+queues rather than running twice, so a bit of overlap between the external cron
+and the `schedule:` fallback is harmless.
+
+When the token nears expiry GitHub emails you; regenerate it and update the one
+header at cron-job.org.
 
 ### Working on it afterwards
 
@@ -148,6 +180,25 @@ git checkout --theirs docs/data.json overflows.db
 git add docs/data.json overflows.db
 git rebase --continue
 ```
+
+### Going private
+
+Moving the external cron off GitHub's scheduler doesn't change what a private
+repo costs you — the poll still runs on GitHub's runners and still bills the same
+minutes. Two things bite on the **Free** plan:
+
+- **GitHub Pages is disabled for private repos.** You'd need GitHub **Pro**
+  (~$4/mo) to keep the `github.io` page, or serve the static `docs/` from
+  SiteGround instead (Part 3, Option B) — that works regardless of repo
+  visibility.
+- **Actions minutes become metered:** 2,000 min/month free. A ~1-minute job
+  every 15 minutes is ~2,900 min/month, over the limit. Options: GitHub Pro
+  (3,000 min), drop the cadence to every 30 minutes (~1,400 min), or accept the
+  per-minute overage charge.
+
+So the cheapest "keep everything working, but private" answer is GitHub Pro at
+~$4/mo, which covers both. If you don't want to pay, either stay public or move
+hosting to SiteGround and slow the poll to 30 minutes.
 
 ---
 
@@ -255,7 +306,8 @@ for leaving up.
 
 Let it collect for a week before you share the URL. The first days look
 misleadingly quiet because you only have each overflow's most recent spill, not
-its history — the barcode fills in from the day you started, not backwards.
+its history — the 90-day strips (behind the clock button) fill in from the day
+you started, not backwards, and read mostly grey until then.
 
 And read the caveats in the README before you make any public claim about a
 specific outfall. This data indicates discharges rather than confirming them,

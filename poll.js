@@ -36,7 +36,22 @@ const CATCHMENT_KM = 25;
 
 // Once you know which IDs you actually want, list them here and the geography
 // is ignored entirely. Leave empty to keep discovering them.
-const PIN_TO_IDS = [];
+const PIN_TO_IDS = [
+  'WXW01297', // River Frome
+  'WXW01245', // River Frome via SWS
+  'WXW00454', // River Frome (S)
+  'WXW00453', // River Frome (S)
+  'WXW01242', // River Frome
+  'WXW00051', // River Frome via SWS
+  'WXW00711', // River Frome via SWS
+  'WXW00934', // River Frome via SWS
+  'WXW00805', // River Frome
+  'WXW01185', // River Frome
+  'WXW00880', // River Frome
+  'WXW00062', // River Frome via SWS
+  'WXW00654', // Trib of River Frome via SWS
+  'WXW00420', // Adderwell Brook
+];
 
 const EXPORT_DAYS = 90;
 
@@ -213,7 +228,7 @@ async function exportJson(db, rows, polledAt) {
   // out — because you narrowed the catchment, or Wessex stopped listing it —
   // ages off the page after a week but keeps its history in the database.
   const monitors = db
-    .prepare(`SELECT id, label, latitude, longitude, watercourse FROM monitors
+    .prepare(`SELECT id, label, latitude, longitude, watercourse, first_seen FROM monitors
               WHERE last_seen >= ? ORDER BY id`)
     .all(polledAt - 7 * DAY)
     .map((m) => ({
@@ -222,6 +237,7 @@ async function exportJson(db, rows, polledAt) {
       lat: m.latitude,
       lon: m.longitude,
       watercourse: m.watercourse,
+      since: m.first_seen,
       status: liveStatus.get(m.id) ?? null,
       events: eventsFor.all(m.id, cutoff)
         .map((e) => ({ start: e.start_ms, end: e.end_ms })),

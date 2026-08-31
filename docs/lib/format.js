@@ -34,6 +34,10 @@ export function fmtDuration(ms) {
   return `${m}m`;
 }
 
+/** Google Maps "drop a pin here" link (the documented Maps URLs API form). */
+export const mapsUrl = (lat, lon) =>
+  `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+
 const DATE = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric', month: 'short', year: 'numeric',
 });
@@ -102,6 +106,44 @@ export function mapStatusOf(monitor, now) {
     return { key: 'recent', text: `Discharged in the last ${RECENT_HOURS}h` };
   }
   return { key: 'dry', text: 'Not discharging' };
+}
+
+/**
+ * One cell per day for the last `days` days (oldest first) — the data behind
+ * the per-monitor 90-day strip on the page. Each cell is `{ start, state }`,
+ * `start` being the local-midnight epoch ms of that day and `state` one of:
+ *   'spill'  – a discharge overlapped the day
+ *   'recent' – within RECENT_HOURS of a discharge ending, but not spilling
+ *   'nodata' – no event, and the day is before this monitor's first reading
+ *   'dry'    – monitored that day, no discharge, nothing recent
+ * An ongoing event (`end == null`) counts as spilling right up to `now`. A known
+ * event is always drawn even if it predates `since` — the first reading Wessex
+ * hands us carries the latest event, so that one spill is real history.
+ */
+export function dayCells(monitor, now, days = 90) {
+  const midnight = new Date(now);
+  midnight.setHours(0, 0, 0, 0);
+  const since = monitor.since ?? null;
+  const events = monitor.events ?? [];
+  const cells = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const start = midnight.getTime() - i * DAY;
+    const end = start + DAY;
+    let state;
+
+    if (events.some((e) => e.start < end && (e.end ?? now) > start)) {
+      state = 'spill';
+    } else if (events.some((e) => e.end != null && start < e.end + RECENT_MS && end > e.end)) {
+      state = 'recent';
+    } else if (since != null && end <= since) {
+      state = 'nodata';
+    } else {
+      state = 'dry';
+    }
+    cells.push({ start, state });
+  }
+  return cells;
 }
 
 /**

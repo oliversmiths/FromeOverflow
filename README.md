@@ -19,18 +19,23 @@ reads that JSON.
 
 `docs/lib/format.js` holds the duration maths and formatting. The poller and the
 page both import it, so a spill is measured the same way in the console and on
-the screen.
+the screen. `docs/lib/cards.js` and `docs/lib/map.js` are the two view
+components.
 
-The page has two views, switched by a tab (and remembered in the URL as
-`#timeline` or `#map`):
+The page is a **full-screen map** of Frome with every monitor as a pin on a
+traffic light: red discharging now, amber discharged in the last 48h, green not
+discharging, grey no data. Pan, zoom and pinch within a 10 km square; monitors
+outside it are hidden (set `SHOW_EDGE_MARKERS` in `docs/lib/map.js` to pin them
+to the edge instead).
 
-- **Timeline** — a 90-day "barcode", one row per monitor, plus a card per
-  monitor with its current state and coordinates.
-- **Map** — every monitor as a pin over a 10 km-square street map of Frome, on a
-  traffic light: red discharging now, amber discharged in the last 48h, green
-  not discharging, grey no data. Pan, zoom and pinch within the square; monitors
-  outside it are hidden (set `SHOW_EDGE_MARKERS` in `index.html` to pin them to
-  the edge instead).
+- A floating **clock button** opens a panel with the **last 90 days** for each
+  monitor — one card each, a GitHub-status-style strip of one bar per day (red
+  discharged, amber the 48h after, green clear, grey before monitoring began).
+- A floating **"i" button** opens an **About** panel.
+- Panel state is remembered in the URL as `#timeline` or `#about`.
+
+The original combined timeline-and-map layout is kept at `docs/archive.html`,
+frozen, and linked from the About panel.
 
 The map has no library and no tile service. `scripts/build-basemap.js`
 (`npm run basemap`) pulls the roads, waterways, suburb names and main road names

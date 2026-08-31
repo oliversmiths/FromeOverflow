@@ -2,8 +2,11 @@ name: Poll storm overflows
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # GitHub runs this late when busy; that's fine
-  workflow_dispatch:          # lets you run it by hand from the Actions tab
+    # Off the hour boundary on purpose — GitHub drops/delays scheduled runs
+    # most around :00. This is only a fallback; an external cron hits the
+    # workflow_dispatch API every 15 min for the real cadence (see SETUP.md).
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:          # external trigger + "run by hand" from the Actions tab
 
 permissions:
   contents: write

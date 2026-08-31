@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Frome Overflow Watch</title>
+<title>Frome Overflow Watch — archived view</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,700;12..96,75..100,800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -17,6 +17,10 @@
     --amber:    #E0912F;
     --silt:     #7E8B82;
     --hairline: #C3C9BF;
+
+    /* 90-day strip */
+    --day-dry:    #93C0A9;   /* monitored, clear that day */
+    --day-nodata: #C7CBBF;   /* before monitoring began */
 
     /* map view */
     --pin-dry:  #2FB84C;   /* "not discharging" markers — deliberately bright */
@@ -319,109 +323,29 @@
     cursor: pointer;
   }
 
-  /* --- The barcode --- */
+  /* --- Overflow list: status + 90-day strip, one card per monitor --- */
 
-  .barcode { --gutter: 156px; }
+  .overflows { display: flex; flex-direction: column; gap: 10px; }
 
-  .ruler {
-    position: relative;
-    height: 15px;
-    margin-left: var(--gutter);
-    border-bottom: 1px solid var(--hairline);
-  }
-
-  .tick {
-    position: absolute;
-    top: 0;
-    height: 15px;
-    padding-left: 4px;
-    border-left: 1px solid var(--hairline);
-    font-family: var(--data);
-    font-size: 10px;
-    color: var(--silt);
-  }
-
-  .row {
-    display: flex;
-    align-items: stretch;
-    border-bottom: 1px solid var(--hairline);
-  }
-
-  .row:first-of-type { border-top: 1px solid var(--hairline); }
-
-  .row-label {
-    width: var(--gutter);
-    flex: 0 0 var(--gutter);
-    padding: 7px 12px 7px 0;
-    font-size: 12.5px;
-    line-height: 1.25;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .row-label .hours {
-    display: block;
-    font-family: var(--data);
-    font-size: 10.5px;
-    color: var(--silt);
-  }
-
-  .track {
-    position: relative;
-    flex: 1;
-    min-height: 34px;
-    background: var(--chalk);
-  }
-
-  .row:hover .track,
-  .row:focus-within .track { background: #E7EAE3; }
-
-  .spill {
-    position: absolute;
-    top: 5px;
-    bottom: 5px;
-    min-width: 2px;
-    background: var(--oxide);
-    border-radius: 1px;
-  }
-
-  .spill.is-live { box-shadow: 0 0 0 2px rgba(188, 67, 28, 0.28); }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .spill.is-live { animation: pulse 2.2s ease-in-out infinite; }
-    @keyframes pulse { 50% { box-shadow: 0 0 0 5px rgba(188, 67, 28, 0.12); } }
-  }
-
-  .row-hit {
-    position: absolute;
-    inset: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-  }
-
-  .row-hit:focus-visible { outline: 2px solid var(--weir); outline-offset: -2px; }
-
-  /* --- Detail list --- */
-
-  .card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 20px;
-    align-items: baseline;
-    margin-bottom: 2px;
-    padding: 14px 16px;
+  .o-card {
+    padding: 15px 18px 16px;
     background: var(--chalk);
     border-left: 3px solid var(--hairline);
   }
 
-  .card.is-discharging { border-left-color: var(--oxide); }
-  .card.is-dry         { border-left-color: var(--weir); }
-  .card.is-offline     { border-left-color: var(--silt); }
+  .o-card.is-discharging { border-left-color: var(--oxide); }
+  .o-card.is-dry         { border-left-color: var(--weir); }
+  .o-card.is-offline     { border-left-color: var(--silt); }
 
-  .card h3 {
+  .o-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 18px;
+    flex-wrap: wrap;
+  }
+
+  .o-head h3 {
     margin: 0;
     font-family: var(--display);
     font-weight: 700;
@@ -429,39 +353,60 @@
     font-size: 17px;
   }
 
-  .card .meta { grid-column: 1; font-size: 13px; color: var(--silt); }
-
-  .card .geo {
-    grid-column: 1;
-    margin: 2px 0 0;
-    font-family: var(--data);
-    font-size: 11.5px;
-  }
-
-  .card .geo a {
-    color: var(--weir);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .card .geo a:hover { text-decoration: underline; }
-
-  .card .geo .pin { vertical-align: -1.5px; margin-right: 4px; }
-
-  .state {
-    grid-row: 1 / span 2;
-    grid-column: 2;
-    align-self: center;
-    text-align: right;
+  .o-state {
     font-family: var(--data);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
-  .card.is-discharging .state { color: var(--oxide); font-weight: 500; }
-  .card.is-dry .state         { color: var(--weir); }
-  .card.is-offline .state     { color: var(--silt); }
+  .o-card.is-discharging .o-state { color: var(--oxide); font-weight: 500; }
+  .o-card.is-dry .o-state         { color: var(--weir); }
+  .o-card.is-offline .o-state     { color: var(--silt); }
+
+  .o-meta { margin: 3px 0 0; font-size: 13px; color: var(--silt); }
+
+  .o-strip {
+    display: flex;
+    gap: 1px;
+    width: 100%;
+    max-width: 450px;
+    height: 34px;
+    margin: 12px 0 0;
+  }
+
+  .o-day {
+    flex: 1 1 0;
+    min-width: 0;
+    border-radius: 1px;
+    background: var(--day-dry);
+  }
+
+  .o-day--nodata { background: var(--day-nodata); }
+  .o-day--recent { background: var(--amber); }
+  .o-day--spill  { background: var(--oxide); }
+
+  .o-scale {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 450px;
+    margin: 5px 0 0;
+    font-family: var(--data);
+    font-size: 10px;
+    color: var(--silt);
+  }
+
+  .o-geo {
+    margin: 11px 0 0;
+    font-family: var(--data);
+    font-size: 11.5px;
+  }
+
+  .o-geo a { color: var(--weir); text-decoration: none; white-space: nowrap; }
+  .o-geo a:hover { text-decoration: underline; }
+  .o-geo .pin { vertical-align: -1.5px; margin-right: 4px; }
 
   /* --- Footer --- */
 
@@ -484,10 +429,6 @@
   }
 
   @media (max-width: 700px) {
-    .barcode { --gutter: 104px; }
-    .row-label { font-size: 11.5px; }
-    .card { grid-template-columns: 1fr; }
-    .state { grid-row: auto; grid-column: 1; text-align: left; }
     #overflow-map { height: 72vh; }
     .tab { padding: 10px 12px; }
   }
@@ -501,6 +442,8 @@
     <h1>Frome<br>Overflow<br>Watch</h1>
     <p class="verdict" id="verdict">Reading the feed…</p>
     <p class="stamp" id="stamp"></p>
+    <p class="stamp">Archived layout — the current site is a full-screen map.
+      <a href="./" style="color:var(--weir)">Open it</a>.</p>
   </header>
 
   <div class="tabs" role="tablist" aria-label="View">
@@ -512,15 +455,11 @@
 
   <div id="timeline-view" role="tabpanel" aria-labelledby="tab-timeline">
     <section>
-      <h2>Ninety days</h2>
-      <p class="standfirst">Every recorded discharge, one line per overflow. Bars that line
-        up vertically are the same storm passing over the town.</p>
-      <div class="barcode" id="barcode"></div>
-    </section>
-
-    <section>
-      <h2>Right now</h2>
-      <div id="cards"></div>
+      <h2>The last 90 days</h2>
+      <p class="standfirst">One card per overflow, its state at the last check on the right.
+        The strip below is its last 90 days, one bar a day: red where it discharged, amber for
+        the 48 hours after, green when it was clear, grey before monitoring began.</p>
+      <div class="overflows" id="overflows"></div>
     </section>
   </div>
 
@@ -547,7 +486,7 @@
 
 <script type="module">
 import {
-  DAY, RECENT_HOURS, fmtDate, fmtDuration, fmtWhen, mapStatusOf,
+  RECENT_HOURS, dayCells, fmtDate, fmtDuration, fmtWhen, mapStatusOf,
   rankByTotal, spillMs, statusOf,
 } from './lib/format.js';
 
@@ -561,12 +500,15 @@ const PIN =
 const mapsUrl = (lat, lon) =>
   `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
 
+const CELL_LABEL = {
+  nodata: 'no data yet',
+  dry: 'no discharge',
+  recent: 'within 48h of a discharge',
+  spill: 'discharging',
+};
+
 function render(data) {
   const now = data.polled_at;
-  const start = now - data.window_days * DAY;
-  const span = now - start;
-  const pct = (ms) => ((ms - start) / span) * 100;
-
   const monitors = rankByTotal(data.monitors, now);
 
   // --- Masthead verdict ---
@@ -586,88 +528,63 @@ function render(data) {
   document.getElementById('stamp').textContent =
     `${monitors.length} monitors watched · last checked ${fmtWhen(now)}`;
 
-  // --- Barcode ---
-  const barcode = document.getElementById('barcode');
-  const ruler = document.createElement('div');
-  ruler.className = 'ruler';
-
-  for (const cursor = new Date(now); cursor >= new Date(start); cursor.setMonth(cursor.getMonth() - 1)) {
-    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1).getTime();
-    if (first < start) continue;
-    const tick = document.createElement('span');
-    tick.className = 'tick';
-    tick.style.left = `${pct(first)}%`;
-    tick.textContent = new Date(first).toLocaleDateString('en-GB', { month: 'short' });
-    ruler.append(tick);
-  }
-  barcode.append(ruler);
-
-  for (const monitor of monitors) {
-    const row = document.createElement('div');
-    row.className = 'row';
-
-    const label = document.createElement('div');
-    label.className = 'row-label';
-    label.textContent = monitor.label;
-    const hours = document.createElement('span');
-    hours.className = 'hours';
-    hours.textContent = monitor.total ? fmtDuration(monitor.total) : '—';
-    label.append(hours);
-
-    const track = document.createElement('div');
-    track.className = 'track';
-
-    for (const event of monitor.events) {
-      const duration = spillMs(event, now);
-      const bar = document.createElement('span');
-      bar.className = event.end === null ? 'spill is-live' : 'spill';
-      bar.style.left = `${pct(event.start)}%`;
-      bar.style.width = `${Math.max(0.25, (duration / span) * 100)}%`;
-      bar.title = `${fmtDate(event.start)} · ${fmtDuration(duration)}` +
-        (event.end === null ? ' and ongoing' : '');
-      track.append(bar);
-    }
-
-    const hit = document.createElement('button');
-    hit.className = 'row-hit';
-    hit.setAttribute('aria-label',
-      `${monitor.label}: ${monitor.events.length} discharges, ${fmtDuration(monitor.total)} total`);
-    track.append(hit);
-
-    row.append(label, track);
-    barcode.append(row);
-  }
-
-  // --- Cards ---
-  const cards = document.getElementById('cards');
+  // --- Overflow list: status + 90-day strip, one card per monitor ---
+  const list = document.getElementById('overflows');
 
   for (const monitor of monitors) {
     const state = statusOf(monitor.status);
     const last = monitor.events.at(-1);
+    const runs = monitor.events.length;
 
     const card = document.createElement('div');
-    card.className = `card is-${state.key}`;
+    card.className = `o-card is-${state.key}`;
 
+    const head = document.createElement('div');
+    head.className = 'o-head';
     const heading = document.createElement('h3');
     heading.textContent = monitor.label;
+    const badge = document.createElement('span');
+    badge.className = 'o-state';
+    badge.textContent = state.text;
+    head.append(heading, badge);
 
     const meta = document.createElement('p');
-    meta.className = 'meta';
-    meta.textContent = `Into the ${monitor.watercourse} · ` + (last
-      ? `last discharge ${fmtWhen(last.start)}, ${fmtDuration(spillMs(last, now))}`
-      : 'no discharge recorded in this window');
+    meta.className = 'o-meta';
+    meta.textContent = `Into the ${monitor.watercourse} · ` + (runs
+      ? `${runs} discharge${runs === 1 ? '' : 's'} in 90 days, ${fmtDuration(monitor.total)} total ` +
+        `· last was ${fmtWhen(last.start, now)}`
+      : 'no discharge recorded in 90 days');
 
-    const badge = document.createElement('span');
-    badge.className = 'state';
-    badge.textContent = state.text;
+    const cells = dayCells(monitor, now, data.window_days);
+    const tally = cells.reduce((t, c) => (t[c.state]++, t), { nodata: 0, dry: 0, recent: 0, spill: 0 });
 
-    card.append(heading, meta, badge);
+    const strip = document.createElement('div');
+    strip.className = 'o-strip';
+    strip.setAttribute('role', 'img');
+    strip.setAttribute('aria-label',
+      `90-day history: ${tally.spill} day${tally.spill === 1 ? '' : 's'} with a discharge, ` +
+      `${tally.recent} within 48h after, ${tally.dry} clear, ` +
+      `${tally.nodata} before monitoring began`);
+    for (const cell of cells) {
+      const d = document.createElement('span');
+      d.className = cell.state === 'dry' ? 'o-day' : `o-day o-day--${cell.state}`;
+      d.title = `${fmtDate(cell.start)} — ${CELL_LABEL[cell.state]}`;
+      strip.append(d);
+    }
+
+    const scale = document.createElement('div');
+    scale.className = 'o-scale';
+    scale.append(
+      Object.assign(document.createElement('span'), { textContent: `${data.window_days} days ago` }),
+      Object.assign(document.createElement('span'), { textContent: 'Today' }));
+
+    card.append(head, meta, strip, scale);
 
     if (monitor.lat != null && monitor.lon != null) {
       const lat = monitor.lat.toFixed(5);
       const lon = monitor.lon.toFixed(5);
       const geo = document.createElement('p');
-      geo.className = 'geo';
+      geo.className = 'o-geo';
       const link = document.createElement('a');
       link.href = mapsUrl(lat, lon);
       link.target = '_blank';
@@ -677,7 +594,7 @@ function render(data) {
       card.append(geo);
     }
 
-    cards.append(card);
+    list.append(card);
   }
 }
 
@@ -1105,7 +1022,7 @@ try {
 } catch {
   document.getElementById('verdict').textContent =
     'No data yet. Run npm run poll to fetch the first reading.';
-  document.getElementById('barcode').innerHTML =
+  document.getElementById('overflows').innerHTML =
     '<div class="empty">The history builds from here — each poll adds to it.</div>';
 }
 </script>

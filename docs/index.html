@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frome Overflow Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,700;12..96,75..100,800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lichen:   #DDE1DA;
+    --chalk:    #F1F3EE;
+    --ink:      #171E1B;
+    --weir:     #3D6152;
+    --oxide:    #BC431C;
+    --amber:    #E0912F;
+    --silt:     #7E8B82;
+    --hairline: #C3C9BF;
+
+    /* 90-day strip */
+    --day-dry:    #93C0A9;
+    --day-nodata: #C7CBBF;
+
+    /* map */
+    --pin-dry:  #2FB84C;
+    --water:    #A9D0E6;
+    --water-line: #2F80B4;
+
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "Instrument Sans", system-ui, sans-serif;
+    --data: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--lichen);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- The map fills the viewport --- */
+
+  #overflow-map {
+    position: fixed;
+    inset: 0;
+    background: var(--lichen);
+    overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  #overflow-map.is-panning { cursor: grabbing; }
+
+  #overflow-map.is-broken {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-size: 17px;
+    color: var(--silt);
+    padding: 24px;
+    text-align: center;
+  }
+
+  #overflow-map svg { display: block; width: 100%; height: 100%; }
+
+  /* Basemap layers. Non-scaling strokes so line weights hold as you zoom. */
+  .bm path { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .bm--water  path { fill: var(--water); stroke: var(--water-line); stroke-width: 0.6; }
+  .bm--stream path { stroke: #6FAAD0; stroke-width: 1.3; }
+  .bm--river  path { stroke: var(--water-line); stroke-width: 2.8; }
+  .bm--minor  path { stroke: #D0D3CB; stroke-width: 1; }
+  .bm--mid    path { stroke: #C1C4BB; stroke-width: 1.6; }
+  .bm--major  path { stroke: #ADB1A6; stroke-width: 2.6; }
+
+  .map-bg { fill: var(--chalk); }
+  .map-frame { fill: none; stroke: var(--hairline); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+  .label-layer { position: absolute; inset: 0; pointer-events: none; }
+
+  .map-label {
+    position: absolute;
+    display: none;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    text-shadow: 0 0 3px var(--chalk), 0 0 3px var(--chalk), 0 0 7px var(--chalk);
+  }
+
+  .map-label.is-shown { display: block; }
+  .map-label--place { font-family: var(--display); font-weight: 700; font-size: 12px; color: var(--ink); }
+  .map-label--road  { font-family: var(--data); font-size: 10px; letter-spacing: 0.02em; color: #58685F; }
+
+  .pin-layer { position: absolute; inset: 0; pointer-events: none; }
+
+  .mappin {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    border: 2px solid var(--chalk);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(23, 30, 27, 0.3);
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .pin-layer .mappin { display: none; }
+  .pin-layer .mappin.is-shown { display: block; }
+  .mappin:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .mappin--discharging { background: var(--oxide); }
+  .mappin--recent      { background: var(--amber); }
+  .mappin--dry         { background: var(--pin-dry); }
+  .mappin--offline     { background: var(--silt); }
+
+  .mappin.is-edge { border-radius: 2px; width: 12px; height: 12px; box-shadow: none; opacity: 0.9; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mappin--discharging.is-shown:not(.is-edge) { animation: pinpulse 2.1s ease-in-out infinite; }
+    @keyframes pinpulse { 50% { box-shadow: 0 0 0 7px rgba(188, 67, 28, 0.16); } }
+  }
+
+  .map-ctrl {
+    position: absolute;
+    left: 16px;
+    bottom: 46px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 4px rgba(23, 30, 27, 0.25);
+  }
+
+  .map-ctrl button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--hairline);
+    background: var(--chalk);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .map-ctrl button:first-child { border-bottom: 0; }
+  .map-ctrl button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; z-index: 1; }
+
+  .map-attr {
+    position: absolute;
+    left: 16px;
+    bottom: 18px;
+    padding: 1px 6px;
+    background: rgba(241, 243, 238, 0.85);
+    font-size: 10px;
+    color: var(--silt);
+  }
+  .map-attr a { color: inherit; }
+
+  .map-popup {
+    position: absolute;
+    z-index: 18;
+    width: 230px;
+    padding: 12px 14px;
+    background: var(--chalk);
+    border: 1px solid var(--ink);
+    font-size: 13px;
+    line-height: 1.45;
+    transform: translate(-50%, calc(-100% - 14px));
+    pointer-events: auto;
+  }
+
+  .map-popup h3 { margin: 0 0 4px; font-family: var(--display); font-weight: 700; font-size: 15px; }
+  .map-popup p { margin: 0 0 6px; }
+  .map-popup a { color: var(--weir); }
+  .map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .map-popup .pop-state.is-discharging { color: var(--oxide); }
+  .map-popup .pop-state.is-recent      { color: #A9631A; }
+  .map-popup .pop-state.is-dry         { color: var(--weir); }
+  .map-popup .pop-state.is-offline     { color: var(--silt); }
+
+  .map-popup .pop-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    border: 0;
+    background: none;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--silt);
+    cursor: pointer;
+  }
+
+  /* --- Floating furniture over the map --- */
+
+  .titlecard {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 15;
+    max-width: min(270px, calc(100vw - 96px));
+    padding: 11px 14px;
+    background: rgba(241, 243, 238, 0.92);
+    border: 1px solid var(--hairline);
+  }
+
+  .tc-eyebrow {
+    margin: 0 0 3px;
+    font-family: var(--data);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--silt);
+  }
+
+  .tc-verdict {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-stretch: 88%;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .tc-verdict.is-clear { color: var(--weir); }
+
+  .legend {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 15;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px 15px;
+    margin: 0;
+    padding: 7px 13px;
+    list-style: none;
+    max-width: calc(100vw - 140px);
+    background: rgba(241, 243, 238, 0.92);
+    border: 1px solid var(--hairline);
+    font-size: 12px;
+  }
+
+  .legend li { display: flex; align-items: center; gap: 7px; }
+
+  .legend .mappin {
+    position: static;
+    width: 13px;
+    height: 13px;
+    flex: none;
+    transform: none;
+    box-shadow: 0 0 0 1px rgba(23, 30, 27, 0.25);
+  }
+
+  .fab {
+    position: fixed;
+    z-index: 20;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--weir);
+    color: var(--chalk);
+    box-shadow: 0 2px 12px rgba(23, 30, 27, 0.32);
+    cursor: pointer;
+    transition: opacity 0.2s, background 0.15s;
+  }
+
+  .fab:hover { background: var(--ink); }
+  .fab:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
+  .fab svg { width: 22px; height: 22px; }
+  .fab--clock { top: 16px; right: 16px; }
+  .fab--info  { bottom: 16px; right: 16px; }
+
+  body.panel-open .fab { opacity: 0; pointer-events: none; }
+
+  /* --- Slide-in panels --- */
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: rgba(23, 30, 27, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+
+  .scrim.is-open { opacity: 1; pointer-events: auto; }
+
+  .panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    max-width: 100%;
+    height: 100%;
+    background: var(--lichen);
+    border-left: 1px solid var(--hairline);
+    box-shadow: -8px 0 30px rgba(23, 30, 27, 0.18);
+    transform: translateX(100%);
+    transition: transform 0.28s ease;
+  }
+
+  .panel.is-open { transform: none; }
+
+  .panel-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 17px 20px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .panel-head h2 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-stretch: 90%;
+    font-size: 18px;
+  }
+
+  .panel-close {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: none;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--silt);
+    cursor: pointer;
+  }
+
+  .panel-close:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 20px 40px;
+  }
+
+  .stamp { font-family: var(--data); font-size: 11px; color: var(--silt); margin: 0 0 4px; }
+  .standfirst { margin: 8px 0 20px; color: #414A45; font-size: 14px; }
+
+  .prose p { margin: 0 0 12px; }
+  .prose h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    margin: 22px 0 6px;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose a { color: var(--weir); }
+
+  /* --- Overflow list (shared look with the archive) --- */
+
+  .overflows { display: flex; flex-direction: column; gap: 10px; }
+
+  .o-card {
+    padding: 14px 16px 15px;
+    background: var(--chalk);
+    border-left: 3px solid var(--hairline);
+  }
+
+  .o-card.is-discharging { border-left-color: var(--oxide); }
+  .o-card.is-dry         { border-left-color: var(--weir); }
+  .o-card.is-offline     { border-left-color: var(--silt); }
+
+  .o-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 16px;
+    flex-wrap: wrap;
+  }
+
+  .o-head h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-stretch: 88%;
+    font-size: 16px;
+  }
+
+  .o-state {
+    font-family: var(--data);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .o-card.is-discharging .o-state { color: var(--oxide); font-weight: 500; }
+  .o-card.is-dry .o-state         { color: var(--weir); }
+  .o-card.is-offline .o-state     { color: var(--silt); }
+
+  .o-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--silt); }
+
+  .o-strip {
+    display: flex;
+    gap: 1px;
+    width: 100%;
+    max-width: 450px;
+    height: 32px;
+    margin: 11px 0 0;
+  }
+
+  .o-day { flex: 1 1 0; min-width: 0; border-radius: 1px; background: var(--day-dry); }
+  .o-day--nodata { background: var(--day-nodata); }
+  .o-day--recent { background: var(--amber); }
+  .o-day--spill  { background: var(--oxide); }
+
+  .o-scale {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 450px;
+    margin: 5px 0 0;
+    font-family: var(--data);
+    font-size: 10px;
+    color: var(--silt);
+  }
+
+  .o-geo { margin: 10px 0 0; font-family: var(--data); font-size: 11.5px; }
+  .o-geo a { color: var(--weir); text-decoration: none; white-space: nowrap; }
+  .o-geo a:hover { text-decoration: underline; }
+  .o-geo .pin { vertical-align: -1.5px; margin-right: 4px; }
+
+  .empty { padding: 24px; background: var(--chalk); font-family: var(--display); font-size: 17px; }
+
+  @media (max-width: 560px) {
+    .panel { width: 100%; border-left: 0; }
+    .map-ctrl { display: none; }
+    .legend { max-width: calc(100vw - 32px); bottom: 74px; }
+    .map-attr { bottom: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<main id="overflow-map" aria-label="Map of storm overflows around Frome"></main>
+
+<div class="titlecard">
+  <p class="tc-eyebrow">Storm overflows · River Frome</p>
+  <p class="tc-verdict" id="verdict">Reading the feed…</p>
+</div>
+
+<ul class="legend" id="legend" aria-label="What the pin colours mean"></ul>
+
+<button class="fab fab--clock" id="open-timeline" aria-controls="panel-timeline"
+  aria-expanded="false" aria-label="Open the 90-day timeline">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/>
+  </svg>
+</button>
+
+<button class="fab fab--info" id="open-info" aria-controls="panel-info"
+  aria-expanded="false" aria-label="About this project">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.6h.01"/>
+  </svg>
+</button>
+
+<aside class="panel" id="panel-timeline" aria-labelledby="pt-h" aria-hidden="true">
+  <div class="panel-head">
+    <h2 id="pt-h">The last 90 days</h2>
+    <button class="panel-close" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel-body">
+    <p class="stamp" id="stamp"></p>
+    <p class="standfirst">One card per overflow, ranked by total discharge time. The strip
+      is its last 90 days, one bar a day: red where it discharged, amber for the 48 hours
+      after, green when it was clear, grey before monitoring began.</p>
+    <div class="overflows" id="overflows"></div>
+  </div>
+</aside>
+
+<aside class="panel" id="panel-info" aria-labelledby="pi-h" aria-hidden="true">
+  <div class="panel-head">
+    <h2 id="pi-h">About</h2>
+    <button class="panel-close" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel-body prose">
+    <h3>What this is</h3>
+    <p>A single-town monitor of storm overflows on the River Frome and its tributaries around
+      Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
+      every 15 minutes and keeps its own history — the feed itself publishes only the current
+      status.</p>
+
+    <h3>Reading the map</h3>
+    <p>Each pin is an overflow, coloured by its state at the last check: <b>red</b> discharging
+      now, <b>amber</b> discharged within the last 48 hours, <b>green</b> not discharging,
+      <b>grey</b> no signal. Tap the clock for every monitor’s last 90 days.</p>
+
+    <h3>What it can’t tell you</h3>
+    <p>A monitor records <i>when</i> an overflow starts and stops — not how much was released,
+      and not whether the water is safe. Monitors can trigger on debris or vegetation, so an
+      activation indicates a discharge rather than confirming one. If a monitor spills twice
+      between two checks only the second is recorded, so the totals are a floor.</p>
+    <p>These figures will not match Wessex Water’s regulator-verified annual returns.</p>
+
+    <h3>Sources</h3>
+    <p><a href="https://www.wessexwater.co.uk/environment/water-quality/storm-overflows"
+      target="_blank" rel="noopener">Wessex Water — storm overflow activity</a><br>
+    <a href="https://environment.data.gov.uk/" target="_blank" rel="noopener">Environment
+      Agency — verified annual data</a></p>
+
+    <h3>Older view</h3>
+    <p>The original combined timeline-and-map page is <a href="archive.html">archived here</a>.</p>
+  </div>
+</aside>
+
+<div class="scrim" id="scrim"></div>
+
+<script type="module">
+import { fmtWhen } from './lib/format.js';
+import { buildMap, renderLegend } from './lib/map.js';
+import { renderCards } from './lib/cards.js';
+
+// Fraction of the fully-zoomed-out view to open on — two ± clicks in (0.6 each).
+const INITIAL_ZOOM = 0.36;
+
+const $ = (id) => document.getElementById(id);
+
+function paintStatus(data) {
+  const live = data.monitors.filter((m) => m.status === 1);
+  const verdict = $('verdict');
+  verdict.className = live.length ? 'tc-verdict' : 'tc-verdict is-clear';
+  verdict.textContent = live.length
+    ? `${live.length} overflow${live.length === 1 ? '' : 's'} discharging now`
+    : 'Nothing discharging right now';
+  $('stamp').textContent =
+    `${data.monitors.length} monitors · last checked ${fmtWhen(data.polled_at)}`;
+}
+
+// --- panels ---
+const PANELS = { timeline: 'panel-timeline', about: 'panel-info' };
+const TRIGGERS = { timeline: 'open-timeline', about: 'open-info' };
+const scrim = $('scrim');
+let open = null;
+
+function setPanel(name) {
+  const prevTrigger = open ? $(TRIGGERS[open]) : null;
+
+  for (const [key, id] of Object.entries(PANELS)) {
+    const on = key === name;
+    $(id).classList.toggle('is-open', on);
+    $(id).setAttribute('aria-hidden', String(!on));
+    $(TRIGGERS[key]).setAttribute('aria-expanded', String(on));
+  }
+  scrim.classList.toggle('is-open', name != null);
+  document.body.classList.toggle('panel-open', name != null);
+  open = name;
+
+  history.replaceState(null, '',
+    name ? `#${name}` : location.pathname + location.search);
+
+  if (name) $(PANELS[name]).querySelector('.panel-close').focus();
+  else if (prevTrigger) prevTrigger.focus();
+}
+
+$('open-timeline').addEventListener('click',
+  () => setPanel(open === 'timeline' ? null : 'timeline'));
+$('open-info').addEventListener('click',
+  () => setPanel(open === 'about' ? null : 'about'));
+scrim.addEventListener('click', () => setPanel(null));
+for (const id of Object.values(PANELS)) {
+  $(id).querySelector('.panel-close').addEventListener('click', () => setPanel(null));
+}
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) setPanel(null); });
+
+// --- load ---
+try {
+  const res = await fetch(`data.json?${Date.now()}`);
+  if (!res.ok) throw new Error(String(res.status));
+  const data = await res.json();
+
+  paintStatus(data);
+  renderLegend($('legend'));
+  renderCards($('overflows'), data);
+  buildMap($('overflow-map'), data, { initialZoom: INITIAL_ZOOM });
+
+  const h = location.hash.slice(1);
+  if (h === 'about' || h === 'timeline') setPanel(h);
+} catch {
+  $('verdict').textContent = 'No data yet — run a poll';
+  renderLegend($('legend'));
+  $('overflows').innerHTML = '<div class="empty">The history builds from here.</div>';
+}
+</script>
+</body>
+</html>

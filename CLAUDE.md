@@ -49,34 +49,50 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   (`fetchAll`, 2000/request), filters to the Frome catchment (`isLocal`), upserts
   into SQLite (`store`), then writes the last 90 days as JSON (`exportJson`).
 - **`docs/lib/format.js`** — shared duration maths and formatting (`spillMs`,
-  `fmtDuration`, `rankByTotal`, `statusOf`, `mapStatusOf`, `DAY`, `RECENT_HOURS`,
-  …). **Imported by both `poll.js` and `docs/index.html`** so a spill is measured
-  identically in the console and on screen. This is the single source of truth for
-  how a discharge is counted — change it here, nowhere else. `statusOf` is the
-  3-state code (discharging / offline / dry); `mapStatusOf` adds the "recent" step
-  (a spill that ended within `RECENT_HOURS`, default 48) for the map's traffic
-  light.
-- **`docs/index.html`** — static page, no framework. `fetch`es `data.json` once
-  and offers two tab views (state in the URL hash, `#timeline` / `#map`):
-  - **Timeline** — the "barcode" (one row per monitor, 90-day timeline) and
-    "Right now" status cards. Each card links its coordinates to Google Maps.
-  - **Map** — **no library, no tile service.** `buildMap` (lazy, on first switch
-    to the tab) fetches `basemap.json` and draws roads/waterways as one SVG whose
-    `viewBox` is the camera; pins are an HTML overlay repositioned each frame.
-    Pan (drag), wheel/`±` zoom and two-finger pinch are clamped to a 10 km square
-    on Frome and a min/max zoom, so nothing outside the square is ever needed.
-    Pins are coloured by `mapStatusOf` (`.mappin--*`: red / amber / bright green /
-    grey); `mapStatusOf` also drives the legend. A monitor outside the square (or
-    panned off-screen) is hidden; flip `SHOW_EDGE_MARKERS` to instead stick it to
-    the edge as a square (`screenXY` still computes the clamped position — box
-    first, then viewport). Popups are the same `popup()` DOM used nowhere else.
-    Web Mercator projection in `drawMap` **must match `scripts/build-basemap.js`**.
-    The map div is `#overflow-map`, deliberately *not* `id="map"`, so the `#map`
-    hash doesn't scroll the browser past the masthead.
-    Labels (`bm.labels`) are an HTML overlay too: `place=suburb` names always,
-    named `major`/`mid` road names once zoomed past `LABEL_ZOOM.road`. A cheap
-    per-frame greedy box-overlap cull thins them (list order = priority: suburbs,
-    then roads longest-first).
+  `fmtDuration`, `rankByTotal`, `statusOf`, `mapStatusOf`, `dayCells`, `mapsUrl`,
+  `DAY`, `RECENT_HOURS`, …). **Imported by `poll.js` and every page/lib module**
+  so a spill is measured identically in the console and on screen. This is the
+  single source of truth for how a discharge is counted — change it here, nowhere
+  else. `statusOf` is the 3-state code (discharging / offline / dry); `mapStatusOf`
+  adds the "recent" step (a spill that ended within `RECENT_HOURS`, default 48) for
+  the traffic light. `dayCells` turns a monitor's events into one cell per day for
+  the last 90 (`spill`/`recent`/`nodata`/`dry`, checked in that order) — the
+  per-monitor strip.
+- **`docs/lib/cards.js`** — `renderCards(container, data)`: the per-monitor list.
+  One card each (ranked by total discharge time) with a `statusOf` badge, a
+  summary line, and a GitHub-status-style 90-day strip — one bar per day from
+  `dayCells` (`.o-day--spill` red / `--recent` amber / `--nodata` grey / plain
+  `.o-day` green), capped at 450px wide, shrinking below that.
+- **`docs/lib/map.js`** — `buildMap(host, data, { initialZoom })` + `renderLegend`.
+  **No library, no tile service.** Fetches `basemap.json` and draws roads/
+  waterways as one SVG whose `viewBox` is the camera; pins/labels/popups are an
+  HTML overlay repositioned each frame. Pan (drag), wheel/`±` zoom and two-finger
+  pinch are clamped so the box's edge is never crossed: at `MAX_ZOOM_OUT` (1) the
+  10 km box *covers* the viewport — `VW_OUT = min(GW, GH*a)` — so a wide screen
+  shows the full width and pans up/down, a tall screen the full height and pans
+  left/right. `MAX_ZOOM_IN` sets the tightest zoom. `initialZoom` is the fraction
+  of the zoomed-out view to open on (the live page passes `0.36` ≈ two `±` clicks
+  in). Pins coloured by `mapStatusOf` (`.mappin--*`: red / amber /
+  bright green / grey), which also drives the legend. A monitor outside the box
+  (or panned off-screen) is hidden; flip `SHOW_EDGE_MARKERS` to stick it to the
+  edge instead (`screenXY` computes the clamped position — box first, then
+  viewport). Web Mercator projection in `drawMap` **must match
+  `scripts/build-basemap.js`**. Labels: `place=suburb` names always, named
+  `major`/`mid` road names once zoomed past `LABEL_ZOOM.road`; a per-frame greedy
+  box-overlap cull thins them (list order = priority). The host is `#overflow-map`,
+  deliberately *not* `id="map"`.
+- **`docs/index.html`** — the live page: a full-viewport `#overflow-map` with two
+  slide-in panels from the right (`.panel`, 500px, 100% on mobile, state in the
+  URL hash `#timeline` / `#about`). A floating clock button (top-right) opens the
+  `cards.js` list; a floating "i" button (bottom-right) opens an About panel. A
+  compact title card (top-left) shows the live verdict; the legend is a
+  bottom-centre pill. No framework — `fetch`es `data.json` once, then
+  `renderCards` + `buildMap`.
+- **`docs/archive.html`** — the original single-file combined page (masthead +
+  Timeline/Map tabs), kept **frozen for reference**. It has its own inline copy of
+  the map engine and card rendering — do not wire it to `lib/map.js` or
+  `lib/cards.js`; changes there should not affect the archive. Linked from the
+  About panel; links back to `./`.
 - **[scripts/build-basemap.js](scripts/build-basemap.js)** — one-off, zero-dep.
   Overpass query for a `BOX_KM` (10) square on `CENTRE` (keep in step with
   `poll.js`), projects to a `GRID`-unit integer grid, Douglas–Peucker simplifies,
@@ -85,10 +101,14 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   (top 40 by length); `place=suburb` nodes become place labels. The page trusts
   `basemap.json`'s own `box`/`size`, so a rebuild with different bounds just works.
 - **[.github/workflows/poll.yml](.github/workflows/poll.yml)** — GitHub Action:
-  polls every 15 min, commits `overflows.db` + `docs/data.json` back to the
-  branch, optionally rsyncs `docs/` to SiteGround (gated on the
-  `DEPLOY_TO_SITEGROUND` repo variable). **The repo is the database**; GitHub
-  Pages / SiteGround just serves `docs/`.
+  commits `overflows.db` + `docs/data.json` back to the branch, optionally rsyncs
+  `docs/` to SiteGround (gated on the `DEPLOY_TO_SITEGROUND` repo variable).
+  **The repo is the database**; GitHub Pages / SiteGround just serves `docs/`.
+  Cadence: the `schedule:` cron is `7,22,37,52 * * * *` (off the hour on purpose)
+  but is only a fallback — GitHub skips most ticks on a low-traffic repo. An
+  external cron (cron-job.org) hits the `workflow_dispatch` API every 15 min for
+  the real cadence; see [SETUP.md](SETUP.md). `concurrency: poll` absorbs any
+  double-trigger.
 
 ### Layout
 
@@ -96,8 +116,11 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
 poll.js                 fetch + store + export    (root)
 serve.js                zero-dep static server for docs/
 scripts/build-basemap.js one-off: OSM streets → docs/basemap.json
-docs/index.html         the page — Timeline + Map tab views
-docs/lib/format.js      shared maths, imported by poll.js and index.html
+docs/index.html         the live page — full-screen map + slide-in panels
+docs/archive.html       the original combined page, kept frozen for reference
+docs/lib/format.js      shared maths, imported by poll.js and the page modules
+docs/lib/cards.js       renderCards() — the per-monitor list + 90-day strip
+docs/lib/map.js         buildMap() — the no-library SVG map
 docs/data.json          generated by poll.js (git-committed; absent in a fresh
                         checkout until the first poll)
 docs/basemap.json       generated by build-basemap.js (git-committed)

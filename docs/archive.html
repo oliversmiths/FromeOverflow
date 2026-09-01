@@ -787,9 +787,13 @@ function drawMap(host, bm, monitors, now) {
     VW_OUT = Math.max(GW, GH * a);
     VW_IN = VW_OUT / MAX_ZOOM_IN;
     if (vw === undefined) {
-      vw = VW_OUT;                     // open on the whole 10 km box
-      vx = (GW - vw) / 2;
-      vy = (GH - vw / a) / 2;
+      // Open zoomed onto the town. (The live map handles this properly; this is
+      // a light touch so the frozen archive still centres sensibly after the
+      // basemap grew and went asymmetric.)
+      vw = VW_OUT * 0.34;
+      const [cLon, cLat] = bm.centre ?? [(BW + BE) / 2, (BS + BN) / 2];
+      vx = projX(cLon) - vw / 2;
+      vy = projY(cLat) - vw / a / 2;
     }
     clamp(a);
     apply();

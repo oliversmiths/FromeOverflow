@@ -42,14 +42,14 @@ You should see something like:
 
 ```
 Fetching Wessex Water storm overflow feed…
-  1247 overflows region-wide, 23 near Frome
-  0 discharging, 1 offline, 23 new spills recorded
-  wrote docs/data.json (23 monitors)
+  1427 overflows region-wide, 38 near Frome
+  0 discharging, 1 offline, 38 new spills recorded
+  wrote docs/data.json (38 monitors)
 ```
 
-The region-wide number tells you Wessex's total; the second is your Frome count.
-The first run records every overflow's most recent spill, so "23 new spills" on
-run one is expected — it drops to 0 or 1 after that.
+The region-wide number is Wessex's total; the second is your Frome list
+(`PIN_TO_IDS` in `poll.js`). The first run records every overflow's most recent
+spill, so "38 new spills" on run one is expected — it drops to 0 or 1 after that.
 
 Then:
 

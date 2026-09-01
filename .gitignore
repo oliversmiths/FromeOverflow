@@ -9,5 +9,10 @@ npm-debug.log*
 .env
 *.local
 
+# DB backups from manual prunes (see scripts/audit-ids.js workflow)
+*.db.bak*
+docs/_*.html
+docs/_*.json
+
 # NOTE: overflows.db and docs/*.json are generated but *committed on purpose*
 # (the repo is the database; the GitHub Action commits new readings back).

@@ -18,22 +18,28 @@ import {
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
-const MAX_ZOOM_IN = 16;    // smallest viewBox = zoomed-out width / this
-// How far out you can pull back. At 1 the 10 km box exactly covers the viewport
-// (never a gap past its edges — on a wide screen you see the full width and pan
-// up/down, on a tall screen the full height and pan left/right). Below 1 the
-// stop comes sooner; keep it >= the page's initialZoom.
+const MAX_ZOOM_IN = 40;    // smallest viewBox = zoomed-out width / this
+// How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
+// the viewport — never a gap past its edges: a wide screen shows the full crop
+// width and pans up/down, a tall screen the full height and pans left/right.
+// Below 1 the stop comes sooner; keep it >= the page's initialZoom.
 const MAX_ZOOM_OUT = 1;
 
-// A monitor outside the 10 km square (or panned off-screen) can either be
-// pinned to the edge as a marker, or simply hidden. Flip to true to bring the
-// edge markers back — the positioning logic in screenXY still computes them.
+// A monitor outside the crop (or panned off-screen) can either be pinned to the
+// edge as a marker, or simply hidden. Flip to true to bring the edge markers
+// back — the positioning logic in screenXY still computes them.
 const SHOW_EDGE_MARKERS = false;
 
-// A label shows only once the view is at or below this fraction of the full-box
-// width (1 = whole box, smaller = zoomed in). Suburbs from the start, road names
-// once you lean in.
-const LABEL_ZOOM = { place: 1.1, road: 0.52 };
+// A label shows only once the view is at or below this fraction of the
+// fully-zoomed-out width (1 = zoomed right out, smaller = leaning in). Towns
+// always; villages/suburbs mid-zoom; hamlets and road names once you lean in.
+const LABEL_ZOOM = { town: 1.1, village: 1.1, road: 0.55, suburb: 0.5, hamlet: 0.22 };
+
+// The camera is clamped to this rectangle, not the whole basemap — an asymmetric
+// box on the town (km from CENTRE) shaped to the Frome catchment: long N–S,
+// reaching WSW down the Mells, barely east. Keep it inside EDGE_KM in
+// scripts/build-basemap.js so the streets are there.
+const CROP_KM = { n: 13, s: 10, e: 6, w: 15 };
 
 export const LEGEND = [
   ['discharging', 'Discharging now'],
@@ -117,6 +123,20 @@ function drawMap(host, bm, monitors, now, initialZoom) {
   const projX = (lon) => ((lon + 180) / 360 - wx0) * gscale;
   const projY = (lat) => (worldY(lat) - wy0) * gscale;
 
+  // The crop rectangle in grid units — the camera never leaves this. `bm.centre`
+  // is the town; CROP_KM the offsets. (north edge = smaller y).
+  const [cLon, cLat] = bm.centre ?? [(BW + BE) / 2, (BS + BN) / 2];
+  const kmLat = 1 / 111.132;
+  const kmLon = 1 / (111.132 * Math.cos((cLat * Math.PI) / 180));
+  const CX0 = projX(cLon - CROP_KM.w * kmLon);
+  const CX1 = projX(cLon + CROP_KM.e * kmLon);
+  const CY0 = projY(cLat + CROP_KM.n * kmLat);
+  const CY1 = projY(cLat - CROP_KM.s * kmLat);
+  const CW = CX1 - CX0;
+  const CH = CY1 - CY0;
+  const townX = projX(cLon);
+  const townY = projY(cLat);
+
   // --- SVG backdrop ---
   const svg = document.createElementNS(SVGNS, 'svg');
   svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
@@ -189,8 +209,8 @@ function drawMap(host, bm, monitors, now, initialZoom) {
   function clamp(a) {
     vw = Math.min(Math.max(vw, VW_IN), VW_OUT);
     vh = vw / a;
-    vx = vw >= GW ? (GW - vw) / 2 : Math.min(Math.max(vx, 0), GW - vw);
-    vy = vh >= GH ? (GH - vh) / 2 : Math.min(Math.max(vy, 0), GH - vh);
+    vx = vw >= CW ? CX0 + (CW - vw) / 2 : Math.min(Math.max(vx, CX0), CX0 + CW - vw);
+    vy = vh >= CH ? CY0 + (CH - vh) / 2 : Math.min(Math.max(vy, CY0), CY0 + CH - vh);
   }
 
   function apply() {
@@ -203,16 +223,16 @@ function drawMap(host, bm, monitors, now, initialZoom) {
   function recalc() {
     const [pw, ph] = size();
     const a = pw / ph;
-    // Most zoomed out: the box *covers* the viewport, so its edge is never
-    // crossed. min() picks the axis that runs out of box first — the other axis
-    // then pans within the square.
-    VW_OUT = Math.min(GW, GH * a) * MAX_ZOOM_OUT;
+    // Most zoomed out: the crop *covers* the viewport, so its edge is never
+    // crossed. min() picks the axis that runs out of crop first — the other axis
+    // then pans within it.
+    VW_OUT = Math.min(CW, CH * a) * MAX_ZOOM_OUT;
     VW_IN = VW_OUT / MAX_ZOOM_IN;
     if (vw === undefined) {
-      vw = VW_OUT * initialZoom;         // open on this fraction of the 10 km box
+      vw = VW_OUT * initialZoom;         // open on this fraction, centred on town
       vh = vw / a;
-      vx = (GW - vw) / 2;                // …centred, i.e. on Frome
-      vy = (GH - vh) / 2;
+      vx = townX - vw / 2;
+      vy = townY - vh / 2;
     }
     clamp(a);
     apply();
@@ -224,6 +244,7 @@ function drawMap(host, bm, monitors, now, initialZoom) {
     const gx = vx + fx * vw;
     const gy = vy + fy * vh;
     vw = Math.min(Math.max(vw * factor, VW_IN), VW_OUT);
+    vh = vw / a;                       // recompute before anchoring, or the zoom drifts
     vx = gx - fx * vw;
     vy = gy - fy * vh;
     clamp(a);
@@ -244,12 +265,12 @@ function drawMap(host, bm, monitors, now, initialZoom) {
       return { m, el, gx: projX(m.lon), gy: projY(m.lat) };
     });
 
-  // Position within the box first (so a monitor beyond the 10 km box sticks to
-  // its edge), then within the viewport (so one panned off-screen sticks too).
+  // Position within the crop first (so anything beyond it sticks to the edge),
+  // then within the viewport (so one panned off-screen sticks too).
   function screenXY(gx, gy) {
-    const inBox = gx >= 0 && gx <= GW && gy >= 0 && gy <= GH;
-    let sx = (Math.min(Math.max(gx, 0), GW) - vx) / vw;
-    let sy = (Math.min(Math.max(gy, 0), GH) - vy) / vh;
+    const inBox = gx >= CX0 && gx <= CX1 && gy >= CY0 && gy <= CY1;
+    let sx = (Math.min(Math.max(gx, CX0), CX1) - vx) / vw;
+    let sy = (Math.min(Math.max(gy, CY0), CY1) - vy) / vh;
     const inView = sx >= 0 && sx <= 1 && sy >= 0 && sy <= 1;
     sx = Math.min(Math.max(sx, 0.012), 0.988);
     sy = Math.min(Math.max(sy, 0.014), 0.986);
@@ -267,11 +288,16 @@ function drawMap(host, bm, monitors, now, initialZoom) {
     }
   }
 
-  // --- labels (suburb + road names) ---
+  // --- labels (place + road names) ---
+  // List order is the declutter cull's priority: town, village, then road ahead
+  // of suburb/hamlet (a street name locates an outfall better than a district).
+  // build-basemap.js already sorts places and roads sensibly within each kind;
+  // the sort here is stable so that order survives.
+  const RANK = { town: 0, village: 1, road: 2, suburb: 3, hamlet: 4 };
   const labels = [
-    ...(bm.labels?.places ?? []).map((l) => ({ ...l, kind: 'place' })),
+    ...(bm.labels?.places ?? []).map((l) => ({ ...l, kind: l.kind ?? 'suburb' })),
     ...(bm.labels?.roads ?? []).map((l) => ({ ...l, kind: 'road' })),
-  ].map((l) => {
+  ].sort((x, y) => RANK[x.kind] - RANK[y.kind]).map((l) => {
     const el = document.createElement('span');
     el.className = `map-label map-label--${l.kind}`;
     el.textContent = l.text;

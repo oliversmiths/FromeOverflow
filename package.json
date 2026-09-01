@@ -11,6 +11,7 @@
     "poll": "node --no-warnings poll.js",
     "serve": "node --no-warnings serve.js",
     "dev": "node --no-warnings poll.js && node --no-warnings serve.js",
-    "basemap": "node --no-warnings scripts/build-basemap.js"
+    "basemap": "node --no-warnings scripts/build-basemap.js",
+    "audit-ids": "node --no-warnings scripts/audit-ids.js"
   }
 }

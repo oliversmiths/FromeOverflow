@@ -1,5 +1,5 @@
 {
- "polled_at": 1788349527478,
+ "polled_at": 1788350444996,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -431,7 +431,7 @@
    "lon": -2.4788410201928195,
    "watercourse": "TRIB OF MELLS STREAM",
    "since": 1788256544235,
-   "status": -1,
+   "status": 0,
    "events": []
   },
   {

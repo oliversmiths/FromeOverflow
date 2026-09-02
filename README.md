@@ -35,9 +35,6 @@ rectangle are hidden (set `SHOW_EDGE_MARKERS` to pin them to the edge instead).
 - A floating **"i" button** opens an **About** panel.
 - Panel state is remembered in the URL as `#timeline` or `#about`.
 
-The original combined timeline-and-map layout is kept at `docs/archive.html`,
-frozen, and linked from the About panel.
-
 The map has no library and no tile service. `scripts/build-basemap.js`
 (`npm run basemap`) pulls the roads, waterways, town/village/hamlet names and
 main road names for the box once from the OpenStreetMap Overpass API and writes

@@ -86,18 +86,14 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   only close up. A per-frame greedy box-overlap cull thins them; `RANK` sets the
   priority (town, village, road, suburb, hamlet — a street name locates an
   outfall better than a district). The host is `#overflow-map`, *not* `id="map"`.
-- **`docs/index.html`** — the live page: a full-viewport `#overflow-map` with two
-  slide-in panels from the right (`.panel`, 500px, 100% on mobile, state in the
-  URL hash `#timeline` / `#about`). A floating clock button (top-right) opens the
-  `cards.js` list; a floating "i" button (bottom-right) opens an About panel. A
-  compact title card (top-left) shows the live verdict; the legend is a
-  bottom-centre pill. No framework — `fetch`es `data.json` once, then
-  `renderCards` + `buildMap`.
-- **`docs/archive.html`** — the original single-file combined page (masthead +
-  Timeline/Map tabs), kept **frozen for reference**. It has its own inline copy of
-  the map engine and card rendering — do not wire it to `lib/map.js` or
-  `lib/cards.js`; changes there should not affect the archive. Linked from the
-  About panel; links back to `./`.
+- **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
+  `#overflow-map` with two slide-in panels from the right (`.panel`, 500px, 100%
+  on mobile, state in the URL hash `#timeline` / `#about`). A floating clock
+  button (top-right) opens the `cards.js` list; a floating "i" button
+  (bottom-right) opens an About panel. A compact title card (top-left) shows the
+  live verdict; the legend is a bottom-centre pill. No framework — `fetch`es
+  `data.json` once, then `renderCards` + `buildMap`. `styles.css` is the only
+  stylesheet.
 - **[scripts/build-basemap.js](scripts/build-basemap.js)** — one-off, zero-dep.
   Overpass query for the **`EDGE_KM`** box on `CENTRE` — an asymmetric rectangle
   (`{n,s,e,w}` km) that must contain map.js's `CROP_KM` with ~1 km margin.
@@ -134,8 +130,8 @@ poll.js                 fetch + store + export    (root)
 serve.js                zero-dep static server for docs/
 scripts/build-basemap.js one-off: OSM streets → docs/basemap.json
 scripts/audit-ids.js    one-off: diff the fallback rule against PIN_TO_IDS
-docs/index.html         the live page — full-screen map + slide-in panels
-docs/archive.html       the original combined page, kept frozen for reference
+docs/index.html         the page — full-screen map + slide-in panels
+docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
 docs/lib/cards.js       renderCards() — the per-monitor list + 90-day strip
 docs/lib/map.js         buildMap() — the no-library SVG map

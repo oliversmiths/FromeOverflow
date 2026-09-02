@@ -1,12 +1,9 @@
 /**
  * The no-library map: draws `basemap.json` (roads + waterways) as one SVG whose
  * viewBox is the camera, with an HTML overlay of pins, labels and popups on top.
- * Pan/zoom/pinch are clamped to the 10 km box the basemap covers.
+ * Pan/zoom/pinch are clamped to `CROP_KM`, an asymmetric box on the town.
  *
- * Extracted from the original single-file page so both it and the archive can
- * share one implementation. The archive keeps its own inline copy, frozen.
- *
- *   buildMap(hostEl, data, { initialZoom: 0.36 });
+ *   buildMap(hostEl, data, { initialZoom: 0.28 });
  *   renderLegend(ulEl);
  *
  * The Web Mercator projection in `drawMap` MUST match `scripts/build-basemap.js`.

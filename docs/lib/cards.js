@@ -1,7 +1,6 @@
 /**
- * The per-monitor list: one card each, current status plus a GitHub-style
- * 90-day strip (one bar a day, from `dayCells`). Shared so the full-screen
- * map page and the archive render an overflow's history identically.
+ * The per-monitor list shown in the timeline panel: one card each, current
+ * status plus a GitHub-style 90-day strip (one bar a day, from `dayCells`).
  *
  *   renderCards(containerEl, data);   // returns the ranked monitors
  */

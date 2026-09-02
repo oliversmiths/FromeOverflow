@@ -29,11 +29,13 @@ out to a rectangle shaped to the Frome catchment — long north–south, reachin
 west down the Mells (`CROP_KM` in `docs/lib/map.js`). Monitors outside that
 rectangle are hidden (set `SHOW_EDGE_MARKERS` to pin them to the edge instead).
 
-- A floating **clock button** opens a panel with the **last 90 days** for each
-  monitor — one card each, a GitHub-status-style strip of one bar per day (red
-  discharged, amber the 48h after, green clear, grey before monitoring began).
-- A floating **"i" button** opens an **About** panel.
-- Panel state is remembered in the URL as `#timeline` or `#about`.
+- A floating button (top-right) opens a drawer with three tabs:
+  - **Timeline** — the **last 90 days** for each monitor: one card each, a
+    GitHub-status-style strip of one bar per day (red discharged, amber the 48h
+    after, green clear, grey before monitoring began).
+  - **About** — what it is and what the data can't tell you.
+  - **Credits** — sources and map attribution.
+- The open tab is remembered in the URL (`#timeline` / `#about` / `#credits`).
 
 The map has no library and no tile service. `scripts/build-basemap.js`
 (`npm run basemap`) pulls the roads, waterways, town/village/hamlet names and

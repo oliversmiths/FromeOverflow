@@ -39,17 +39,18 @@ export function renderCards(container, data) {
     head.className = 'o-head';
     const heading = document.createElement('h3');
     heading.textContent = monitor.label;
-    const badge = document.createElement('span');
-    badge.className = 'o-state';
-    badge.textContent = state.text;
-    head.append(heading, badge);
+    const where = document.createElement('span');
+    where.className = 'o-where';
+    where.textContent = `into ${monitor.watercourse}`;
+    heading.append(document.createTextNode(' · '), where);
+    head.append(heading);
 
     const meta = document.createElement('p');
     meta.className = 'o-meta';
-    meta.textContent = `Into the ${monitor.watercourse} · ` + (runs
-      ? `${runs} discharge${runs === 1 ? '' : 's'} in ${data.window_days} days, ` +
-        `${fmtDuration(monitor.total)} total · last was ${fmtWhen(last.start, now)}`
-      : `no discharge recorded in ${data.window_days} days`);
+    meta.textContent = runs
+      ? `${runs} discharge${runs === 1 ? '' : 's'} in the last ${data.window_days} days` +
+        ` · ${fmtDuration(monitor.total)} total · last was ${fmtWhen(last.start, now)}`
+      : `no discharge in the last ${data.window_days} days`;
 
     const cells = dayCells(monitor, now, data.window_days);
     const tally = cells.reduce((t, c) => (t[c.state]++, t), { nodata: 0, dry: 0, recent: 0, spill: 0 });

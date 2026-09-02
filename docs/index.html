@@ -4,88 +4,108 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Frome Overflow Watch</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,700;12..96,75..100,800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="icon.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#0666B5">
+<link rel="preconnect" href="https://use.typekit.net" crossorigin>
+<link rel="preconnect" href="https://p.typekit.net" crossorigin>
+<link rel="stylesheet" href="https://use.typekit.net/hpb4tyd.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<main id="overflow-map" aria-label="Map of storm overflows around Frome"></main>
-
-<div class="titlecard">
-  <p class="tc-eyebrow">Storm overflows · River Frome</p>
-  <p class="tc-verdict" id="verdict">Reading the feed…</p>
+<div class="splash" id="splash">
+  <p class="splash-verdict" id="splash-verdict">Reading the feed…</p>
+  <img class="splash-img" id="splash-img" src="overflow-img.webp" alt="">
+  <p class="splash-brand">Overflow&nbsp;Watch <span>Frome</span></p>
 </div>
+
+<main id="overflow-map" aria-label="Map of storm overflows around Frome"></main>
 
 <ul class="legend" id="legend" aria-label="What the pin colours mean"></ul>
 
-<button class="fab fab--clock" id="open-timeline" aria-controls="panel-timeline"
-  aria-expanded="false" aria-label="Open the 90-day timeline">
+<button class="fab fab--menu" id="open-panel" aria-controls="panel"
+  aria-expanded="false" aria-label="Timeline, about and credits">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/>
   </svg>
 </button>
 
-<button class="fab fab--info" id="open-info" aria-controls="panel-info"
-  aria-expanded="false" aria-label="About this project">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.6h.01"/>
-  </svg>
-</button>
-
-<aside class="panel" id="panel-timeline" aria-labelledby="pt-h" aria-hidden="true">
+<aside class="panel" id="panel" aria-hidden="true">
   <div class="panel-head">
-    <h2 id="pt-h">The last 90 days</h2>
+    <div class="tabs" role="tablist" aria-label="Panel sections">
+      <button class="tab" type="button" role="tab" id="tab-timeline"
+        aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
+      <button class="tab" type="button" role="tab" id="tab-about" tabindex="-1"
+        aria-controls="tabpanel-about" aria-selected="false">About</button>
+      <button class="tab" type="button" role="tab" id="tab-credits" tabindex="-1"
+        aria-controls="tabpanel-credits" aria-selected="false">Credits</button>
+    </div>
     <button class="panel-close" type="button" aria-label="Close">&times;</button>
   </div>
-  <div class="panel-body">
+
+  <div class="panel-body" id="tabpanel-timeline" role="tabpanel"
+    aria-labelledby="tab-timeline" tabindex="0">
+    <p class="verdict" id="verdict">Reading the feed…</p>
     <p class="stamp" id="stamp"></p>
-    <p class="standfirst">One card per overflow, ranked by total discharge time. The strip
-      is its last 90 days, one bar a day: red where it discharged, amber for the 48 hours
-      after, green when it was clear, grey before monitoring began.</p>
+    
     <div class="overflows" id="overflows"></div>
   </div>
-</aside>
 
-<aside class="panel" id="panel-info" aria-labelledby="pi-h" aria-hidden="true">
-  <div class="panel-head">
-    <h2 id="pi-h">About</h2>
-    <button class="panel-close" type="button" aria-label="Close">&times;</button>
-  </div>
-  <div class="panel-body prose">
+  <div class="panel-body prose" id="tabpanel-about" role="tabpanel"
+    aria-labelledby="tab-about" tabindex="0" hidden>
     <h3>What this is</h3>
     <p>A single-town monitor of storm overflows on the River Frome and its tributaries around
       Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
-      every 15 minutes and keeps its own history — the feed itself publishes only the current
+      every 15 minutes and keeps its own history – the feed itself publishes only the current
       status.</p>
 
     <h3>Reading the map</h3>
     <p>Each pin is an overflow, coloured by its state at the last check: <b>red</b> discharging
       now, <b>amber</b> discharged within the last 48 hours, <b>green</b> not discharging,
-      <b>grey</b> no signal. Tap the clock for every monitor’s last 90 days.</p>
+      <b>grey</b> no signal. Open the Timeline tab for every monitor’s last 90 days.</p>
+      
+        <h3>Reading the timeline</h3>
+      <p>One card per overflow, ranked by total discharge time. The strip
+      is its last 90 days, one bar a day: <b>red</b> where it discharged, <b>amber</b> for the 48 hours
+      after, <b>green</b> when it was clear, <b>grey</b> before monitoring began.</p>
 
     <h3>What it can’t tell you</h3>
-    <p>A monitor records <i>when</i> an overflow starts and stops — not how much was released,
+    <p>A monitor records <i>when</i> an overflow starts and stops – not how much was released,
       and not whether the water is safe. Monitors can trigger on debris or vegetation, so an
       activation indicates a discharge rather than confirming one. If a monitor spills twice
       between two checks only the second is recorded, so the totals are a floor.</p>
     <p>These figures will not match Wessex Water’s regulator-verified annual returns.</p>
+  </div>
 
-    <h3>Sources</h3>
+  <div class="panel-body prose" id="tabpanel-credits" role="tabpanel"
+    aria-labelledby="tab-credits" tabindex="0" hidden>
+    <h3>Data</h3>
     <p><a href="https://www.wessexwater.co.uk/environment/water-quality/storm-overflows"
-      target="_blank" rel="noopener">Wessex Water — storm overflow activity</a><br>
+      target="_blank" rel="noopener">Wessex Water</a> – the near real-time storm overflow
+      feed, checked every 15 minutes.<br>
     <a href="https://environment.data.gov.uk/" target="_blank" rel="noopener">Environment
-      Agency — verified annual data</a></p>
+      Agency</a> — regulator-verified annual figures.</p>
+
+    <h3>Map</h3>
+    <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
+      target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Drawn as plain
+      SVG – no tile service, no map library.</p>
+
+    <h3>This site</h3>
+    <p>An independent project, not affiliated with Wessex Water or the Environment Agency.</p>
+
+    <h3>Acknowledgements</h3>
+    Several other projects have inspired this work, including:
+    <p><a href="https://www.sas.org.uk/sewage-map/" target="_blank" rel="noopener">Surfers Against Sewage – Live Sewage Map</a> & <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub" target="_blank" rel="noopener">The National Storm Overflow Hub</a>. This project does not seek to replicate or compete with those efforts, but to provide a single-town view of the Frome catchment.</p>
   </div>
 </aside>
 
 <div class="scrim" id="scrim"></div>
 
 <script type="module">
-import { fmtWhen } from './lib/format.js';
+import { fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
 import { renderCards } from './lib/cards.js';
 
@@ -96,52 +116,101 @@ const INITIAL_ZOOM = 0.28;
 
 const $ = (id) => document.getElementById(id);
 
+// --- intro splash: hold ~5s, then fade over 3s (or tap to skip) ---
+const splash = $('splash');
+$('splash-img').addEventListener('error', (e) => e.target.remove());
+let splashGone = false;
+function dismissSplash() {
+  if (splashGone) return;
+  splashGone = true;
+  splash.classList.add('is-gone');
+  setTimeout(() => { splash.hidden = true; }, 3200);
+}
+setTimeout(dismissSplash, 5000);
+splash.addEventListener('click', dismissSplash);
+addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
+
 function paintStatus(data) {
-  const live = data.monitors.filter((m) => m.status === 1);
-  const verdict = $('verdict');
-  verdict.className = live.length ? 'tc-verdict' : 'tc-verdict is-clear';
-  verdict.textContent = live.length
-    ? `${live.length} overflow${live.length === 1 ? '' : 's'} discharging now`
-    : 'Nothing discharging right now';
-  $('stamp').textContent =
-    `${data.monitors.length} monitors · last checked ${fmtWhen(data.polled_at)}`;
-}
+  const now = data.polled_at;
+  const states = data.monitors.map((m) => mapStatusOf(m, now).key);
+  const live = states.filter((k) => k === 'discharging').length;
+  const recent = states.filter((k) => k === 'recent').length;
 
-// --- panels ---
-const PANELS = { timeline: 'panel-timeline', about: 'panel-info' };
-const TRIGGERS = { timeline: 'open-timeline', about: 'open-info' };
-const scrim = $('scrim');
-let open = null;
-
-function setPanel(name) {
-  const prevTrigger = open ? $(TRIGGERS[open]) : null;
-
-  for (const [key, id] of Object.entries(PANELS)) {
-    const on = key === name;
-    $(id).classList.toggle('is-open', on);
-    $(id).setAttribute('aria-hidden', String(!on));
-    $(TRIGGERS[key]).setAttribute('aria-expanded', String(on));
+  const n = (x) => `${x} overflow${x === 1 ? '' : 's'}`;
+  let cls, text;
+  if (live) {
+    [cls, text] = ['is-discharging', `${n(live)} discharging now`];
+  } else if (recent) {
+    [cls, text] = ['is-recent', `${n(recent)} recently discharged`];
+  } else {
+    [cls, text] = ['is-clear', 'No overflows discharging right now'];
   }
-  scrim.classList.toggle('is-open', name != null);
-  document.body.classList.toggle('panel-open', name != null);
-  open = name;
 
-  history.replaceState(null, '',
-    name ? `#${name}` : location.pathname + location.search);
-
-  if (name) $(PANELS[name]).querySelector('.panel-close').focus();
-  else if (prevTrigger) prevTrigger.focus();
+  $('verdict').className = `verdict ${cls}`;
+  $('verdict').textContent = text;
+  $('splash-verdict').textContent = text;
+  $('stamp').textContent =
+    `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }
 
-$('open-timeline').addEventListener('click',
-  () => setPanel(open === 'timeline' ? null : 'timeline'));
-$('open-info').addEventListener('click',
-  () => setPanel(open === 'about' ? null : 'about'));
-scrim.addEventListener('click', () => setPanel(null));
-for (const id of Object.values(PANELS)) {
-  $(id).querySelector('.panel-close').addEventListener('click', () => setPanel(null));
+// --- panel (one drawer, tabs: timeline / about / credits) ---
+const TABS = ['timeline', 'about', 'credits'];
+const panel = $('panel');
+const openBtn = $('open-panel');
+const scrim = $('scrim');
+let active = null;   // null = closed, else the open tab name
+
+function selectTab(tab) {
+  active = tab;
+  for (const t of TABS) {
+    const on = t === tab;
+    const btn = $(`tab-${t}`);
+    btn.setAttribute('aria-selected', String(on));
+    btn.tabIndex = on ? 0 : -1;
+    $(`tabpanel-${t}`).hidden = !on;
+  }
+  history.replaceState(null, '', `#${tab}`);
 }
-addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) setPanel(null); });
+
+function openPanel(tab = 'timeline') {
+  panel.classList.add('is-open');
+  panel.setAttribute('aria-hidden', 'false');
+  openBtn.setAttribute('aria-expanded', 'true');
+  scrim.classList.add('is-open');
+  document.body.classList.add('panel-open');
+  selectTab(tab);
+  $(`tab-${tab}`).focus();
+}
+
+function closePanel() {
+  active = null;
+  panel.classList.remove('is-open');
+  panel.setAttribute('aria-hidden', 'true');
+  openBtn.setAttribute('aria-expanded', 'false');
+  scrim.classList.remove('is-open');
+  document.body.classList.remove('panel-open');
+  history.replaceState(null, '', location.pathname + location.search);
+  openBtn.focus();
+}
+
+openBtn.addEventListener('click', () => (active ? closePanel() : openPanel('timeline')));
+scrim.addEventListener('click', closePanel);
+panel.querySelector('.panel-close').addEventListener('click', closePanel);
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && active) closePanel(); });
+
+const tablist = panel.querySelector('.tabs');
+tablist.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab');
+  if (btn) { selectTab(btn.id.slice(4)); btn.focus(); }
+});
+tablist.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  const i = TABS.indexOf(active);
+  const next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length];
+  selectTab(next);
+  $(`tab-${next}`).focus();
+});
 
 // --- load ---
 try {
@@ -155,9 +224,10 @@ try {
   buildMap($('overflow-map'), data, { initialZoom: INITIAL_ZOOM });
 
   const h = location.hash.slice(1);
-  if (h === 'about' || h === 'timeline') setPanel(h);
+  if (TABS.includes(h)) openPanel(h);
 } catch {
   $('verdict').textContent = 'No data yet — run a poll';
+  $('splash-verdict').textContent = 'No data yet';
   renderLegend($('legend'));
   $('overflows').innerHTML = '<div class="empty">The history builds from here.</div>';
 }

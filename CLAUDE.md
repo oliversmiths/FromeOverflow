@@ -87,13 +87,18 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   priority (town, village, road, suburb, hamlet — a street name locates an
   outfall better than a district). The host is `#overflow-map`, *not* `id="map"`.
 - **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
-  `#overflow-map` with two slide-in panels from the right (`.panel`, 500px, 100%
-  on mobile, state in the URL hash `#timeline` / `#about`). A floating clock
-  button (top-right) opens the `cards.js` list; a floating "i" button
-  (bottom-right) opens an About panel. A compact title card (top-left) shows the
-  live verdict; the legend is a bottom-centre pill. No framework — `fetch`es
-  `data.json` once, then `renderCards` + `buildMap`. `styles.css` is the only
-  stylesheet.
+  `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
+  drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
+  with a tab strip — **Timeline** (the `cards.js` list), **About**, **Credits**.
+  Opens to Timeline; tabs are `role="tab"` with arrow-key nav; the active tab is
+  the URL hash (`#timeline` / `#about` / `#credits`). The Timeline tab leads with
+  the live verdict (`#verdict`, `paintStatus` gives it `.verdict.is-discharging`
+  / `.is-recent` / `.is-clear`) above the "N monitors · last checked …" stamp.
+  The legend is a bottom-centre pill. On load a full-screen `.splash` shows the
+  verdict big over `docs/splash.jpg` (**not committed — drop it in**; the `<img>`
+  self-removes if missing), then fades after 5 s (tap/Esc to skip). No framework
+  — `fetch`es `data.json` once, then `renderCards` + `buildMap`. `styles.css` is
+  the only stylesheet.
 - **[scripts/build-basemap.js](scripts/build-basemap.js)** — one-off, zero-dep.
   Overpass query for the **`EDGE_KM`** box on `CENTRE` — an asymmetric rectangle
   (`{n,s,e,w}` km) that must contain map.js's `CROP_KM` with ~1 km margin.

@@ -167,14 +167,14 @@ body {
 .map-popup {
   position: absolute;
   z-index: 18;
-  width: 230px;
+  width: min(230px, calc(100vw - 24px));
   padding: 12px 14px;
   background: var(--chalk);
   border: 1px solid var(--ink);
   font-size: 13px;
   line-height: 1.45;
-  transform: translate(-50%, calc(-100% - 14px));
   pointer-events: auto;
+  /* left / top are set in px by placePopup() so it stays on screen near edges */
 }
 
 .map-popup h3 { margin: 0 0 4px; font-family: var(--display); font-weight: 700; font-size: 15px; }

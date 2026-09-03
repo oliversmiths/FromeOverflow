@@ -55,7 +55,8 @@
   <div class="panel-body" id="tabpanel-timeline" role="tabpanel"
     aria-labelledby="tab-timeline" tabindex="0">
     <p class="stamp" id="stamp"></p>
-    
+    <p class="coverage" id="coverage" hidden></p>
+
     <div class="overflows" id="overflows"></div>
   </div>
 
@@ -75,7 +76,16 @@
         <h3>Reading the timeline</h3>
       <p>One card per overflow, ranked by total discharge time. The strip
       is its last 90 days, one bar a day: red where it discharged, amber for the 48 hours
-      after, green when it was clear, grey before monitoring began.</p>
+      after, green when it was clear, dark grey where the monitor was offline, and
+      hatched before this record began.</p>
+      <p>Hatched days are not clear days – they are days nobody here was watching. This
+      site keeps its own history because the Wessex feed publishes only the current
+      status, so the strip can only go back as far as the first reading. A discharge
+      may still show inside the hatching: the first reading carries Wessex’s most
+      recent event, so that one spill is known while the days around it are not.</p>
+      <p>An offline day is not a discharge – it means the sensor sent no signal, so nothing
+      is known either way. Where that has happened the card says how long the monitor was
+      dark, because “no discharge recorded” means less when part of the record is missing.</p>
 
     <h3>What it can’t tell you</h3>
     <p>A monitor records <i>when</i> an overflow starts and stops – not how much was released,
@@ -113,7 +123,7 @@
 <div class="scrim" id="scrim"></div>
 
 <script type="module">
-import { fmtWhen, mapStatusOf } from './lib/format.js';
+import { DAY, fmtDate, fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
 import { renderCards } from './lib/cards.js';
 
@@ -182,6 +192,31 @@ function paintStatus(data) {
   setSplashVerdict(text);
   $('stamp').textContent =
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
+  paintCoverage(data, now);
+}
+
+// The strips are always 90 days wide, but this record only goes back as far as
+// the first poll. While it is shallower than the window, say so — most of every
+// strip is "we weren't watching yet", and hatching alone doesn't explain the
+// discharges that show up before the record starts. Once the history catches up
+// with the window this note stops appearing on its own.
+function paintCoverage(data, now) {
+  const note = $('coverage');
+  const starts = data.monitors.map((m) => m.since).filter((s) => s != null);
+  if (!starts.length) { note.hidden = true; return; }
+
+  const started = Math.min(...starts);
+  const depth = Math.floor((now - started) / DAY);
+  if (depth >= data.window_days) { note.hidden = true; return; }
+
+  note.textContent =
+    `This record only began on ${fmtDate(started)}, ` +
+    `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`}. ` +
+    'Hatched days are before it starts — they are not days without a discharge. ' +
+    'Some older discharges do appear: Wessex publish their latest event with the ' +
+    'first reading, so that single spill is known even though the days around it ' +
+    'are not.';
+  note.hidden = false;
 }
 
 // --- panel (one drawer, tabs: timeline / about / credits) ---

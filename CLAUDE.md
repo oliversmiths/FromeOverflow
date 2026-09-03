@@ -28,6 +28,10 @@ then exports JSON for a static page. See [README.md](README.md) and
   (the map's streets) from the OSM Overpass API. Run rarely, by hand.
 - `npm run audit-ids` → `node scripts/audit-ids.js` — diff the fallback catchment
   rule against the hand-curated `PIN_TO_IDS`. Read-only; run every few months.
+- `npm run context` → `node scripts/fetch-context.js` — fill in each monitor's
+  static reference data (site name, waterbody, overflow type, treatment, cause)
+  from Wessex's `overflow_context` layer. Writes to `monitors`; run every few
+  months, then `npm run poll` to republish. `--dry` shows what would change.
 
 There is no test suite or linter. `build-basemap.js` is the only build step and its
 output is committed. The page must be served over http — browsers block module
@@ -57,14 +61,23 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   single source of truth for how a discharge is counted — change it here, nowhere
   else. `statusOf` is the 3-state code (discharging / offline / dry); `mapStatusOf`
   adds the "recent" step (a spill that ended within `RECENT_HOURS`, default 48) for
-  the traffic light. `dayCells` turns a monitor's events into one cell per day for
-  the last 90 (`spill`/`recent`/`nodata`/`dry`, checked in that order) — the
-  per-monitor strip.
-- **`docs/lib/cards.js`** — `renderCards(container, data)`: the per-monitor list.
-  One card each (ranked by total discharge time) with a `statusOf` badge, a
-  summary line, and a GitHub-status-style 90-day strip — one bar per day from
-  `dayCells` (`.o-day--spill` red / `--recent` amber / `--nodata` grey / plain
-  `.o-day` green), capped at 450px wide, shrinking below that.
+  the traffic light. The map popup is split in two by a rule: **above it is the
+  live activity feed** (Id + watercourse, state, last discharge, offline total,
+  coordinates); **below it, `CONTEXT_ROWS`** renders the static
+  `overflow_context` fields as a `.pop-context` term/value grid. Rows with no
+  value are skipped, so an unfetched monitor just shows the feed half. `dayCells` turns a monitor's events *and its offline spells*
+  into one cell per day for the last 90
+  (`spill`/`recent`/`offline`/`nodata`/`dry`, checked in that order, so a
+  confirmed discharge always outranks a gap in the record) — the per-monitor
+  strip. `offlineMs` totals a monitor's offline time over the window.
+- **`docs/lib/cards.js`** — `renderCards(container, data, onSeeOnMap)`: the
+  per-monitor list. One card each (ranked by total discharge time) with a
+  `statusOf` badge, a summary line, and a GitHub-status-style 90-day strip — one
+  bar per day from `dayCells` (`.o-day--spill` red / `--recent` amber /
+  `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
+  450px wide, shrinking below that. When `offlineMs` is non-zero the summary line
+  appends "offline for …" — "no discharge recorded" means less when part of the
+  record is missing.
 - **`docs/lib/map.js`** — `buildMap(host, data, { initialZoom })` + `renderLegend`.
   **No library, no tile service.** Fetches `basemap.json` and draws roads/
   waterways as one SVG whose `viewBox` is the camera; pins/labels/popups are an
@@ -92,7 +105,14 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   with a tab strip — **Timeline** (the `cards.js` list), **About**, **Credits**.
   Opens to Timeline; tabs are `role="tab"` with arrow-key nav; the active tab is
   the URL hash (`#timeline` / `#about` / `#credits`). The Timeline tab leads with
-  the "N monitors · last checked …" stamp, then the `cards.js` list.
+  the "N monitors · last checked …" stamp, then `#coverage`, then the `cards.js`
+  list. **`paintCoverage` is temporary by design:** the strips are always 90 days
+  wide but the record only reaches back to the first poll, so while it is
+  shallower than `window_days` the note explains the hatching *and* the
+  discharges that appear before the record starts (Wessex hand over their latest
+  event with the first reading, so one old spill shows with no monitored days
+  around it). It hides itself for good once the history catches up — nothing to
+  remember to remove.
   The legend is a bottom-centre pill. On load a full-screen `.splash` shows the
   verdict big (`#splash-verdict`, `setSplashVerdict` sets it word-by-word for the
   hand-set look) over `docs/assets/overflow-img.webp`; then it fades after 5 s
@@ -123,6 +143,17 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   executed directly), fetches the feed, and prints a diff between the fallback
   rule and the hand-curated `PIN_TO_IDS`. Run every few months to catch new or
   retagged Wessex monitors; nothing is written.
+- **[scripts/fetch-context.js](scripts/fetch-context.js)** — zero-dep, hand-run.
+  The activity feed publishes only 11 fields and **no site name or waterbody**;
+  Wessex put those on a separate public layer, `overflow_context`, in the same
+  ArcGIS org. Joins on **`National_Unique_Id_2025`** (the same `WXW…` ids;
+  `National_Unique_Id` is the older `WSX…` scheme — check there first if a rename
+  ever breaks the join) and fills `site_name`, `waterbody`, `overflow_type`,
+  `treatment`, `cause`, `context_at` on `monitors`. **Never writes `label`.**
+  Static data, so deliberately not part of the poll. `--dry` to preview. That
+  layer holds much more than we take — permit reference, regulator-verified
+  annual spill counts, `Perc_of_reporting_period_monito` (Wessex's own monitor
+  uptime figure), improvement plans — if you ever want more, add to `FIELDS`.
 - **[.github/workflows/poll.yml](.github/workflows/poll.yml)** — GitHub Action:
   commits `overflows.db` + `docs/data.json` back to the branch, optionally rsyncs
   `docs/` to SiteGround (gated on the `DEPLOY_TO_SITEGROUND` repo variable).
@@ -140,6 +171,7 @@ poll.js                 fetch + store + export    (root)
 serve.js                zero-dep static server for docs/
 scripts/build-basemap.js one-off: OSM streets → docs/basemap.json
 scripts/audit-ids.js    one-off: diff the fallback rule against PIN_TO_IDS
+scripts/fetch-context.js one-off: site names + waterbody etc → monitors table
 docs/index.html         the page — full-screen map + slide-in panels
 docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
@@ -155,19 +187,46 @@ overflows.db            node:sqlite file (git-committed)
 
 Three tables (schema in [poll.js](poll.js) `SCHEMA`):
 
-- **`monitors`** — one row per outfall. `label` is **human-owned; the poller never
-  writes it** (`UPDATE monitors SET label=... WHERE id=...`). Everything else is refreshed each poll.
+- **`monitors`** — one row per outfall, with three kinds of column:
+  - `label` is **human-owned; nothing automated writes it** — not the poller, not
+    `fetch-context.js` (`UPDATE monitors SET label=... WHERE id=...`).
+  - `latitude`/`longitude`/`watercourse`/`last_seen` come from the activity feed
+    and are refreshed on every poll.
+  - `site_name`/`waterbody`/`overflow_type`/`treatment`/`cause`/`context_at` are
+    static reference data, written only by `npm run context`. The poller's
+    `upsertMonitor` lists its columns explicitly, so a poll can't clobber them.
+
+  `exportJson` publishes the heading as **`label ?? id`** — the Wessex Id is the
+  title on both card types, exactly as the activity feed gives it, and `label` is
+  a hand-set escape hatch that is normally NULL. `site_name` is published
+  *separately* and appears in the popup's context block, not as the title.
 - **`events`** — keyed on `(monitor_id, start_ms)`. Wessex give us only the latest
   event's start/end, so: a start we've seen before just fills in `end_ms`
   (`COALESCE`, never overwritten); an unseen start is a new spill.
 - **`snapshots`** — every raw reading, kept so the event history can be rebuilt
-  with better logic later without data loss.
+  with better logic later without data loss. This is not just insurance: offline
+  spells are *only* recoverable from here (see below). Columns added after the
+  first release need a one-off `ALTER TABLE` in `migrate()` — `CREATE TABLE IF
+  NOT EXISTS` will not add them to an existing `overflows.db`.
 
 Rules baked into `store` / `exportJson`:
 
 - **Status codes:** `1` = discharging, `-1` = offline/no signal, anything else = dry.
 - While `Status === 1` the event's `end_ms` is left `NULL` — the end Wessex report
   during an active spill belongs to the *previous* event.
+- **Offline is a status, not an event.** Wessex only ever describe *discharges* in
+  `LatestEventStart`/`LatestEventEnd`; those stay frozen on the last spill while a
+  monitor is dark. An offline spell is visible only as a run of `Status = -1`
+  readings, so `offlineReader` stitches those back into `{start, end}` spans and
+  `exportJson` publishes them per monitor as `offline`. `StatusStart` (stored as
+  `status_start_ms`) gives the exact transition and groups a run; rows written
+  before that column existed have `NULL` and fall back to poll timestamps split on
+  `OFFLINE_GAP_MS` (90 min), which can merge two spells into one.
+- **An offline day is not a discharge.** Other trackers (Surfers Against Sewage)
+  treat a dark sensor as suspicious and colour it like a spill. This project does
+  not — it reports the gap as a gap (mid-grey day, "offline for …" on the card),
+  which is consistent with the caveat that an activation *indicates* rather than
+  *confirms* a discharge. Keep that distinction in any user-facing copy.
 - ArcGIS returns `undefined` for absent fields; `node:sqlite` rejects `undefined`,
   so everything crossing into a query goes through `val()`.
 - **Known undercount:** if a monitor spills twice between two polls, only the

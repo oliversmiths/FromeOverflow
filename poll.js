@@ -13,7 +13,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { DAY, fmtDuration, spillMs } from './docs/lib/format.js';
+import { DAY, MINUTE, fmtDuration, spillMs } from './docs/lib/format.js';
 
 // --- Configuration ---------------------------------------------------------
 
@@ -94,13 +94,22 @@ const JSON_PATH = join(ROOT, 'docs', 'data.json');
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS monitors (
-  id           TEXT PRIMARY KEY,
-  label        TEXT,            -- your name for it; the poller never overwrites this
-  latitude     REAL,
-  longitude    REAL,
-  watercourse  TEXT,
-  first_seen   INTEGER,
-  last_seen    INTEGER
+  id            TEXT PRIMARY KEY,
+  label         TEXT,           -- your name for it; nothing automated ever writes this
+  latitude      REAL,
+  longitude     REAL,
+  watercourse   TEXT,           -- from the activity feed, e.g. "RIVER FROME"
+  first_seen    INTEGER,
+  last_seen     INTEGER,
+  -- Static reference data from Wessex's overflow_context layer. Filled in by
+  -- scripts/fetch-context.js, never by the poller -- it changes once a year, not
+  -- every 15 minutes.
+  site_name     TEXT,           -- e.g. "FROME WALLBRIDGE"
+  waterbody     TEXT,           -- EA Water Framework Directive waterbody
+  overflow_type TEXT,           -- where in the network it sits
+  treatment     TEXT,           -- diluted only, or settled first
+  cause         TEXT,           -- rainfall, or groundwater-affected
+  context_at    INTEGER         -- when fetch-context.js last filled the above
 );
 
 CREATE TABLE IF NOT EXISTS events (
@@ -114,13 +123,40 @@ CREATE TABLE IF NOT EXISTS snapshots (
   polled_at       INTEGER NOT NULL,
   monitor_id      TEXT NOT NULL,
   status          INTEGER,
+  status_start_ms INTEGER,       -- when the *current* status began (any status)
   latest_start_ms INTEGER,
   latest_end_ms   INTEGER,
   PRIMARY KEY (polled_at, monitor_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_start ON events (start_ms);
+CREATE INDEX IF NOT EXISTS idx_snap_monitor ON snapshots (monitor_id, polled_at);
 `;
+
+/**
+ * `CREATE TABLE IF NOT EXISTS` won't add a column to a database that already
+ * exists, so every column added after the first release is listed here and
+ * ALTERed in on the next run. Existing rows keep NULL, which each reader copes
+ * with. Add to this list whenever you add a column to `SCHEMA`.
+ */
+const ADDED_COLUMNS = [
+  ['snapshots', 'status_start_ms', 'INTEGER'],
+  ['monitors', 'site_name', 'TEXT'],
+  ['monitors', 'waterbody', 'TEXT'],
+  ['monitors', 'overflow_type', 'TEXT'],
+  ['monitors', 'treatment', 'TEXT'],
+  ['monitors', 'cause', 'TEXT'],
+  ['monitors', 'context_at', 'INTEGER'],
+];
+
+function migrate(db) {
+  for (const [table, column, type] of ADDED_COLUMNS) {
+    const existing = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+    if (!existing.includes(column)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+    }
+  }
+}
 
 /** node:sqlite rejects `undefined`, which ArcGIS hands us for absent fields. */
 const val = (x) => (x === undefined ? null : x);
@@ -201,8 +237,8 @@ function store(db, rows, polledAt) {
 
   const recordSnapshot = db.prepare(`
     INSERT OR REPLACE INTO snapshots
-      (polled_at, monitor_id, status, latest_start_ms, latest_end_ms)
-    VALUES (?, ?, ?, ?, ?)`);
+      (polled_at, monitor_id, status, status_start_ms, latest_start_ms, latest_end_ms)
+    VALUES (?, ?, ?, ?, ?, ?)`);
 
   const seenEvent = db.prepare(
     'SELECT 1 AS found FROM events WHERE monitor_id = ? AND start_ms = ?');
@@ -224,7 +260,7 @@ function store(db, rows, polledAt) {
         row.ReceivingWaterCourse ?? 'Unknown', polledAt, polledAt);
 
       recordSnapshot.run(
-        polledAt, id, val(row.Status),
+        polledAt, id, val(row.Status), val(row.StatusStart),
         val(row.LatestEventStart), val(row.LatestEventEnd));
 
       const start = row.LatestEventStart;
@@ -248,6 +284,55 @@ function store(db, rows, polledAt) {
 
 // --- Exporting -------------------------------------------------------------
 
+// Two offline readings this far apart are treated as separate spells. Only used
+// for rows written before `status_start_ms` existed; generous against the 15-min
+// cadence because GitHub's own schedule is unreliable.
+const OFFLINE_GAP_MS = 90 * MINUTE;
+
+/**
+ * Rebuilds a monitor's offline spells from the snapshot log.
+ *
+ * Wessex only ever describe *discharges* in `LatestEventStart`/`LatestEventEnd`
+ * — those stay frozen on the last spill while a monitor is offline. An offline
+ * spell is only visible as a run of `Status = -1` readings, so we stitch those
+ * back into `{ start, end }` spans shaped like events. `status_start_ms` gives
+ * the exact transition; rows written before that column existed have NULL, and
+ * fall back to poll timestamps split on `OFFLINE_GAP_MS`. A spell still running
+ * at the latest poll gets `end: null`, exactly like an ongoing discharge.
+ */
+function offlineReader(db) {
+  const readings = db.prepare(`
+    SELECT polled_at, status_start_ms FROM snapshots
+    WHERE monitor_id = ? AND status = -1 AND polled_at >= ?
+    ORDER BY polled_at`);
+
+  const nextClear = db.prepare(`
+    SELECT polled_at, status_start_ms FROM snapshots
+    WHERE monitor_id = ? AND polled_at > ? AND status IS NOT -1
+    ORDER BY polled_at LIMIT 1`);
+
+  return function spansFor(id, cutoff) {
+    const runs = [];
+    for (const r of readings.all(id, cutoff)) {
+      const open = runs.at(-1);
+      const continues = open && (
+        r.status_start_ms != null && open.statusStart != null
+          ? r.status_start_ms === open.statusStart
+          : r.polled_at - open.lastAt <= OFFLINE_GAP_MS);
+      if (continues) open.lastAt = r.polled_at;
+      else runs.push({ statusStart: r.status_start_ms, firstAt: r.polled_at, lastAt: r.polled_at });
+    }
+
+    return runs.map((run) => {
+      const clear = nextClear.get(id, run.lastAt);
+      return {
+        start: run.statusStart ?? run.firstAt,
+        end: clear ? (clear.status_start_ms ?? clear.polled_at) : null,
+      };
+    });
+  };
+}
+
 async function exportJson(db, rows, polledAt) {
   const liveStatus = new Map(rows.map((r) => [String(r.Id), r.Status]));
   const cutoff = polledAt - EXPORT_DAYS * DAY;
@@ -257,23 +342,35 @@ async function exportJson(db, rows, polledAt) {
     WHERE monitor_id = ? AND start_ms >= ?
     ORDER BY start_ms`);
 
+  const offlineFor = offlineReader(db);
+
   // Only publish monitors the filter has matched recently. A monitor that drops
   // out — because you narrowed the catchment, or Wessex stopped listing it —
   // ages off the page after a week but keeps its history in the database.
   const monitors = db
-    .prepare(`SELECT id, label, latitude, longitude, watercourse, first_seen FROM monitors
-              WHERE last_seen >= ? ORDER BY id`)
+    .prepare(`SELECT id, label, site_name, latitude, longitude, watercourse, waterbody,
+                     overflow_type, treatment, cause, first_seen
+              FROM monitors WHERE last_seen >= ? ORDER BY id`)
     .all(polledAt - 7 * DAY)
     .map((m) => ({
       id: m.id,
+      // The heading shows the Wessex Id, as the activity feed gives it. `label`
+      // is only an escape hatch: set it by hand and it wins. The site name from
+      // overflow_context is published separately, as context, not as the title.
       label: m.label ?? m.id,
       lat: m.latitude,
       lon: m.longitude,
       watercourse: m.watercourse,
+      site_name: m.site_name,
+      waterbody: m.waterbody,
+      overflow_type: m.overflow_type,
+      treatment: m.treatment,
+      cause: m.cause,
       since: m.first_seen,
       status: liveStatus.get(m.id) ?? null,
       events: eventsFor.all(m.id, cutoff)
         .map((e) => ({ start: e.start_ms, end: e.end_ms })),
+      offline: offlineFor(m.id, cutoff),
     }));
 
   await mkdir(dirname(JSON_PATH), { recursive: true });
@@ -304,6 +401,7 @@ async function main() {
 
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
+  migrate(db);
 
   const fresh = store(db, local, polledAt);
   const count = await exportJson(db, local, polledAt);
@@ -331,4 +429,7 @@ if (process.argv[1] === import.meta.filename) {
   });
 }
 
-export { fetchAll, matchesRule, haversineKm, CENTRE, RADIUS_KM, CATCHMENT_KM, WATERCOURSES, PIN_TO_IDS };
+export {
+  fetchAll, matchesRule, haversineKm, migrate, SCHEMA, DB_PATH,
+  CENTRE, RADIUS_KM, CATCHMENT_KM, WATERCOURSES, PIN_TO_IDS,
+};

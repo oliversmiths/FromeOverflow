@@ -21,7 +21,9 @@
   --hairline: #C3C9BF;
   --sewage:   #D6FF00;
   --dry:      #77A881 ;   /* "not discharging" — pins and the 90-day strip */
-  --day-nodata: #eee;
+  --day-nodata: #ededed;      /* before this monitor's first reading */
+  --day-nodata-line: #cfcfcf; /* hatch stroke over it — "not watched", not "clear" */
+  --day-offline: #b4b4b4; /* monitor was reporting no signal that day */
   /*--water:    #9bc2e1;   /* map waterways */
 --water:    #0666B5;   /* map waterways */
   --display: "Happy Times NG", Georgia, "Times New Roman", serif;
@@ -130,7 +132,7 @@ body {
 
 .pin-layer .mappin { display: none; }
 .pin-layer .mappin.is-shown { display: block; }
-.mappin:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.mappin:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .mappin--discharging { background: var(--oxide); }
 .mappin--recent      { background: var(--amber); }
@@ -181,7 +183,11 @@ body {
 .map-popup {
   position: absolute;
   z-index: 18;
-  width: min(250px, calc(100vw - 24px));
+  width: min(300px, calc(100vw - 24px));
+  /* The context block can make this taller than the map; placePopup() can clamp
+     where it sits but not how big it is, so cap it and let it scroll. */
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
   padding: 12px 14px;
   background: var(--chalk);
   border: 1px solid var(--weir);
@@ -196,12 +202,48 @@ body {
 .map-popup p { margin: 0 0 6px; }
 .map-popup .pop-label { color: var(--weir); }
 .map-popup .pop-watercourse { color: var(--weir); font-size: 14px;  }
+/* Status and coordinates on one line — status left, link right — closing the
+   feed half just above the context divider. Wraps to two rows if they can't fit
+   side by side (the preceding <p> already supplies the gap above). */
+.map-popup .pop-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 0;
+}
+.map-popup .pop-top p { margin: 0; }
+
 .map-popup .pop-last { font-size: 12px; }
+.map-popup .pop-offline { font-size: 12px; color: var(--silt); }
+
+/* Below the divider: static context from overflow_context, as term/value pairs.
+   Everything above it comes from the live activity feed. */
+.map-popup .pop-context {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  margin: 11px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.map-popup .pop-context dt {
+  font-family: var(--data);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--silt);
+  padding-top: 1px;
+}
+.map-popup .pop-context dd { margin: 0; }
 .map-popup a { display: inline-flex; align-items: center; gap: 4px; color: var(--silt); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover span { text-decoration: underline; }
 /* beat the `#overflow-map svg { width:100% }` basemap rule */
 #overflow-map .map-popup .pin { flex: none; width: 11px; height: 11px; }
-.map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+.map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .map-popup .pop-state.is-discharging { color: var(--oxide); }
 .map-popup .pop-state.is-recent      { color: var(--amber); }
 .map-popup .pop-state.is-dry         { color: var(--dry); }
@@ -308,7 +350,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.28s ease;
-  backdrop-filter: grayscale(1) blur(20px);
+  backdrop-filter:blur(15px);
 }
 
 .scrim.is-open { opacity: 1; pointer-events: auto; }
@@ -389,6 +431,19 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .stamp { font-family: var(--data); font-size: 11px; color:  rgba(255, 255, 255, 0.62); margin: 0 0 4px; }
 .standfirst { margin: 8px 0 20px; color: var(--sewage); font-size: 18px; }
 
+/* Shown only while the record is shallower than the 90-day window; paintCoverage
+   hides it for good once the history catches up. */
+.coverage {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-left: 2px solid var(--sewage);
+  background: rgba(255, 255, 255, 0.09);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sewage);
+}
+.coverage[hidden] { display: none; }
+
 .prose p { margin: 0 0 12px; }
 .prose h3 {
   font-family: var(--display);
@@ -438,9 +493,20 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 }
 
 .o-day { flex: 1 1 0; min-width: 0; border-radius: 1px; background: var(--dry); }
-.o-day--nodata { background: var(--day-nodata); }
-.o-day--recent { background: var(--amber); }
-.o-day--spill  { background: var(--oxide); }
+/* Hatched, not flat. While the record is young most of every strip is "we
+   weren't watching yet", and a flat pale block reads as "clear" — which is the
+   opposite of what it means. The hatch also gives the pre-record discharges a
+   legible context: one solid bar inside a hatched run is a known event in an
+   otherwise unwatched stretch. */
+.o-day--nodata  {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--day-nodata-line) 0 1px,
+    var(--day-nodata) 1px 3px);
+}
+.o-day--offline { background: var(--day-offline); }
+.o-day--recent  { background: var(--amber); }
+.o-day--spill   { background: var(--oxide); }
 
 .o-scale {
   display: flex;

@@ -103,7 +103,7 @@ export function mapStatusOf(monitor, now) {
   const last = monitor.events.at(-1);
   const endedAt = last ? (last.end ?? now) : null;
   if (endedAt != null && now - endedAt <= RECENT_MS) {
-    return { key: 'recent', text: `Discharged in the last ${RECENT_HOURS}h` };
+    return { key: 'recent', text: `Discharged <${RECENT_HOURS}h` };
   }
   return { key: 'dry', text: 'Not discharging' };
 }
@@ -112,19 +112,23 @@ export function mapStatusOf(monitor, now) {
  * One cell per day for the last `days` days (oldest first) — the data behind
  * the per-monitor 90-day strip on the page. Each cell is `{ start, state }`,
  * `start` being the local-midnight epoch ms of that day and `state` one of:
- *   'spill'  – a discharge overlapped the day
- *   'recent' – within RECENT_HOURS of a discharge ending, but not spilling
- *   'nodata' – no event, and the day is before this monitor's first reading
- *   'dry'    – monitored that day, no discharge, nothing recent
- * An ongoing event (`end == null`) counts as spilling right up to `now`. A known
- * event is always drawn even if it predates `since` — the first reading Wessex
- * hands us carries the latest event, so that one spill is real history.
+ *   'spill'   – a discharge overlapped the day
+ *   'recent'  – within RECENT_HOURS of a discharge ending, but not spilling
+ *   'offline' – the monitor was reporting no signal for part of the day
+ *   'nodata'  – nothing known, and the day is before this monitor's first reading
+ *   'dry'     – monitored that day, no discharge, nothing recent
+ * checked in that order, so a confirmed discharge always outranks a gap in the
+ * record. An ongoing event (`end == null`) counts as spilling right up to `now`,
+ * and so does an unfinished offline spell. A known event is always drawn even if
+ * it predates `since` — the first reading Wessex hands us carries the latest
+ * event, so that one spill is real history.
  */
 export function dayCells(monitor, now, days = 90) {
   const midnight = new Date(now);
   midnight.setHours(0, 0, 0, 0);
   const since = monitor.since ?? null;
   const events = monitor.events ?? [];
+  const offline = monitor.offline ?? [];
   const cells = [];
 
   for (let i = days - 1; i >= 0; i--) {
@@ -136,6 +140,8 @@ export function dayCells(monitor, now, days = 90) {
       state = 'spill';
     } else if (events.some((e) => e.end != null && start < e.end + RECENT_MS && end > e.end)) {
       state = 'recent';
+    } else if (offline.some((o) => o.start < end && (o.end ?? now) > start)) {
+      state = 'offline';
     } else if (since != null && end <= since) {
       state = 'nodata';
     } else {
@@ -144,6 +150,18 @@ export function dayCells(monitor, now, days = 90) {
     cells.push({ start, state });
   }
   return cells;
+}
+
+/**
+ * Total time a monitor spent offline within the published window, in ms. The
+ * counterpart to a monitor's discharge `total`: "no discharge recorded" means
+ * much less when the sensor was dark for a stretch, so the card says both.
+ */
+export function offlineMs(monitor, now) {
+  return (monitor.offline ?? []).reduce((sum, span) => {
+    const ms = spillMs(span, now);
+    return Number.isFinite(ms) ? sum + Math.max(0, ms) : sum;
+  }, 0);
 }
 
 /**

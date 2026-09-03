@@ -10,7 +10,7 @@
  */
 
 import {
-  RECENT_HOURS, fmtDuration, fmtWhen, mapStatusOf, mapsUrl, spillMs,
+  RECENT_HOURS, fmtDuration, fmtWhen, mapStatusOf, mapsUrl, offlineMs, spillMs,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -65,6 +65,19 @@ export function renderLegend(ul) {
   }
 }
 
+// The second half of a popup: static reference data from Wessex's
+// `overflow_context` layer, filled in by scripts/fetch-context.js. Everything
+// above the divider comes from the live activity feed; everything below is
+// context that explains it. Rows with no value are skipped, so a monitor whose
+// context hasn't been fetched simply shows the feed half.
+const CONTEXT_ROWS = [
+  ['Site', 'site_name'],
+  ['Waterbody', 'waterbody'],
+  ['Type', 'overflow_type'],
+  ['Treatment', 'treatment'],
+  ['Cause', 'cause'],
+];
+
 function popup(monitor, now) {
   const state = mapStatusOf(monitor, now);
   const last = monitor.events.at(-1);
@@ -81,18 +94,16 @@ function popup(monitor, now) {
   w.textContent = monitor.watercourse;
   h.append(label, ' ', w);
 
+  // State and coordinates share one row — status left, location right — so the
+  // link costs no extra height. It closes the feed half, directly above the
+  // context divider. `.pop-top` wraps to two rows if they can't sit side by side.
   const s = document.createElement('p');
   s.className = `pop-state is-${state.key}`;
   s.textContent = state.text;
-  s.style.margin = '0 0 6px';
 
-  const d = document.createElement('p');
-  d.className = 'pop-last';
-  d.textContent = last
-    ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtDuration(spillMs(last, now))}.`
-    : 'No discharge recorded in the last 90 days.';
-
-  el.append(s, h, d);
+  const top = document.createElement('div');
+  top.className = 'pop-top';
+  top.append(s);
 
   if (monitor.lat != null && monitor.lon != null) {
     const lat = monitor.lat.toFixed(5);
@@ -102,7 +113,40 @@ function popup(monitor, now) {
     a.target = '_blank';
     a.rel = 'noopener';
     a.innerHTML = `${PIN}<span>${lat}, ${lon} ↗</span>`;
-    el.append(a);
+    top.append(a);
+  }
+
+  const d = document.createElement('p');
+  d.className = 'pop-last';
+  d.textContent = last
+    ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtDuration(spillMs(last, now))}.`
+    : 'No discharge recorded in the last 90 days.';
+
+  el.append(h, d);
+
+  // Same caveat the timeline cards carry: what the record doesn't cover.
+  const dark = offlineMs(monitor, now);
+  if (dark > 0) {
+    const o = document.createElement('p');
+    o.className = 'pop-offline';
+    o.textContent = `Offline for ${fmtDuration(dark)} in that time.`;
+    el.append(o);
+  }
+
+  el.append(top);
+
+  const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
+  if (rows.length) {
+    const dl = document.createElement('dl');
+    dl.className = 'pop-context';
+    for (const [term, key] of rows) {
+      const dt = document.createElement('dt');
+      dt.textContent = term;
+      const dd = document.createElement('dd');
+      dd.textContent = monitor[key];
+      dl.append(dt, dd);
+    }
+    el.append(dl);
   }
   return el;
 }

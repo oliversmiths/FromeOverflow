@@ -8,7 +8,7 @@
  */
 
 import {
-  dayCells, fmtDate, fmtDuration, fmtWhen, rankByTotal, statusOf,
+  dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, statusOf,
 } from './format.js';
 
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
@@ -18,8 +18,9 @@ const LOUPE =
   '<circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>';
 
 const CELL_LABEL = {
-  nodata: 'no data yet',
+  nodata: 'before this record began',
   dry: 'no discharge',
+  offline: 'monitor offline',
   recent: 'within 48h of a discharge',
   spill: 'discharging',
 };
@@ -47,27 +48,40 @@ export function renderCards(container, data, onSeeOnMap) {
     heading.append(document.createTextNode(''), where);
     head.append(heading);
 
+    // "No discharge recorded" is only half the story if the sensor was dark for
+    // part of the window, so the offline total rides alongside it.
+    const dark = offlineMs(monitor, now);
+    const bits = runs
+      ? [`${runs} discharge${runs === 1 ? '' : 's'} in the last ${data.window_days} days`,
+         `${fmtDuration(monitor.total)} total`,
+         `last was ${fmtWhen(last.start, now)}`]
+      : [`no discharge in the last ${data.window_days} days`];
+    if (dark > 0) bits.push(`offline for ${fmtDuration(dark)}`);
+
     const meta = document.createElement('p');
     meta.className = 'o-meta';
-    meta.textContent = runs
-      ? `${runs} discharge${runs === 1 ? '' : 's'} in the last ${data.window_days} days` +
-        ` · ${fmtDuration(monitor.total)} total · last was ${fmtWhen(last.start, now)}`
-      : `no discharge in the last ${data.window_days} days`;
+    meta.textContent = bits.join(' · ');
 
     const cells = dayCells(monitor, now, data.window_days);
-    const tally = cells.reduce((t, c) => (t[c.state]++, t), { nodata: 0, dry: 0, recent: 0, spill: 0 });
+    const tally = cells.reduce((t, c) => (t[c.state]++, t),
+      { nodata: 0, dry: 0, offline: 0, recent: 0, spill: 0 });
 
     const strip = document.createElement('div');
     strip.className = 'o-strip';
     strip.setAttribute('role', 'img');
     strip.setAttribute('aria-label',
       `${data.window_days}-day history: ${tally.spill} day${tally.spill === 1 ? '' : 's'} ` +
-      `with a discharge, ${tally.recent} within 48h after, ${tally.dry} clear, ` +
-      `${tally.nodata} before monitoring began`);
+      `with a discharge, ${tally.recent} within 48h after, ${tally.offline} with the ` +
+      `monitor offline, ${tally.dry} clear, ${tally.nodata} before monitoring began`);
     for (const cell of cells) {
       const d = document.createElement('span');
       d.className = cell.state === 'dry' ? 'o-day' : `o-day o-day--${cell.state}`;
-      d.title = `${fmtDate(cell.start)} — ${CELL_LABEL[cell.state]}`;
+      // A discharge can sit before our own record starts — Wessex hand over their
+      // latest event with the first reading. Say so, or it implies we were
+      // watching the whole surrounding stretch.
+      const early = monitor.since != null && cell.start < monitor.since;
+      d.title = `${fmtDate(cell.start)} — ${CELL_LABEL[cell.state]}` +
+        (early && cell.state !== 'nodata' ? ' (before this record began)' : '');
       strip.append(d);
     }
 

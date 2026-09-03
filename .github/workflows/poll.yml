@@ -34,8 +34,21 @@ jobs:
           git config user.name  "overflow-bot"
           git config user.email "actions@github.com"
           git add overflows.db docs/data.json
-          git diff --staged --quiet || git commit -m "Reading at $(date -u +'%Y-%m-%d %H:%M')"
-          git push
+          git diff --staged --quiet && { echo "Nothing changed."; exit 0; }
+          git commit -m "Reading at $(date -u +'%Y-%m-%d %H:%M')"
+
+          # A manual push can land between checkout and push. The reading only
+          # touches overflows.db + docs/data.json, which hand commits never do,
+          # so a rebase onto origin is always clean — just retry the race.
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin "${GITHUB_REF_NAME}" && git push; then
+              exit 0
+            fi
+            echo "push attempt $attempt lost the race, retrying…"
+            sleep $((RANDOM % 8 + 3))
+          done
+          echo "Could not push after 5 attempts."
+          exit 1
 
       # --- Deploy to SiteGround --------------------------------------------
       # Skipped until you add the SG_SSH_KEY secret, so polling works on its

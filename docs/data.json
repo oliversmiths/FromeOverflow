@@ -1,5 +1,5 @@
 {
- "polled_at": 1788422443285,
+ "polled_at": 1788423323862,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -44,7 +44,7 @@
    "lon": -2.293428501270845,
    "watercourse": "RIVER FROME",
    "since": 1788256544235,
-   "status": 0,
+   "status": -1,
    "events": []
   },
   {

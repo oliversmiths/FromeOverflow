@@ -1,7 +1,7 @@
 /* Styles for docs/index.html (the full-screen-map page). */
 
 :root {
-  --lichen:   #fff;
+   --lichen:   #fff;
   --chalk:    #fff  ;
   --ink:      #222;
   --weir:     #0666B5;
@@ -12,11 +12,11 @@
   --sewage:   #D6FF00;
   /* 90-day strip */
   /*--day-dry:    rgb(118, 173, 42);*/
-  --day-dry:    #7BC3D9;
-  --day-nodata: #CCCCCC;
+  --day-dry:    #90C29A;
+  --day-nodata: #eee;
 
   /* map */
-  --pin-dry:  #7BC3D9;
+  --pin-dry:  #90C29A;
   --water:    #0666B5;
   --water-line: #0666B5;
 

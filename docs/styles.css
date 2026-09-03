@@ -501,9 +501,21 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   font-family: var(--display);
   font-weight: 400;
   font-size: clamp(34px, min(11vw, 15vh), 156px);
-  line-height: 1;
-  /* no letter-spacing: any non-normal value disables the fl/fi ligatures */
+  line-height: 0.98;
 }
+
+/* Hand-set look: one word per line, each ranged at its own indent. The
+   nth-child rules are a fixed pattern — no JS randomness. One word (the 3rd)
+   is pushed hard right against the block edge. */
+.sv-word {
+  display: block;
+  width: fit-content;
+}
+.sv-word:nth-child(2) { margin-left: 1.2em; }
+.sv-word:nth-child(3) { margin-left: auto; }   /* ranged fully right */
+.sv-word:nth-child(4) { margin-left: 2.4em; }
+.sv-word:nth-child(5) { margin-left: 0.6em; }
+.sv-word:nth-child(6) { margin-left: 3em; }
 
 .splash-img {
   position: absolute;

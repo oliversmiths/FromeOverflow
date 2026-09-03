@@ -146,6 +146,21 @@ splash.addEventListener('click', dismissSplash);
 $('replay-splash').addEventListener('click', showSplash);
 addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
 
+// Splash verdict: set the text as one <span> per word, each on its own line, so
+// the stylesheet can range them at different indents for a hand-set look.
+function setSplashVerdict(text) {
+  const el = $('splash-verdict');
+  el.replaceChildren();
+  for (const word of text.split(/\s+/)) {
+    const w = document.createElement('span');
+    w.className = 'sv-word';
+    w.textContent = word;
+    el.append(w);
+  }
+}
+
+setSplashVerdict($('splash-verdict').textContent.trim());
+
 function paintStatus(data) {
   const now = data.polled_at;
   const states = data.monitors.map((m) => mapStatusOf(m, now).key);
@@ -164,7 +179,7 @@ function paintStatus(data) {
 
   $('verdict').className = `verdict ${cls}`;
   $('verdict').textContent = text;
-  $('splash-verdict').textContent = text;
+  setSplashVerdict(text);
   $('stamp').textContent =
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }
@@ -243,7 +258,7 @@ try {
   if (TABS.includes(h)) openPanel(h);
 } catch {
   $('verdict').textContent = 'No data yet — run a poll';
-  $('splash-verdict').textContent = 'No data yet';
+  setSplashVerdict('No data yet');
   renderLegend($('legend'));
   $('overflows').innerHTML = '<div class="empty">The history builds from here.</div>';
 }

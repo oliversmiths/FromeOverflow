@@ -24,11 +24,16 @@
 
 <ul class="legend" id="legend" aria-label="What the pin colours mean"></ul>
 
+<button class="fl-mark" id="replay-splash" type="button" aria-label="Replay the intro">
+  <svg viewBox="0 0 100 156" aria-hidden="true">
+    <path fill="currentColor" d="M76.483 2.33052H100V155.085H82.2034V33.6864C82.2034 21.6102 73.517 13.7712 59.7458 13.7712C43.0085 13.7712 34.5339 21.3983 34.5339 36.2288V50.4237H60.3814V65.2542H34.5339V155.085H16.7373V65.2542H0V50.4237H16.7373V42.3729C16.7373 12.5 29.2373 0 59.1102 0C62.5 0 67.7966 0.423736 69.9153 1.05932C73.9407 1.90678 76.2712 2.33052 76.483 2.33052Z"/>
+  </svg>
+</button>
+
 <button class="fab fab--menu" id="open-panel" aria-controls="panel"
   aria-expanded="false" aria-label="Timeline, about and credits">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/>
+  <svg viewBox="0 0 21 48" aria-hidden="true">
+    <path fill="currentColor" d="M13.248 7.04V0H20.288V7.04H13.248ZM6.4 44.16L7.104 44.8C8.256 44.032 12.224 40.448 14.464 37.888H17.024C14.336 40.96 9.408 46.016 6.528 48H2.688C0.96 46.848 0.832 44.16 2.176 40.576L9.728 20.352L9.024 19.712C8.512 20.16 6.72 21.888 2.56 26.88H0C4.224 21.248 7.872 17.536 10.24 16H14.08C14.848 16.32 15.744 17.152 15.744 18.56C15.744 19.712 15.488 20.864 14.72 22.784L6.4 44.16Z"/>
   </svg>
 </button>
 
@@ -86,7 +91,7 @@
       target="_blank" rel="noopener">Wessex Water</a> – the near real-time storm overflow
       feed, checked every 15 minutes.<br>
     <a href="https://environment.data.gov.uk/" target="_blank" rel="noopener">Environment
-      Agency</a> — regulator-verified annual figures.</p>
+      Agency</a> – regulator-verified annual figures.</p>
 
     <h3>Map</h3>
     <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
@@ -116,18 +121,28 @@ const INITIAL_ZOOM = 0.28;
 
 const $ = (id) => document.getElementById(id);
 
-// --- intro splash: hold ~5s, then fade over 3s (or tap to skip) ---
+// --- intro splash: hold ~5s then fade; tap to skip, the fl mark replays it ---
 const splash = $('splash');
 $('splash-img').addEventListener('error', (e) => e.target.remove());
-let splashGone = false;
-function dismissSplash() {
-  if (splashGone) return;
-  splashGone = true;
-  splash.classList.add('is-gone');
-  setTimeout(() => { splash.hidden = true; }, 3200);
+let holdTimer, hideTimer;
+
+function showSplash() {
+  clearTimeout(holdTimer);
+  clearTimeout(hideTimer);
+  splash.hidden = false;
+  void splash.offsetWidth;                 // restart the transition
+  splash.classList.remove('is-gone');
+  holdTimer = setTimeout(dismissSplash, 5000);
 }
-setTimeout(dismissSplash, 5000);
+function dismissSplash() {
+  clearTimeout(holdTimer);
+  splash.classList.add('is-gone');
+  hideTimer = setTimeout(() => { splash.hidden = true; }, 3200);
+}
+
+holdTimer = setTimeout(dismissSplash, 5000);
 splash.addEventListener('click', dismissSplash);
+$('replay-splash').addEventListener('click', showSplash);
 addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
 
 function paintStatus(data) {

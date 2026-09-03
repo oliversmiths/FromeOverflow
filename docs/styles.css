@@ -24,6 +24,10 @@
 
 * { box-sizing: border-box; }
 
+/* No double-tap-to-zoom on the chrome — a quick second tap on the menu button
+   was zooming the page instead of toggling the panel. */
+button { touch-action: manipulation; }
+
 html, body { height: 100%; background: #fff; }
 
 body {

@@ -224,6 +224,9 @@ function closePanel() {
   document.body.classList.remove('panel-open');
   history.replaceState(null, '', location.pathname + location.search);
   openBtn.focus();
+  // Leave the panel ready for a fresh open: every tab scrolled back to the top.
+  // (The menu button always reopens on Timeline, so the tab resets itself.)
+  for (const t of TABS) $(`tabpanel-${t}`).scrollTop = 0;
 }
 
 openBtn.addEventListener('click', () => (active ? closePanel() : openPanel('timeline')));

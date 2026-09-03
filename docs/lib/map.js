@@ -14,6 +14,12 @@ import {
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
+
+// Map-pin glyph for the popup's coordinate link — inherits colour and size.
+const PIN =
+  '<svg class="pin" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">' +
+  '<path fill="currentColor" d="M12 2a7.5 7.5 0 0 0-7.5 7.5c0 5.2 6.3 11.7 6.6 12a1.2 1.2 0 0 0 1.8 0' +
+  'c.3-.3 6.6-6.8 6.6-12A7.5 7.5 0 0 0 12 2Zm0 10.2a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Z"/></svg>';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
 const MAX_ZOOM_IN = 40;    // smallest viewBox = zoomed-out width / this
 // How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
@@ -87,7 +93,7 @@ function popup(monitor, now) {
     a.href = mapsUrl(lat, lon);
     a.target = '_blank';
     a.rel = 'noopener';
-    a.textContent = `${lat}, ${lon} ↗`;
+    a.innerHTML = `${PIN}<span>${lat}, ${lon} ↗</span>`;
     el.append(a);
   }
   return el;
@@ -99,14 +105,26 @@ function popup(monitor, now) {
  */
 export function buildMap(host, data, opts = {}) {
   const { initialZoom = 1 } = opts;
+  let api = null;
+  const pending = [];   // focus() calls made before the basemap finished loading
 
   fetch(`basemap.json?${Date.now()}`)
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then((bm) => drawMap(host, bm, data.monitors, data.polled_at, initialZoom))
+    .then((bm) => {
+      api = drawMap(host, bm, data.monitors, data.polled_at, initialZoom);
+      for (const m of pending) api.focus(m);
+      pending.length = 0;
+    })
     .catch(() => {
       host.classList.add('is-broken');
       host.textContent = 'The map backdrop failed to load.';
     });
+
+  // Fly the camera to one monitor's pin and open its popup — the panel's
+  // "See on map" links call this.
+  return {
+    focus(monitor) { api ? api.focus(monitor) : pending.push(monitor); },
+  };
 }
 
 function drawMap(host, bm, monitors, now, initialZoom) {
@@ -452,6 +470,42 @@ function drawMap(host, bm, monitors, now, initialZoom) {
   zin.addEventListener('click', () => zoomAt(0.6, 0.5, 0.5));
   zout.addEventListener('click', () => zoomAt(1 / 0.6, 0.5, 0.5));
 
+  // --- focus one monitor: ease the camera onto its pin, then open the popup ---
+  let flyRAF = 0;
+  function focus(monitor) {
+    const p = pins.find((x) => x.m.id === monitor.id);
+    if (!p) return;                       // unknown id, or a monitor with no coords
+    const [pw, ph] = size();
+    const a = pw / ph;
+    const start = { vx, vy, vw };
+
+    vw = Math.max(VW_IN, VW_OUT * 0.14);  // lean in on the pin
+    vh = vw / a;
+    vx = p.gx - vw / 2;
+    vy = p.gy - vh / 2;
+    clamp(a);
+    const end = { vx, vy, vw };
+
+    cancelAnimationFrame(flyRAF);
+    const t0 = performance.now();
+    const D = 420;
+    const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / D);
+      const e = ease(k);
+      vw = start.vw + (end.vw - start.vw) * e;
+      vh = vw / a;
+      vx = start.vx + (end.vx - start.vx) * e;
+      vy = start.vy + (end.vy - start.vy) * e;
+      clamp(a);
+      apply();
+      if (k < 1) flyRAF = requestAnimationFrame(step);
+      else openPopup(p.m);
+    })(t0);
+  }
+
   new ResizeObserver(recalc).observe(host);
   recalc();
+
+  return { focus };
 }

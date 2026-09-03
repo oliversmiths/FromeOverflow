@@ -256,8 +256,11 @@ try {
 
   paintStatus(data);
   renderLegend($('legend'));
-  renderCards($('overflows'), data);
-  buildMap($('overflow-map'), data, { initialZoom: INITIAL_ZOOM });
+  const map = buildMap($('overflow-map'), data, { initialZoom: INITIAL_ZOOM });
+  renderCards($('overflows'), data, (monitor) => {
+    closePanel();
+    map.focus(monitor);
+  });
 
   const h = location.hash.slice(1);
   if (TABS.includes(h)) openPanel(h);

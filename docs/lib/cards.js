@@ -2,18 +2,20 @@
  * The per-monitor list shown in the timeline panel: one card each, current
  * status plus a GitHub-style 90-day strip (one bar a day, from `dayCells`).
  *
- *   renderCards(containerEl, data);   // returns the ranked monitors
+ *   renderCards(containerEl, data, onSeeOnMap);   // returns the ranked monitors
+ *
+ * `onSeeOnMap(monitor)` is called when a card's "View on map" button is clicked.
  */
 
 import {
-  dayCells, fmtDate, fmtDuration, fmtWhen, mapsUrl, rankByTotal, statusOf,
+  dayCells, fmtDate, fmtDuration, fmtWhen, rankByTotal, statusOf,
 } from './format.js';
 
-// Small map-pin glyph, inherits colour and font size from its link.
-const PIN =
-  '<svg class="pin" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">' +
-  '<path fill="currentColor" d="M12 2a7.5 7.5 0 0 0-7.5 7.5c0 5.2 6.3 11.7 6.6 12a1.2 1.2 0 0 0 1.8 0' +
-  'c.3-.3 6.6-6.8 6.6-12A7.5 7.5 0 0 0 12 2Zm0 10.2a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Z"/></svg>';
+// Magnifying-glass glyph for the "View on map" button — inherits colour and size.
+const LOUPE =
+  '<svg class="ico" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" ' +
+  'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
+  '<circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>';
 
 const CELL_LABEL = {
   nodata: 'no data yet',
@@ -22,7 +24,7 @@ const CELL_LABEL = {
   spill: 'discharging',
 };
 
-export function renderCards(container, data) {
+export function renderCards(container, data, onSeeOnMap) {
   const now = data.polled_at;
   const monitors = rankByTotal(data.monitors, now);
   container.replaceChildren();
@@ -78,16 +80,13 @@ export function renderCards(container, data) {
     card.append(head, meta, strip, scale);
 
     if (monitor.lat != null && monitor.lon != null) {
-      const lat = monitor.lat.toFixed(5);
-      const lon = monitor.lon.toFixed(5);
       const geo = document.createElement('p');
       geo.className = 'o-geo';
-      const link = document.createElement('a');
-      link.href = mapsUrl(lat, lon);
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.innerHTML = `${PIN}${lat}, ${lon}`;
-      geo.append(link);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = `${LOUPE}<span>View on map</span>`;
+      btn.addEventListener('click', () => onSeeOnMap?.(monitor));
+      geo.append(btn);
       card.append(geo);
     }
 

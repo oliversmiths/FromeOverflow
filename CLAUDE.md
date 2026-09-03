@@ -92,13 +92,18 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   with a tab strip — **Timeline** (the `cards.js` list), **About**, **Credits**.
   Opens to Timeline; tabs are `role="tab"` with arrow-key nav; the active tab is
   the URL hash (`#timeline` / `#about` / `#credits`). The Timeline tab leads with
-  the live verdict (`#verdict`, `paintStatus` gives it `.verdict.is-discharging`
-  / `.is-recent` / `.is-clear`) above the "N monitors · last checked …" stamp.
+  the "N monitors · last checked …" stamp, then the `cards.js` list.
   The legend is a bottom-centre pill. On load a full-screen `.splash` shows the
-  verdict big over `docs/splash.jpg` (**not committed — drop it in**; the `<img>`
-  self-removes if missing), then fades after 5 s (tap/Esc to skip). No framework
+  verdict big (`#splash-verdict`, `setSplashVerdict` sets it word-by-word for the
+  hand-set look) over `docs/assets/overflow-img.webp`; then it fades after 5 s
+  (tap/Esc to skip). No framework
   — `fetch`es `data.json` once, then `renderCards` + `buildMap`. `styles.css` is
   the only stylesheet.
+- **`docs/assets/`** — committed static assets: `icon.png` (favicon / apple-touch),
+  `overflow-img.webp` (splash backdrop), `happy-times-NG_italic_master_web.woff2`
+  (the `--display` face, self-hosted via `@font-face`; `--body`/`--data` still
+  come from the Adobe kit `hpb4tyd`). `data.json` / `basemap.json` stay at the
+  `docs/` root — they're generated, not assets.
 - **[scripts/build-basemap.js](scripts/build-basemap.js)** — one-off, zero-dep.
   Overpass query for the **`EDGE_KM`** box on `CENTRE` — an asymmetric rectangle
   (`{n,s,e,w}` km) that must contain map.js's `CROP_KM` with ~1 km margin.

@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Frome Overflow Watch</title>
-<link rel="icon" href="icon.png" type="image/png" sizes="512x512">
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="assets/icon.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="assets/icon.png">
 <meta name="theme-color" content="#0666B5">
 
 <link rel="preconnect" href="https://use.typekit.net" crossorigin>
 <link rel="preconnect" href="https://p.typekit.net" crossorigin>
 <link rel="stylesheet" href="https://use.typekit.net/hpb4tyd.css">
+<link rel="preload" href="assets/happy-times-NG_italic_master_web.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <div class="splash" id="splash">
   <p class="splash-verdict" id="splash-verdict">Reading the feed…</p>
-  <img class="splash-img" id="splash-img" src="overflow-img.webp" alt="">
+  <img class="splash-img" id="splash-img" src="assets/overflow-img.webp" alt="">
   <p class="splash-brand">Overflow&nbsp;Watch <span>Frome</span></p>
 </div>
 
@@ -53,7 +54,6 @@
 
   <div class="panel-body" id="tabpanel-timeline" role="tabpanel"
     aria-labelledby="tab-timeline" tabindex="0">
-    <p class="verdict" id="verdict">Reading the feed…</p>
     <p class="stamp" id="stamp"></p>
     
     <div class="overflows" id="overflows"></div>
@@ -170,17 +170,15 @@ function paintStatus(data) {
   const recent = states.filter((k) => k === 'recent').length;
 
   const n = (x) => `${x} overflow${x === 1 ? '' : 's'}`;
-  let cls, text;
+  let text;
   if (live) {
-    [cls, text] = ['is-discharging', `${n(live)} discharging right now`];
+    text = `${n(live)} discharging right now`;
   } else if (recent) {
-    [cls, text] = ['is-recent', `${n(recent)} recently discharged`];
+    text = `${n(recent)} recently discharged`;
   } else {
-    [cls, text] = ['is-clear', 'No overflows discharging right now'];
+    text = 'No overflows discharging right now';
   }
 
-  $('verdict').className = `verdict ${cls}`;
-  $('verdict').textContent = text;
   setSplashVerdict(text);
   $('stamp').textContent =
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
@@ -265,7 +263,6 @@ try {
   const h = location.hash.slice(1);
   if (TABS.includes(h)) openPanel(h);
 } catch {
-  $('verdict').textContent = 'No data yet — run a poll';
   setSplashVerdict('No data yet');
   renderLegend($('legend'));
   $('overflows').innerHTML = '<div class="empty">The history builds from here.</div>';

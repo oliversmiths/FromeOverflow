@@ -1,5 +1,16 @@
 /* Styles for docs/index.html (the full-screen-map page). */
 
+/* Display face — Happy Times NG (self-hosted, one italic master). Its glyphs are
+   inherently slanted, so it's declared font-style: normal and nothing in the
+   sheet asks for italic. --body and --data still come from the Adobe kit. */
+@font-face {
+  font-family: "Happy Times NG";
+  src: url("assets/happy-times-NG_italic_master_web.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --chalk:    #fff;
   --ink:      #222;
@@ -13,13 +24,14 @@
   --day-nodata: #eee;
   --water:    #9bc2e1;   /* map waterways */
 
-  --display: "monotype-grotesque", system-ui, sans-serif;
+  --display: "Happy Times NG", Georgia, "Times New Roman", serif;
   --body:  "monotype-grotesque", system-ui, sans-serif;
   --data:  "ibm-plex-mono", ui-monospace, monospace;
 
-  /* All three faces come from one Adobe Fonts kit (hpb4tyd): monotype-grotesque
-     300 + 400, ibm-plex-mono. No bold — font-weight 600+ on the grotesque is
-     browser-synthesised, so keep display text at 300/400. */
+  /* --display is self-hosted (see @font-face above). --body/--data come from one
+     Adobe Fonts kit (hpb4tyd): monotype-grotesque 300 + 400, ibm-plex-mono.
+     No bold — font-weight 600+ on the grotesque is browser-synthesised, so keep
+     body text at 300/400. Happy Times NG has a single weight. */
 }
 
 * { box-sizing: border-box; }
@@ -58,7 +70,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--display);
+  font-family: var(--body);
   font-size: 17px;
   color: var(--silt);
   padding: 24px;
@@ -94,7 +106,7 @@ body {
 .map-label--town,
 .map-label--village,
 .map-label--suburb,
-.map-label--hamlet { font-family: var(--display); color: var(--ink); text-transform: uppercase; }
+.map-label--hamlet { font-family: var(--body); color: var(--ink); text-transform: uppercase; }
 
 .map-label--town    { font-weight: 400; font-size: 12px; letter-spacing: 0.01em; }
 .map-label--village { font-weight: 400; font-size: 11px; text-trasform:uppercase;  }
@@ -336,7 +348,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   font-size: 17px;
   color: rgba(255, 255, 255, 0.62);
   cursor: pointer;
-  font-family: var(--display);
+  font-family: var(--body);
 }
 
 .tab:hover { color: var(--sewage); }
@@ -368,21 +380,12 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .panel-body[hidden] { display: none; }
 
-.verdict {
-  margin: 0 0 6px;
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 28px;
-  line-height: 1.2;
-  color: var(--sewage);
-}
-
 .stamp { font-family: var(--data); font-size: 11px; color: var(--sewage); margin: 0 0 4px; }
 .standfirst { margin: 8px 0 20px; color: var(--sewage); font-size: 18px; }
 
 .prose p { margin: 0 0 12px; }
 .prose h3 {
-  font-family: var(--display);
+  font-family: var(--body);
   font-weight: 400;
   font-size: 17px;
   margin: 22px 0 6px;
@@ -415,7 +418,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   color: var(--weir);
 }
 
-.o-where { color: var(--weir); font-size:13px; font-family:var(--display) }
+.o-where { color: var(--weir); font-size:13px; font-family:var(--body) }
 
 .o-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--weir); font-weight: 400; }
 
@@ -477,7 +480,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-geo .ico { flex: none; }
 .o-geo button:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
 
-.empty { padding: 24px; background: #fff; color: var(--ink); font-family: var(--display); font-size: 17px; }
+.empty { padding: 24px; background: #fff; color: var(--ink); font-family: var(--body); font-size: 17px; }
 
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }
@@ -546,7 +549,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   bottom: clamp(18px, 2vh, 60px);
   margin: 0;
   z-index: 2;
-  font-family: var(--display);
+  font-family: var(--body);
   font-weight: 400;
   font-size: clamp(20px, 3.2vw, 34px);
   white-space: nowrap;

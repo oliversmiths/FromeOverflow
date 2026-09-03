@@ -462,7 +462,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 }
 .prose h3:first-child { margin-top: 0; }
 .prose a { color: var(--sewage); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.prose a:hover { text-decoration: none; }
+.prose a:hover { opacity: 0.8; }
 
 /* --- Overflow list (the timeline panel) --- */
 

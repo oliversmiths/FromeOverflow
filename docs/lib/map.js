@@ -52,7 +52,7 @@ export const LEGEND = [
    ['discharging', 'Discharging now'],
   ['recent', `Discharged recently`],
   ['dry', 'Not discharging'],
-  ['offline', 'No data / offline'],
+  ['offline', 'Offline'],
 ];
 
 export function renderLegend(ul) {
@@ -70,21 +70,29 @@ function popup(monitor, now) {
   const last = monitor.events.at(-1);
   const el = document.createElement('div');
 
+  // Label and watercourse share one heading line; each in its own span so the
+  // stylesheet can treat them differently.
   const h = document.createElement('h3');
-  h.textContent = monitor.label;
+  const label = document.createElement('span');
+  label.className = 'pop-label';
+  label.textContent = monitor.label;
+  const w = document.createElement('span');
+  w.className = 'pop-watercourse';
+  w.textContent = monitor.watercourse;
+  h.append(label, ' ', w);
 
   const s = document.createElement('p');
   s.className = `pop-state is-${state.key}`;
   s.textContent = state.text;
   s.style.margin = '0 0 6px';
 
-  const w = document.createElement('p');
-  w.style.margin = '0 0 6px';
-  w.textContent = `Into the ${monitor.watercourse}. ` + (last
+  const d = document.createElement('p');
+  d.className = 'pop-last';
+  d.textContent = last
     ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtDuration(spillMs(last, now))}.`
-    : 'No discharge recorded in the last 90 days.');
+    : 'No discharge recorded in the last 90 days.';
 
-  el.append(h, s, w);
+  el.append(s, h, d);
 
   if (monitor.lat != null && monitor.lon != null) {
     const lat = monitor.lat.toFixed(5);

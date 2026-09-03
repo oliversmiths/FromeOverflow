@@ -551,7 +551,9 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 @media (max-width: 640px) {
   .splash-verdict {
     right: clamp(12px, 4vw, 20px);
-   /*  font-size: clamp(30px, 8vw, 54px);*/
+    /* bigger on phones: 15% of width, floored at 42px, capped at 96px.
+       320px → 48px · 375px → 56px · 430px → 64px */
+    font-size: clamp(42px, 15vw, 96px);
     line-height: 1.05;
   }
   .splash-img {

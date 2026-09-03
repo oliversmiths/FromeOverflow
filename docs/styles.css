@@ -659,6 +659,12 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
     transform: translate(-50%, -50%);
     width: 80vw;
   }
+  .splash-brand {
+    left: 50%;
+    right: auto;
+    bottom: 30px;
+    transform: translateX(-50%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

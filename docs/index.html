@@ -127,28 +127,19 @@ const splash = $('splash');
 $('splash-img').addEventListener('error', (e) => e.target.remove());
 let holdTimer, hideTimer;
 
-// Match the iOS/Android browser chrome to what's on screen: blue while the
-// splash is up, white once it's the map.
-const themeMeta = document.querySelector('meta[name="theme-color"]');
-const setTheme = (c) => themeMeta && themeMeta.setAttribute('content', c);
-
 function showSplash() {
   clearTimeout(holdTimer);
   clearTimeout(hideTimer);
   splash.hidden = false;
   void splash.offsetWidth;                 // restart the transition
   splash.classList.remove('is-gone');
-  setTheme('#0666B5');
   holdTimer = setTimeout(dismissSplash, 5000);
 }
 function dismissSplash() {
   clearTimeout(holdTimer);
   splash.classList.add('is-gone');
-  setTheme('#ffffff');
   hideTimer = setTimeout(() => { splash.hidden = true; }, 3200);
 }
-
-setTheme('#0666B5');   // page opens on the splash
 
 holdTimer = setTimeout(dismissSplash, 5000);
 splash.addEventListener('click', dismissSplash);

@@ -3,20 +3,21 @@
 :root {
   --lichen:   #fff;
   --chalk:    #fff  ;
-  --ink:      #171E1B;
+  --ink:      #222;
   --weir:     #0666B5;
-  --oxide:    #FF005E ;
-  --amber:    #FFC300;
-  --silt:     #333;
+  --oxide:    #AB522F;
+  --amber:   rgb(209, 169, 42);
+  --silt:     #888;
   --hairline: #C3C9BF;
   --sewage:   #D6FF00;
   /* 90-day strip */
-  --day-dry:    #1B9A7A;
+  /*--day-dry:    rgb(118, 173, 42);*/
+  --day-dry:    #7BC3D9;
   --day-nodata: #CCCCCC;
 
   /* map */
-  --pin-dry:  #1B9A7A ;
-  --water:    #A9D0E6;
+  --pin-dry:  #7BC3D9;
+  --water:    #0666B5;
   --water-line: #0666B5;
 
   --display: "monotype-grotesque", system-ui, sans-serif;
@@ -183,7 +184,7 @@ body {
 
 .map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 15px; }
 .map-popup p { margin: 0 0 6px; }
-.map-popup a { color: var(--weir); font-family: var(--data); text-decoration: none; font-size: 10px; }
+.map-popup a { color: var(--silt); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover { text-decoration: underline; }
 .map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
 .map-popup .pop-state.is-discharging { color: var(--oxide); }
@@ -337,6 +338,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   font-size: 17px;
   color: rgba(255, 255, 255, 0.62);
   cursor: pointer;
+  font-family: var(--display);
 }
 
 .tab:hover { color: var(--sewage); }
@@ -438,11 +440,26 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   justify-content: space-between;
   width: 100%;
   max-width: 450px;
-  margin: 5px 0 0;
+  margin: 4px 0 0;
+  padding-top: 5px;
   font-family: var(--data);
   font-size: 10px;
   color: var(--silt);
+  /* a timeline axis: a hairline with a downward tick at each end */
+  border-top: 1px solid currentColor;
+  position: relative;
 }
+.o-scale::before,
+.o-scale::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 4px;
+  background: currentColor;
+}
+.o-scale::before { left: 0; }
+.o-scale::after  { right: 0; }
 
 .o-geo { margin: 10px 0 0; font-family: var(--data); font-size: 11.5px; }
 .o-geo a { color: var(--weir); text-decoration: none; white-space: nowrap; }

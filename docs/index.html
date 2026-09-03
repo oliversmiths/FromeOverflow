@@ -33,7 +33,7 @@
 </button>
 
 <button class="fab fab--menu" id="open-panel" aria-controls="panel"
-  aria-expanded="false" aria-label="Timeline, about and credits">
+  aria-expanded="false" aria-label="Timeline, guide, safety and sources">
   <svg viewBox="0 0 21 48" aria-hidden="true">
     <path fill="currentColor" d="M13.248 7.04V0H20.288V7.04H13.248ZM6.4 44.16L7.104 44.8C8.256 44.032 12.224 40.448 14.464 37.888H17.024C14.336 40.96 9.408 46.016 6.528 48H2.688C0.96 46.848 0.832 44.16 2.176 40.576L9.728 20.352L9.024 19.712C8.512 20.16 6.72 21.888 2.56 26.88H0C4.224 21.248 7.872 17.536 10.24 16H14.08C14.848 16.32 15.744 17.152 15.744 18.56C15.744 19.712 15.488 20.864 14.72 22.784L6.4 44.16Z"/>
   </svg>
@@ -44,10 +44,12 @@
     <div class="tabs" role="tablist" aria-label="Panel sections">
       <button class="tab" type="button" role="tab" id="tab-timeline"
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
-      <button class="tab" type="button" role="tab" id="tab-about" tabindex="-1"
-        aria-controls="tabpanel-about" aria-selected="false">About</button>
-      <button class="tab" type="button" role="tab" id="tab-credits" tabindex="-1"
-        aria-controls="tabpanel-credits" aria-selected="false">Credits</button>
+      <button class="tab" type="button" role="tab" id="tab-guide" tabindex="-1"
+        aria-controls="tabpanel-guide" aria-selected="false">Guide</button>
+      <button class="tab" type="button" role="tab" id="tab-safety" tabindex="-1"
+        aria-controls="tabpanel-safety" aria-selected="false">Safety</button>
+      <button class="tab" type="button" role="tab" id="tab-sources" tabindex="-1"
+        aria-controls="tabpanel-sources" aria-selected="false">Sources</button>
     </div>
     <button class="panel-close" type="button" aria-label="Close">&times;</button>
   </div>
@@ -60,8 +62,8 @@
     <div class="overflows" id="overflows"></div>
   </div>
 
-  <div class="panel-body prose" id="tabpanel-about" role="tabpanel"
-    aria-labelledby="tab-about" tabindex="0" hidden>
+  <div class="panel-body prose" id="tabpanel-guide" role="tabpanel"
+    aria-labelledby="tab-guide" tabindex="0" hidden>
     <h3>What this is</h3>
     <p>A single-town monitor of storm overflows on the River Frome and its tributaries around
       Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
@@ -72,30 +74,50 @@
     <p>Each pin is an overflow, coloured by its state at the last check: red discharging
       now, amber discharged within the last 48 hours, green not discharging,
       grey no signal. Open the Timeline tab for every monitor’s last 90 days.</p>
-      
-        <h3>Reading the timeline</h3>
-      <p>One card per overflow, ranked by total discharge time. The strip
+
+    <h3>Reading the timeline</h3>
+    <p>One card per overflow, ranked by total discharge time. The strip
       is its last 90 days, one bar a day: red where it discharged, amber for the 48 hours
       after, green when it was clear, dark grey where the monitor was offline, and
       hatched before this record began.</p>
-      <p>Hatched days are not clear days – they are days nobody here was watching. This
+    <p>Hatched days are not clear days – they are days nobody here was watching. This
       site keeps its own history because the Wessex feed publishes only the current
       status, so the strip can only go back as far as the first reading. A discharge
       may still show inside the hatching: the first reading carries Wessex’s most
       recent event, so that one spill is known while the days around it are not.</p>
-      <p>An offline day is not a discharge – it means the sensor sent no signal, so nothing
+    <p>An offline day is not a discharge – it means the sensor sent no signal, so nothing
       is known either way. Where that has happened the card says how long the monitor was
       dark, because “no discharge recorded” means less when part of the record is missing.</p>
-
-    <h3>What it can’t tell you</h3>
-    <p>A monitor records <i>when</i> an overflow starts and stops – not how much was released,
-      and not whether the water is safe. Monitors can trigger on debris or vegetation, so an
-      activation indicates a discharge rather than confirming one. If a monitor spills twice
-      between two checks only the second is recorded, so the totals are a floor. These figures will not match Wessex Water’s regulator-verified annual returns.</p>
   </div>
 
-  <div class="panel-body prose" id="tabpanel-credits" role="tabpanel"
-    aria-labelledby="tab-credits" tabindex="0" hidden>
+  <div class="panel-body prose" id="tabpanel-safety" role="tabpanel"
+    aria-labelledby="tab-safety" tabindex="0" hidden>
+    <h3>Safety</h3>
+    <p>This site records <i>when</i> storm overflows discharge. It does not measure water
+      quality, and it cannot tell you whether a river is safe to enter.</p>
+    <p>A stretch showing no recent discharge is not therefore clean. Rivers carry bacteria
+      from farmland, wildlife and road runoff at all times, and hazards like cold or fast
+      water regardless of what the overflows are doing.</p>
+    <p>If you swim, paddle or let a dog in the Frome, judge each spot on its own merits. For
+      designated bathing-water classifications and live pollution alerts, see the
+      Environment Agency’s <a href="https://environment.data.gov.uk/bwq/" target="_blank"
+      rel="noopener">Swimfo</a> and Surfers Against Sewage’s
+      <a href="https://www.sas.org.uk/safer-seas-service/" target="_blank" rel="noopener">Safer
+      Seas &amp; Rivers Service</a>.</p>
+
+    <h3>What it can’t tell you</h3>
+    <p>A monitor records the start and end of an overflow – not how much was released, and
+      not what was in it. A monitor can also trigger on debris or vegetation, so an
+      activation <i>indicates</i> a discharge rather than confirming one.</p>
+
+    <h3>An incomplete picture</h3>
+    <p>If a monitor spills twice between two checks, only the second is recorded, so the
+      totals here are a floor, not an exact figure. These numbers will not match Wessex
+      Water’s regulator-verified annual returns, which are counted differently.</p>
+  </div>
+
+  <div class="panel-body prose" id="tabpanel-sources" role="tabpanel"
+    aria-labelledby="tab-sources" tabindex="0" hidden>
     <h3>Data</h3>
     <p>Overflow activity comes from Wessex Water’s near real-time event duration
       monitoring (EDM) feed – an ArcGIS feature service published to Water UK’s
@@ -232,13 +254,12 @@ function paintCoverage(data, now) {
     `This record only began ` + `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`} `+ `on ${fmtDate(started)}. ` +
     
     'Some older discharges do appear: Wessex publish their latest event with the ' +
-    'first reading, so that single spill is known even though the days around it ' +
-    'are not.';
+    'first reading, so that single a spill is known even though the days around it are not.';
   note.hidden = false;
 }
 
-// --- panel (one drawer, tabs: timeline / about / credits) ---
-const TABS = ['timeline', 'about', 'credits'];
+// --- panel (one drawer, tabs: timeline / guide / safety / sources) ---
+const TABS = ['timeline', 'guide', 'safety', 'sources'];
 const panel = $('panel');
 const openBtn = $('open-panel');
 const scrim = $('scrim');

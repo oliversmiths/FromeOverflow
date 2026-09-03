@@ -35,7 +35,7 @@ rectangle are hidden (set `SHOW_EDGE_MARKERS` to pin them to the edge instead).
     after, green clear, grey before monitoring began).
   - **About** — what it is and what the data can't tell you.
   - **Credits** — sources and map attribution.
-- The open tab is remembered in the URL (`#timeline` / `#about` / `#credits`).
+- The open tab is remembered in the URL (`#timeline` / `#guide` / `#safety` / `#sources`).
 
 The map has no library and no tile service. `scripts/build-basemap.js`
 (`npm run basemap`) pulls the roads, waterways, town/village/hamlet names and

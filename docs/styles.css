@@ -27,8 +27,8 @@
   /*--water:    #9bc2e1;   /* map waterways */
 --water:    #0666B5;   /* map waterways */
   --display: "Happy Times NG", Georgia, "Times New Roman", serif;
-  --body:  "monotype-grotesque", system-ui, sans-serif;
-  --data:  "ibm-plex-mono", ui-monospace, monospace;
+  --body:  system-ui, sans-serif;
+  --data:  ui-monospace, monospace;
 
   /* --display is self-hosted (see @font-face above). --body/--data come from one
      Adobe Fonts kit (hpb4tyd): monotype-grotesque 300 + 400, ibm-plex-mono.
@@ -50,7 +50,7 @@ body {
   color: var(--ink);
   font-family: var(--body);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.35;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -198,10 +198,10 @@ body {
   /* left / top are set in px by placePopup() so it stays on screen near edges */
 }
 
-.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 14px; }
+.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 13px; }
 .map-popup p { margin: 0 0 6px; }
 .map-popup .pop-label { color: var(--weir); }
-.map-popup .pop-watercourse { color: var(--weir); font-size: 14px;  }
+.map-popup .pop-watercourse { color: var(--weir); font-size: 13px;  }
 /* Status and coordinates on one line — status left, link right — closing the
    feed half just above the context divider. Wraps to two rows if they can't fit
    side by side (the preceding <p> already supplies the gap above). */
@@ -215,8 +215,8 @@ body {
 }
 .map-popup .pop-top p { margin: 0; }
 
-.map-popup .pop-last { font-size: 12px; }
-.map-popup .pop-offline { font-size: 12px; color: var(--silt); }
+.map-popup .pop-last { font-size: 11px; }
+.map-popup .pop-offline { font-size: 11px; color: var(--silt); }
 
 /* Below the divider: static context from overflow_context, as term/value pairs.
    Everything above it comes from the live activity feed. */
@@ -361,7 +361,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   right: 0;
   z-index: 30;
   display: flex;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 300;
   flex-direction: column;
   width: 500px;
@@ -385,18 +385,28 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   border-bottom: 1px solid  rgba(255, 255, 255, 0.62);;
 }
 
-.tabs { display: flex; align-items: center; gap: 2px; }
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;               /* let it share the head with .panel-close */
+  overflow-x: auto;           /* last-resort scroll rather than a broken layout */
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
 
 .tab {
   appearance: none;
   border: 0;
   background: none;
-  padding: 8px 10px;
+  padding: 8px 9px;
   font-size: 20px;
+  line-height: 1;
+  white-space: nowrap;
   color: rgba(255, 255, 255, 0.62);
   cursor: pointer;
   font-family: var(--display);
- font-weight: 300;
+  font-weight: 300;
 }
 
 .tab:hover { color: var(--sewage); }
@@ -437,8 +447,8 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   margin: 10px 0 0;
   padding: 10px 12px;
   border-left: 2px solid var(--sewage);
-  font-size: 17px;
-  line-height: 1.45;
+  font-size: 16px;
+  line-height: 1.35;
   color: var(--sewage);
 }
 .coverage[hidden] { display: none; }
@@ -474,13 +484,14 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   font-family: var(--data);
   font-weight: 400;
   font-size: 13px;
-  line-height: 1.3;
+  text-transform: uppercase;
+  line-height: 1.35;
   color: var(--weir);
 }
 
 .o-where {  }
 
-.o-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--weir); font-weight: 400; }
+.o-meta { margin: 3px 0 0; font-size: 11px; color: var(--weir); font-weight: 400; }
 
 .o-strip {
   display: flex;
@@ -558,6 +569,9 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   /* .map-ctrl { display: none; } */
   .legend { max-width: calc(100vw - 50vw); bottom: 14px; right: 14px; flex-direction: column; }
   .map-attr { bottom: 14px; }
+  /* Four tabs plus the 75px close button — tighten so they fit a phone. */
+  .panel-head { padding-left: 10px; }
+  .tab { padding: 8px 7px; font-size: 17px; }
 }
 
 /* --- Intro splash: shown on load, fades after 5s --- */

@@ -1,5 +1,5 @@
 {
- "polled_at": 1788453039869,
+ "polled_at": 1788453465126,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -9,6 +9,11 @@
    "lat": 51.23196096940266,
    "lon": -2.320596862259275,
    "watercourse": "RIVER FROME VIA SWS",
+   "site_name": "FROME SINGERS CATTLE MARKET",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -16,7 +21,8 @@
      "start": 1788012000000,
      "end": 1788012360000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00062",
@@ -24,6 +30,11 @@
    "lat": 51.22335859765987,
    "lon": -2.312891623999638,
    "watercourse": "RIVER FROME (VIA SWS)",
+   "site_name": "FROME ADDERWELL CLOSE",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -35,7 +46,8 @@
      "start": 1788144600000,
      "end": 1788145800000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00120",
@@ -43,9 +55,20 @@
    "lat": 51.26658909645268,
    "lon": -2.293428501270845,
    "watercourse": "RIVER FROME",
+   "site_name": "BECKINGTON STORM TANK",
+   "waterbody": "Somerset Frome conf with Mells to conf B. Avo",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": [
+    {
+     "start": 1788423323862,
+     "end": 1788426046794
+    }
+   ]
   },
   {
    "id": "WXW00307",
@@ -53,6 +76,11 @@
    "lat": 51.23867967299156,
    "lon": -2.4429746619720656,
    "watercourse": "MELLS RIVER",
+   "site_name": "COLEFORD INLET",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at inlet of water recycling centre",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -60,7 +88,8 @@
      "start": 1788048240000,
      "end": 1788048360000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00308",
@@ -68,6 +97,11 @@
    "lat": 51.23867967299156,
    "lon": -2.4429746619720656,
    "watercourse": "MELLS RIVER",
+   "site_name": "COLEFORD STORM TANK",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -79,7 +113,8 @@
      "start": 1788014760020,
      "end": 1788015000020
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00333",
@@ -87,6 +122,11 @@
    "lat": 51.23151658696091,
    "lon": -2.318690206828017,
    "watercourse": "RIVER FROME",
+   "site_name": "FROME COURT HOUSE KING STREET",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -94,7 +134,8 @@
      "start": 1788012000000,
      "end": 1788012720000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00340",
@@ -102,9 +143,15 @@
    "lat": 51.190198721655605,
    "lon": -2.440520228958095,
    "watercourse": "WHATLEY BROOK",
+   "site_name": "CRANMORE INLET",
+   "waterbody": "Whatley Bk - source to conf Mells R",
+   "overflow_type": "Storm overflow at inlet of water recycling centre",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00369",
@@ -112,9 +159,15 @@
    "lat": 51.2218504095369,
    "lon": -2.249228312569296,
    "watercourse": "RODDEN BROOK",
+   "site_name": "CHAPMANSLADE DIVERS BRIDGE",
+   "waterbody": "Rodden Bk - source to conf R Frome",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00401",
@@ -122,6 +175,11 @@
    "lat": 51.23705600445347,
    "lon": -2.470780494255622,
    "watercourse": "MELLS RIVER (S)",
+   "site_name": "EDFORD INLET",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at inlet of water recycling centre",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -129,7 +187,8 @@
      "start": 1788006060000,
      "end": 1788006120000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00402",
@@ -137,6 +196,11 @@
    "lat": 51.23703856809265,
    "lon": -2.4703705472258575,
    "watercourse": "MELLS RIVER (S)",
+   "site_name": "EDFORD STORM TANK",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -144,7 +208,8 @@
      "start": 1782166380000,
      "end": 1782166500000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00420",
@@ -152,6 +217,11 @@
    "lat": 51.222418111286665,
    "lon": -2.3181977384896366,
    "watercourse": "ADDERWELL BROOK",
+   "site_name": "FROME FELTHAM DRIVE NEAR FOOTBRIDGE",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -163,7 +233,8 @@
      "start": 1787994480000,
      "end": 1787994600000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00453",
@@ -171,9 +242,15 @@
    "lat": 51.236789656085044,
    "lon": -2.325207064662251,
    "watercourse": "RIVER FROME(S)",
+   "site_name": "FROME WELSHMILL LANE INLET",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow at inlet of water recycling centre",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00454",
@@ -181,6 +258,11 @@
    "lat": 51.236672874520295,
    "lon": -2.325772866343715,
    "watercourse": "RIVER FROME(S)",
+   "site_name": "FROME WELSHMILL LANE STORM TANKS STORM TANK",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -188,7 +270,8 @@
      "start": 1788012720000,
      "end": 1788015720000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00490",
@@ -196,9 +279,15 @@
    "lat": 51.24378356248126,
    "lon": -2.52657348358895,
    "watercourse": "MELLS STREAM(S)",
+   "site_name": "GURNEY SLADE",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater.  At other times, the overflow discharges due to rainwater entering the sewer",
    "since": 1788262043425,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00596",
@@ -206,6 +295,11 @@
    "lat": 51.23671141235839,
    "lon": -2.4481811888337943,
    "watercourse": "MELLS STREAM",
+   "site_name": "COLEFORD KINGS HEAD",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -217,7 +311,8 @@
      "start": 1787220240010,
      "end": 1787220360010
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00654",
@@ -225,6 +320,11 @@
    "lat": 51.22248074285668,
    "lon": -2.3203562382422147,
    "watercourse": "TRIB OF RIVER FROME (VIA SWS)",
+   "site_name": "FROME LOWER KEYFORD",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -236,7 +336,8 @@
      "start": 1788145080000,
      "end": 1788145560000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00693",
@@ -244,9 +345,15 @@
    "lat": 51.217952918424885,
    "lon": -2.339517792061503,
    "watercourse": "TRIBUTARY OF NUNNEY BROOK",
+   "site_name": "FROME COURTS BARTON MARSTON LANE",
+   "waterbody": "Nunney Bk - source to conf Mells R",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00709",
@@ -254,9 +361,15 @@
    "lat": 51.239319834025146,
    "lon": -2.3877459790553175,
    "watercourse": "MELLS STREAM(S)",
+   "site_name": "MELLS",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00710",
@@ -264,9 +377,15 @@
    "lat": 51.23861757443163,
    "lon": -2.382554619747746,
    "watercourse": "MELLS STREAM",
+   "site_name": "MELLS STORM TANK",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater.  At other times, the overflow discharges due to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00711",
@@ -274,6 +393,11 @@
    "lat": 51.23151658696091,
    "lon": -2.318690206828017,
    "watercourse": "RIVER FROME (VIA SWS)",
+   "site_name": "FROME MERCHANTS BARTON",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -281,7 +405,8 @@
      "start": 1788012120000,
      "end": 1788012720000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00788",
@@ -289,9 +414,15 @@
    "lat": 51.33838070599378,
    "lon": -2.301523368946632,
    "watercourse": "RIVER FROME",
+   "site_name": "FRESHFORD NEW INN",
+   "waterbody": "Somerset Frome conf with Mells to conf B. Avo",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788262043425,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00805",
@@ -299,6 +430,11 @@
    "lat": 51.23036785472475,
    "lon": -2.307987630705506,
    "watercourse": "RIVER FROME",
+   "site_name": "FROME NORTH OF CARPET FACTORY NEAR RAILWAY JUNCTION",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -306,7 +442,8 @@
      "start": 1787931840000,
      "end": 1787932440000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00816",
@@ -314,6 +451,11 @@
    "lat": 51.21679784688173,
    "lon": -2.3789720992634633,
    "watercourse": "NUNNEY BROOK",
+   "site_name": "NUNNEY STORM TANK",
+   "waterbody": "Nunney Bk - source to conf Mells R",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -325,7 +467,8 @@
      "start": 1788027120020,
      "end": 1788036840020
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00818",
@@ -333,6 +476,11 @@
    "lat": 51.233271517085925,
    "lon": -2.5020395729608147,
    "watercourse": "MELLS STREAM",
+   "site_name": "OAKHILL STORM TANK",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788262043425,
    "status": 0,
    "events": [
@@ -344,7 +492,8 @@
      "start": 1782154200020,
      "end": 1782155280020
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00880",
@@ -352,6 +501,11 @@
    "lat": 51.228742426687305,
    "lon": -2.3071185407229637,
    "watercourse": "RIVER FROME",
+   "site_name": "FROME PORTWAY / LOCKS HILL",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -363,7 +517,8 @@
      "start": 1788144240000,
      "end": 1788144600000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00934",
@@ -371,6 +526,11 @@
    "lat": 51.2319829835231,
    "lon": -2.3124632017256186,
    "watercourse": "RIVER FROME(VIA SWS)",
+   "site_name": "FROME RODDEN ROAD",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -378,7 +538,8 @@
      "start": 1782149280000,
      "end": 1782149880000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00935",
@@ -386,9 +547,15 @@
    "lat": 51.286514392967895,
    "lon": -2.284382684617836,
    "watercourse": "TRIB OF THE RIVER FROME",
+   "site_name": "RODE BARROW FARM TANK",
+   "waterbody": "Somerset Frome conf with Mells to conf B. Avo",
+   "overflow_type": "Storm overflow on sewer network with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW00936",
@@ -396,6 +563,11 @@
    "lat": 51.28973628656941,
    "lon": -2.282538828925128,
    "watercourse": "SOMERSET FROME(S)",
+   "site_name": "RODE STORM TANK",
+   "waterbody": "Somerset Frome conf with Mells to conf B. Avo",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -407,7 +579,8 @@
      "start": 1788012240090,
      "end": 1788016200200
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW00979",
@@ -415,6 +588,11 @@
    "lat": 51.33480112153891,
    "lon": -2.3090577021304663,
    "watercourse": "RIVER FROME",
+   "site_name": "FRESHFORD FIELDS OFF ROSEMARY LANE",
+   "waterbody": "Somerset Frome conf with Mells to conf B. Avo",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -422,7 +600,8 @@
      "start": 1788027480000,
      "end": 1788027600000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW01068",
@@ -430,9 +609,20 @@
    "lat": 51.22257759307373,
    "lon": -2.4788410201928195,
    "watercourse": "TRIB OF MELLS STREAM",
+   "site_name": "STOKE ST MICHAEL STOKE HILL",
+   "waterbody": "Mells source to conf with Somerset Frome",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": [
+    {
+     "start": 1788337834401,
+     "end": 1788350444996
+    }
+   ]
   },
   {
    "id": "WXW01156",
@@ -440,6 +630,11 @@
    "lat": 51.19204881487381,
    "lon": -2.3575510218065885,
    "watercourse": "TRIBUTARY OF RIVER FROME",
+   "site_name": "TRUDOXHILL",
+   "waterbody": "Frome - source to conf Maiden Bradley Bk",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -451,7 +646,8 @@
      "start": 1788007680070,
      "end": 1788008160070
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW01185",
@@ -459,9 +655,15 @@
    "lat": 51.22894219927468,
    "lon": -2.3071246234194933,
    "watercourse": "RIVER FROME",
+   "site_name": "FROME WALLBRIDGE",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW01187",
@@ -469,6 +671,11 @@
    "lat": 51.17530851261497,
    "lon": -2.4109580460126705,
    "watercourse": " TRIB OF THE NUNNEY BROOK(S)",
+   "site_name": "WANSTROW",
+   "waterbody": "Nunney Bk - source to conf Mells R",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -480,7 +687,8 @@
      "start": 1782148860010,
      "end": 1782150480010
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW01242",
@@ -488,6 +696,11 @@
    "lat": 51.23245279901936,
    "lon": -2.321589828733902,
    "watercourse": "RIVER FROME",
+   "site_name": "FROME WESTWAY PRECINCT CAR PARK R/O",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -495,7 +708,8 @@
      "start": 1782149160000,
      "end": 1782149400000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW01243",
@@ -503,6 +717,11 @@
    "lat": 51.32580657935782,
    "lon": -2.2808840545723057,
    "watercourse": "TRIBUTARY OF RIVER FROME",
+   "site_name": "WESTWOOD STORM TANK",
+   "waterbody": "Somerset Frome conf with Mells to conf B. Avo",
+   "overflow_type": "Storm overflow at water recycling centre after settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater.  At other times, the overflow discharges due to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
    "events": [
@@ -510,7 +729,8 @@
      "start": 1782150480000,
      "end": 1782201000000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW01245",
@@ -518,6 +738,11 @@
    "lat": 51.23627957291062,
    "lon": -2.3262001094499616,
    "watercourse": "RIVER FROME VIA SWS",
+   "site_name": "FROME WHATCOMBE ROAD NO 20",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -529,7 +754,8 @@
      "start": 1788144240000,
      "end": 1788144480000
     }
-   ]
+   ],
+   "offline": []
   },
   {
    "id": "WXW01272",
@@ -537,9 +763,15 @@
    "lat": 51.16939965466654,
    "lon": -2.3642345359583516,
    "watercourse": "RIVER FROME",
+   "site_name": "WITHAM FRIARY",
+   "waterbody": "Frome - source to conf Maiden Bradley Bk",
+   "overflow_type": "Storm overflow at pumping station with settlement treatment",
+   "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": []
+   "events": [],
+   "offline": []
   },
   {
    "id": "WXW01297",
@@ -547,6 +779,11 @@
    "lat": 51.237257527148465,
    "lon": -2.3287540305315617,
    "watercourse": "RIVER FROME",
+   "site_name": "FROME FARRANT ROAD NEAR YOUTH CENTRE",
+   "waterbody": "Frome (Maiden Bradley to Mells)",
+   "overflow_type": "Storm overflow on sewer network",
+   "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
+   "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
    "events": [
@@ -554,7 +791,8 @@
      "start": 1788011640000,
      "end": 1788012840000
     }
-   ]
+   ],
+   "offline": []
   }
  ]
 }

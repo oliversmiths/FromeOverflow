@@ -1,24 +1,17 @@
 /* Styles for docs/index.html (the full-screen-map page). */
 
 :root {
-   --lichen:   #fff;
-  --chalk:    #fff  ;
+  --chalk:    #fff;
   --ink:      #222;
-  --weir:     #0666B5;
+  --weir:     #0666B5;   /* brand blue — panels, splash, chrome */
   --oxide:    #AB522F;
   --amber:   rgb(209, 169, 42);
   --silt:     #888;
   --hairline: #C3C9BF;
   --sewage:   #D6FF00;
-  /* 90-day strip */
-  /*--day-dry:    rgb(118, 173, 42);*/
-  --day-dry:    #90C29A;
+  --dry:      #90C29A;   /* "not discharging" — pins and the 90-day strip */
   --day-nodata: #eee;
-
-  /* map */
-  --pin-dry:  #90C29A;
-  --water:    #0666B5;
-  --water-line: #0666B5;
+  --water:    #1f75bc;   /* map waterways */
 
   --display: "monotype-grotesque", system-ui, sans-serif;
   --body:  "monotype-grotesque", system-ui, sans-serif;
@@ -72,9 +65,9 @@ body {
 
 /* Basemap layers. Non-scaling strokes so line weights hold as you zoom. */
 .bm path { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.bm--water  path { fill: var(--water); stroke: var(--water-line); stroke-width: 0.6; }
-.bm--stream path { stroke: #6FAAD0; stroke-width: 1.3; }
-.bm--river  path { stroke: var(--water-line); stroke-width: 2.8; }
+.bm--water  path { fill: var(--water); stroke: var(--water); stroke-width: 0.6; }
+.bm--stream path { stroke: var(--water); stroke-width: 1.3; }
+.bm--river  path { stroke: var(--water); stroke-width: 2.8; }
 .bm--minor  path { stroke: #DDD; stroke-width: 1; }
 .bm--mid    path { stroke: #DDD; stroke-width: 1.5; }
 .bm--major  path { stroke: #DDD; stroke-width: 2; }
@@ -109,12 +102,11 @@ body {
 
 .mappin {
   position: absolute;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   padding: 0;
   border: 2px solid var(--chalk);
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(23, 30, 27, 0.3);
   transform: translate(-50%, -50%);
   pointer-events: auto;
   cursor: pointer;
@@ -122,11 +114,11 @@ body {
 
 .pin-layer .mappin { display: none; }
 .pin-layer .mappin.is-shown { display: block; }
-.mappin:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.mappin:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
 
 .mappin--discharging { background: var(--oxide); }
 .mappin--recent      { background: var(--amber); }
-.mappin--dry         { background: var(--pin-dry); }
+.mappin--dry         { background: var(--dry); }
 .mappin--offline     { background: var(--silt); }
 
 .mappin.is-edge { border-radius: 2px; width: 12px; height: 12px; box-shadow: none; opacity: 0.9; }
@@ -189,7 +181,7 @@ body {
 .map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
 .map-popup .pop-state.is-discharging { color: var(--oxide); }
 .map-popup .pop-state.is-recent      { color: var(--amber); }
-.map-popup .pop-state.is-dry         { color: var(--pin-dry); }
+.map-popup .pop-state.is-dry         { color: var(--dry); }
 .map-popup .pop-state.is-offline     { color: var(--silt); }
 
 .map-popup .pop-close {
@@ -233,7 +225,6 @@ body {
   height: 13px;
   flex: none;
   transform: none;
-  box-shadow: 0 0 0 1px rgba(23, 30, 27, 0.25);
 }
 
 /* Square, flush to the top-right corner — same 75px footprint as the panel's
@@ -249,13 +240,13 @@ body {
   place-items: center;
   padding: 0;
   border: 0;
-  background: var(--water-line);
+  background: var(--weir);
   color: var(--sewage);
   cursor: pointer;
   transition: opacity 0.2s, background 0.15s;
 }
 
-.fab:hover { background: var(--sewage); color: var(--water-line); }
+.fab:hover { background: var(--sewage); color: var(--weir); }
 .fab:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
 .fab svg { display: block; height: 34px; width: auto; }
 
@@ -272,14 +263,14 @@ body {
   place-items: center;
   border: 0;
   background: none;
-  color: var(--water-line);
+  color: var(--weir);
   cursor: pointer;
   transition: opacity 0.2s, background 0.15s, color 0.15s;
 }
 
 .fl-mark svg { display: block; height: 32px; width: auto; }
-.fl-mark:hover { background: var(--sewage); color: var(--water-line); }
-.fl-mark:focus-visible { outline: 2px solid var(--water-line); outline-offset: -3px; }
+.fl-mark:hover { background: var(--sewage); color: var(--weir); }
+.fl-mark:focus-visible { outline: 2px solid var(--weir); outline-offset: -3px; }
 
 body.panel-open .fab,
 body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
@@ -310,7 +301,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   width: 500px;
   max-width: 100%;
   height: 100%;
-  background: var(--water-line);   /* deep water blue */
+  background: var(--weir);   /* deep water blue */
   color: var(--sewage);        /* bright yellow-green */
   transform: translateX(100%);
   transition: transform 0.28s ease;
@@ -358,7 +349,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   place-items: center;
 }
 
-.panel-close:hover { background: var(--sewage); color: var(--water-line); }
+.panel-close:hover { background: var(--sewage); color: var(--weir); }
 .panel-close:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
 
 .panel-body {
@@ -405,7 +396,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 }
 
 .o-card.is-discharging { border-left-color: var(--oxide); }
-.o-card.is-dry         { border-left-color: var(--day-dry); }
+.o-card.is-dry         { border-left-color: var(--dry); }
 .o-card.is-offline     { border-left-color: var(--silt); }
 
 .o-head h3 {
@@ -414,12 +405,12 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   font-weight: 400;
   font-size: 16px;
   line-height: 1.3;
-  color: var(--water-line);
+  color: var(--weir);
 }
 
-.o-where { color: var(--water-line); font-size:13px; font-family:var(--display) }
+.o-where { color: var(--weir); font-size:13px; font-family:var(--display) }
 
-.o-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--water-line); font-weight: 400; }
+.o-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--weir); font-weight: 400; }
 
 .o-strip {
   display: flex;
@@ -430,7 +421,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   margin: 11px 0 0;
 }
 
-.o-day { flex: 1 1 0; min-width: 0; border-radius: 1px; background: var(--day-dry); }
+.o-day { flex: 1 1 0; min-width: 0; border-radius: 1px; background: var(--dry); }
 .o-day--nodata { background: var(--day-nodata); }
 .o-day--recent { background: var(--amber); }
 .o-day--spill  { background: var(--oxide); }
@@ -481,7 +472,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: var(--water-line);
+  background: var(--weir);
   color: var(--sewage);
   overflow: hidden;
   cursor: pointer;
@@ -531,8 +522,8 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .splash-brand {
   position: absolute;
-  left: clamp(16px, 5vw, 88px);
-  bottom: clamp(18px, 6vh, 60px);
+  left: clamp(16px, 2vw, 88px);
+  bottom: clamp(18px, 2vh, 60px);
   margin: 0;
   z-index: 2;
   font-family: var(--display);

@@ -102,12 +102,12 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
 - **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
   `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
   drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
-  with a tab strip — **Timeline** (the `cards.js` list), **Guide** (how to read
-  the map and strip), **Safety** (leads with the water-quality disclaimer, then
-  the interpretation caveats), **Sources** (data provenance + CC BY attribution +
-  acknowledgements). Opens to Timeline; tabs are `role="tab"` with arrow-key nav;
-  the active tab is the URL hash (`#timeline` / `#guide` / `#safety` /
-  `#sources`). The Timeline tab leads with
+  with a tab strip — **Timeline** (the `cards.js` list), **About** (what this is,
+  how to read the map and strip, Friends of the River Frome), **Safety** (leads
+  with the water-quality disclaimer, then the interpretation caveats), **Sources**
+  (just Data + Map — provenance and the CC BY attribution). Opens to Timeline;
+  tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
+  (`#timeline` / `#about` / `#safety` / `#sources`). The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `#coverage`, then the `cards.js`
   list. **`paintCoverage` is temporary by design:** the strips are always 90 days
   wide but the record only reaches back to the first poll, so while it is

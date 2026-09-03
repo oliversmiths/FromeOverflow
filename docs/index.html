@@ -33,7 +33,7 @@
 </button>
 
 <button class="fab fab--menu" id="open-panel" aria-controls="panel"
-  aria-expanded="false" aria-label="Timeline, guide, safety and sources">
+  aria-expanded="false" aria-label="Timeline, about, safety and sources">
   <svg viewBox="0 0 21 48" aria-hidden="true">
     <path fill="currentColor" d="M13.248 7.04V0H20.288V7.04H13.248ZM6.4 44.16L7.104 44.8C8.256 44.032 12.224 40.448 14.464 37.888H17.024C14.336 40.96 9.408 46.016 6.528 48H2.688C0.96 46.848 0.832 44.16 2.176 40.576L9.728 20.352L9.024 19.712C8.512 20.16 6.72 21.888 2.56 26.88H0C4.224 21.248 7.872 17.536 10.24 16H14.08C14.848 16.32 15.744 17.152 15.744 18.56C15.744 19.712 15.488 20.864 14.72 22.784L6.4 44.16Z"/>
   </svg>
@@ -44,8 +44,8 @@
     <div class="tabs" role="tablist" aria-label="Panel sections">
       <button class="tab" type="button" role="tab" id="tab-timeline"
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
-      <button class="tab" type="button" role="tab" id="tab-guide" tabindex="-1"
-        aria-controls="tabpanel-guide" aria-selected="false">Guide</button>
+      <button class="tab" type="button" role="tab" id="tab-about" tabindex="-1"
+        aria-controls="tabpanel-about" aria-selected="false">About</button>
       <button class="tab" type="button" role="tab" id="tab-safety" tabindex="-1"
         aria-controls="tabpanel-safety" aria-selected="false">Safety</button>
       <button class="tab" type="button" role="tab" id="tab-sources" tabindex="-1"
@@ -62,13 +62,17 @@
     <div class="overflows" id="overflows"></div>
   </div>
 
-  <div class="panel-body prose" id="tabpanel-guide" role="tabpanel"
-    aria-labelledby="tab-guide" tabindex="0" hidden>
+  <div class="panel-body prose" id="tabpanel-about" role="tabpanel"
+    aria-labelledby="tab-about" tabindex="0" hidden>
     <h3>What this is</h3>
     <p>A single-town monitor of storm overflows on the River Frome and its tributaries around
       Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
       every 15 minutes and keeps its own history – the feed itself publishes only the current
       status.</p>
+    <p>An independent project by <a href="https://www.smiths.studio/" target="_blank"
+      rel="noopener">Smiths.Studio</a>, not affiliated with Wessex Water or the Environment
+      Agency. It covers the Frome catchment only and does not try to replace the national
+      trackers.</p>
 
     <h3>Reading the map</h3>
     <p>Each pin is an overflow, coloured by its state at the last check: red discharging
@@ -83,6 +87,12 @@
       nobody here was watching yet. A discharge can still appear inside the hatching: the
       first reading carries Wessex’s latest event, so that one spill is known even when the
       days around it are not.</p>
+
+    <h3>River Frome</h3>
+    <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome.
+      For more information and to get involved please visit
+      <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
+      of the River Frome</a>.</p>
   </div>
 
   <div class="panel-body prose" id="tabpanel-safety" role="tabpanel"
@@ -139,15 +149,6 @@
     <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
       target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Drawn as plain
       SVG – no tile service, no map library.</p>
-
-    <h3>This site</h3>
-    <p>An independent project by <a href="https://www.smiths.studio/" target="_blank"
-      rel="noopener">Smiths.Studio</a>, not affiliated with Wessex Water or the Environment
-      Agency. It covers the Frome catchment only and does not try to replace the national
-      trackers.</p>
-
-    <h3>River Frome</h3>
-    <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome. For more information and to get involved please visit <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends of the River Frome</a>.</p>
   </div>
 </aside>
 
@@ -248,8 +249,8 @@ function paintCoverage(data, now) {
   note.hidden = false;
 }
 
-// --- panel (one drawer, tabs: timeline / guide / safety / sources) ---
-const TABS = ['timeline', 'guide', 'safety', 'sources'];
+// --- panel (one drawer, tabs: timeline / about / safety / sources) ---
+const TABS = ['timeline', 'about', 'safety', 'sources'];
 const panel = $('panel');
 const openBtn = $('open-panel');
 const scrim = $('scrim');

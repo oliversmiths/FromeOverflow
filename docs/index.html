@@ -170,7 +170,7 @@ function paintStatus(data) {
   const n = (x) => `${x} overflow${x === 1 ? '' : 's'}`;
   let cls, text;
   if (live) {
-    [cls, text] = ['is-discharging', `${n(live)} discharging now`];
+    [cls, text] = ['is-discharging', `${n(live)} discharging right now`];
   } else if (recent) {
     [cls, text] = ['is-recent', `${n(recent)} recently discharged`];
   } else {

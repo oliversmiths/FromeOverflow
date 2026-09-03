@@ -557,11 +557,11 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
     line-height: 1.05;
   }
   .splash-img {
-    right: 50%;
-    top: auto;
-    bottom: clamp(76px, 18vh, 160px);
-    transform: translateX(50%);
-    width: min(72vw, 38vh);
+    right: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
   }
 }
 

@@ -181,7 +181,7 @@ body {
   /* left / top are set in px by placePopup() so it stays on screen near edges */
 }
 
-.map-popup h3 { margin: 0 0 4px; font-family: var(--display); font-weight: 400; font-size: 15px; }
+.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 15px; }
 .map-popup p { margin: 0 0 6px; }
 .map-popup a { color: var(--weir); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover { text-decoration: underline; }
@@ -209,7 +209,7 @@ body {
   position: fixed;
   right: 16px;
   bottom: 16px;
-  
+  font-family: var(--data);
   z-index: 15;
   display: flex;
   flex-wrap: wrap;
@@ -221,7 +221,7 @@ body {
   max-width: calc(100vw - 140px);
   background: #fff;
   border: 1px solid var(--hairline);
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .legend li { display: flex; align-items: center; gap: 7px; }
@@ -408,14 +408,14 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .o-head h3 {
   margin: 0;
-  font-family: var(--display);
+  font-family: var(--data);
   font-weight: 400;
   font-size: 16px;
   line-height: 1.3;
   color: var(--water-line);
 }
 
-.o-where { color: var(--water-line); font-size:13px; }
+.o-where { color: var(--water-line); font-size:13px; font-family:var(--display) }
 
 .o-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--water-line); font-weight: 400; }
 

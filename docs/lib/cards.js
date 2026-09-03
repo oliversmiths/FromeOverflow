@@ -41,8 +41,8 @@ export function renderCards(container, data) {
     heading.textContent = monitor.label;
     const where = document.createElement('span');
     where.className = 'o-where';
-    where.textContent = `into ${monitor.watercourse}`;
-    heading.append(document.createTextNode(' · '), where);
+    where.textContent = ` into ${monitor.watercourse}`;
+    heading.append(document.createTextNode(''), where);
     head.append(heading);
 
     const meta = document.createElement('p');

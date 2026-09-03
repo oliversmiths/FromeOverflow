@@ -437,8 +437,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   margin: 10px 0 0;
   padding: 10px 12px;
   border-left: 2px solid var(--sewage);
-  background: rgba(255, 255, 255, 0.09);
-  font-size: 13px;
+  font-size: 17px;
   line-height: 1.45;
   color: var(--sewage);
 }

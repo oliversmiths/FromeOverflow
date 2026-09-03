@@ -97,11 +97,30 @@
   <div class="panel-body prose" id="tabpanel-credits" role="tabpanel"
     aria-labelledby="tab-credits" tabindex="0" hidden>
     <h3>Data</h3>
-    <p><a href="https://www.wessexwater.co.uk/environment/water-quality/storm-overflows"
-      target="_blank" rel="noopener">Wessex Water</a> – the near real-time storm overflow
-      feed, checked every 15 minutes.<br>
-    <a href="https://environment.data.gov.uk/" target="_blank" rel="noopener">Environment
-      Agency</a> – regulator-verified annual figures.</p>
+    <p>Overflow activity comes from Wessex Water’s near real-time event duration
+      monitoring (EDM) feed – an ArcGIS feature service published to Water UK’s
+      <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub"
+      target="_blank" rel="noopener">National Storm Overflow Hub</a>. It carries only each
+      monitor’s current status, which is why this site checks it every 15 minutes and
+      keeps a history of its own.</p>
+
+    <p><a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
+      target="_blank" rel="noopener">Wessex Water Storm Overflow Activity</a> © Wessex Water,
+      licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+      rel="noopener">CC BY 4.0</a>. Used here filtered to the Frome catchment and rebuilt
+      into a day-by-day record.</p>
+
+    <p>Site names, receiving waterbody, overflow type, level of treatment and cause of
+      discharge come from a second Wessex Water layer,
+      <a href="https://data-wessexwater.opendata.arcgis.com/datasets/3ff7018195fd496da08e1009185d4600_0/explore"
+      target="_blank" rel="noopener">overflow context</a>. It changes about once a year, so
+      it is fetched by hand rather than polled.</p>
+
+    <p>Waterbody names follow the Environment Agency’s Water Framework Directive
+      catchments, and you can look one up in the EA’s
+      <a href="https://environment.data.gov.uk/catchment-planning/" target="_blank"
+      rel="noopener">Catchment Data Explorer</a>. No Environment Agency data is used
+      directly here, and none of these figures are regulator-verified.</p>
 
     <h3>Map</h3>
     <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
@@ -210,9 +229,8 @@ function paintCoverage(data, now) {
   if (depth >= data.window_days) { note.hidden = true; return; }
 
   note.textContent =
-    `This record only began on ${fmtDate(started)}, ` +
-    `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`}. ` +
-    'Hatched days are before it starts — they are not days without a discharge. ' +
+    `This record only began ` + `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`} `+ `on ${fmtDate(started)}. ` +
+    
     'Some older discharges do appear: Wessex publish their latest event with the ' +
     'first reading, so that single spill is known even though the days around it ' +
     'are not.';

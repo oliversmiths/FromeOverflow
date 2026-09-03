@@ -567,7 +567,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }
   /* .map-ctrl { display: none; } */
-  .legend { max-width: calc(100vw - 50vw); bottom: 14px; right: 14px; flex-direction: column; }
+  .legend { max-width: calc(100vw - 50vw); bottom: 46px; right: 14px; flex-direction: column; }
   .map-attr { bottom: 14px; }
   /* Four tabs plus the 75px close button — tighten so they fit a phone. */
   .panel-head { padding-left: 10px; }

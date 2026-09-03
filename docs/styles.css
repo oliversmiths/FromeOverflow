@@ -207,9 +207,9 @@ body {
 
 .legend {
   position: fixed;
-  left: 50%;
+  right: 16px;
   bottom: 16px;
-  transform: translateX(-50%);
+  
   z-index: 15;
   display: flex;
   flex-wrap: wrap;
@@ -451,10 +451,10 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .empty { padding: 24px; background: #fff; color: var(--ink); font-family: var(--display); font-size: 17px; }
 
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }
   .map-ctrl { display: none; }
-  .legend { max-width: calc(100vw - 32px); bottom: 74px; }
+  .legend { max-width: calc(100vw - 50vw); bottom: 14px; right: 14px; flex-direction: column; }
   .map-attr { bottom: 14px; }
 }
 

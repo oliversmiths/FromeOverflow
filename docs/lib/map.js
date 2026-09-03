@@ -39,8 +39,12 @@ const LABEL_ZOOM = { town: 1.1, village: 1.1, road: 0.55, suburb: 0.5, hamlet: 0
 const CROP_KM = { n: 13, s: 10, e: 6, w: 15 };
 
 export const LEGEND = [
-  ['discharging', 'Discharging now'],
-  ['recent', `Discharged in the last ${RECENT_HOURS}h`],
+  //['discharging', 'Discharging now'],
+  //['recent', `Discharged in the last ${RECENT_HOURS}h`],
+  //['dry', 'Not discharging'],
+  //['offline', 'No data / offline'],
+   ['discharging', 'Discharging now'],
+  ['recent', `Discharged recently`],
   ['dry', 'Not discharging'],
   ['offline', 'No data / offline'],
 ];
@@ -327,7 +331,6 @@ function drawMap(host, bm, monitors, now, initialZoom) {
 
   // --- popup ---
   let openM = null;
-  let popW = 0, popH = 0;   // measured once per open; content is fixed thereafter
 
   function openPopup(m) {
     openM = m;
@@ -337,39 +340,16 @@ function drawMap(host, bm, monitors, now, initialZoom) {
     close.setAttribute('aria-label', 'Close');
     close.addEventListener('click', (e) => { e.stopPropagation(); closePopup(); });
     pop.append(close, popup(m, now));
-    pop.hidden = false;
-    const r = pop.getBoundingClientRect();
-    popW = r.width;
-    popH = r.height;
     placePopup();
   }
   function closePopup() { openM = null; pop.hidden = true; }
-
-  // Sit the popup above the pin, centred; flip below if it would clip the top,
-  // then clamp so it never leaves the map — so an edge pin still gets a readable
-  // popup.
   function placePopup() {
     if (!openM) return;
     const { sx, sy, edge } = screenXY(projX(openM.lon), projY(openM.lat));
     if (edge && !SHOW_EDGE_MARKERS) { pop.hidden = true; return; }
     pop.hidden = false;
-
-    const [pw, ph] = size();
-    const px = sx * pw;
-    const py = sy * ph;
-    const M = 8;      // keep this far from the map edge
-    const GAP = 14;   // gap between pin and popup
-    const PIN = 10;   // pin half-height
-
-    let left = px - popW / 2;
-    let top = py - GAP - popH;
-    if (top < M) top = py + GAP + PIN;                    // no room above → below
-
-    left = Math.min(Math.max(left, M), Math.max(M, pw - popW - M));
-    top = Math.min(Math.max(top, M), Math.max(M, ph - popH - M));
-
-    pop.style.left = `${Math.round(left)}px`;
-    pop.style.top = `${Math.round(top)}px`;
+    pop.style.left = `${sx * 100}%`;
+    pop.style.top = `${sy * 100}%`;
   }
 
   // --- interaction: drag to pan, wheel / ± to zoom, two fingers to pinch ---

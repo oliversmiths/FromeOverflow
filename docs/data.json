@@ -1,5 +1,5 @@
 {
- "polled_at": 1788547526174,
+ "polled_at": 1788547855591,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -17,8 +17,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00062",
@@ -39,8 +38,7 @@
      "end": 1788145800000
     }
    ],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00120",
@@ -61,8 +59,7 @@
      "start": 1788423323862,
      "end": 1788426046794
     }
-   ],
-   "priorSpill": true
+   ]
   },
   {
    "id": "WXW00307",
@@ -78,8 +75,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00308",
@@ -95,8 +91,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00333",
@@ -112,8 +107,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00340",
@@ -129,8 +123,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00369",
@@ -146,8 +139,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": false
+   "offline": []
   },
   {
    "id": "WXW00401",
@@ -163,8 +155,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00402",
@@ -180,8 +171,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00420",
@@ -197,8 +187,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00453",
@@ -214,8 +203,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": false
+   "offline": []
   },
   {
    "id": "WXW00454",
@@ -231,8 +219,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00490",
@@ -248,8 +235,7 @@
    "since": 1788262043425,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00596",
@@ -265,8 +251,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00654",
@@ -287,8 +272,7 @@
      "end": 1788145560000
     }
    ],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00693",
@@ -304,8 +288,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": false
+   "offline": []
   },
   {
    "id": "WXW00709",
@@ -321,8 +304,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": false
+   "offline": []
   },
   {
    "id": "WXW00710",
@@ -338,8 +320,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": false
+   "offline": []
   },
   {
    "id": "WXW00711",
@@ -355,8 +336,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00788",
@@ -372,8 +352,7 @@
    "since": 1788262043425,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00805",
@@ -389,8 +368,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00816",
@@ -406,8 +384,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00818",
@@ -423,8 +400,7 @@
    "since": 1788262043425,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00880",
@@ -445,8 +421,7 @@
      "end": 1788144600000
     }
    ],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00934",
@@ -462,8 +437,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00935",
@@ -479,8 +453,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00936",
@@ -496,8 +469,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW00979",
@@ -513,8 +485,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01068",
@@ -535,8 +506,7 @@
      "start": 1788337834401,
      "end": 1788350444996
     }
-   ],
-   "priorSpill": true
+   ]
   },
   {
    "id": "WXW01156",
@@ -552,8 +522,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01185",
@@ -569,8 +538,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01187",
@@ -586,8 +554,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01242",
@@ -603,8 +570,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01243",
@@ -620,8 +586,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01245",
@@ -642,8 +607,7 @@
      "end": 1788144480000
     }
    ],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01272",
@@ -659,8 +623,7 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   },
   {
    "id": "WXW01297",
@@ -676,8 +639,7 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": [],
-   "priorSpill": true
+   "offline": []
   }
  ]
 }

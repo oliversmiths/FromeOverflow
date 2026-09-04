@@ -1,5 +1,5 @@
 {
- "polled_at": 1788512447850,
+ "polled_at": 1788512935061,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -16,12 +16,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1788012000000,
-     "end": 1788012360000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -38,10 +33,6 @@
    "since": 1788107728322,
    "status": 0,
    "events": [
-    {
-     "start": 1788046560000,
-     "end": 1788047280000
-    },
     {
      "start": 1788144600000,
      "end": 1788145800000
@@ -83,12 +74,7 @@
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788048240000,
-     "end": 1788048360000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -104,16 +90,7 @@
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788014760000,
-     "end": 1788015000000
-    },
-    {
-     "start": 1788014760020,
-     "end": 1788015000020
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -129,12 +106,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788012000000,
-     "end": 1788012720000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -182,12 +154,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788006060000,
-     "end": 1788006120000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -203,12 +170,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1782166380000,
-     "end": 1782166500000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -224,16 +186,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1787931120000,
-     "end": 1787931840000
-    },
-    {
-     "start": 1787994480000,
-     "end": 1787994600000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -265,12 +218,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1788012720000,
-     "end": 1788015720000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -302,16 +250,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1787220240000,
-     "end": 1787220360000
-    },
-    {
-     "start": 1787220240010,
-     "end": 1787220360010
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -328,10 +267,6 @@
    "since": 1788107728322,
    "status": 0,
    "events": [
-    {
-     "start": 1788012000000,
-     "end": 1788013560000
-    },
     {
      "start": 1788145080000,
      "end": 1788145560000
@@ -400,12 +335,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1788012120000,
-     "end": 1788012720000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -437,12 +367,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1787931840000,
-     "end": 1787932440000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -458,16 +383,7 @@
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788027120000,
-     "end": 1788036840000
-    },
-    {
-     "start": 1788027120020,
-     "end": 1788036840020
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -483,16 +399,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788262043425,
    "status": 0,
-   "events": [
-    {
-     "start": 1782154200000,
-     "end": 1782155280000
-    },
-    {
-     "start": 1782154200020,
-     "end": 1782155280020
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -509,10 +416,6 @@
    "since": 1788107728322,
    "status": 0,
    "events": [
-    {
-     "start": 1787931360000,
-     "end": 1787932320000
-    },
     {
      "start": 1788144240000,
      "end": 1788144600000
@@ -533,12 +436,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1782149280000,
-     "end": 1782149880000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -570,16 +468,7 @@
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788012240000,
-     "end": 1788016200000
-    },
-    {
-     "start": 1788012240090,
-     "end": 1788016200200
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -595,12 +484,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788027480000,
-     "end": 1788027600000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -637,16 +521,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1788007680000,
-     "end": 1788008160000
-    },
-    {
-     "start": 1788007680070,
-     "end": 1788008160070
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -678,16 +553,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1782148860000,
-     "end": 1782150480000
-    },
-    {
-     "start": 1782148860010,
-     "end": 1782150480010
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -703,12 +569,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1782149160000,
-     "end": 1782149400000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -724,12 +585,7 @@
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater.  At other times, the overflow discharges due to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [
-    {
-     "start": 1782150480000,
-     "end": 1782201000000
-    }
-   ],
+   "events": [],
    "offline": []
   },
   {
@@ -746,10 +602,6 @@
    "since": 1788107728322,
    "status": 0,
    "events": [
-    {
-     "start": 1788011760000,
-     "end": 1788013080000
-    },
     {
      "start": 1788144240000,
      "end": 1788144480000
@@ -786,12 +638,7 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [
-    {
-     "start": 1788011640000,
-     "end": 1788012840000
-    }
-   ],
+   "events": [],
    "offline": []
   }
  ]

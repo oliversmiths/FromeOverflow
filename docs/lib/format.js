@@ -146,16 +146,28 @@ export function mapStatusOf(monitor, now) {
  * right up to `now`, and so does an unfinished offline spell.
  */
 export function dayCells(monitor, now, days = 90) {
-  const midnight = new Date(now);
-  midnight.setHours(0, 0, 0, 0);
   const since = monitor.since ?? null;
   const events = monitor.events ?? [];
   const offline = monitor.offline ?? [];
   const cells = [];
 
-  for (let i = days - 1; i >= 0; i--) {
-    const start = midnight.getTime() - i * DAY;
-    const end = start + DAY;
+  // Local-midnight boundaries, one more than there are days so each cell can use
+  // the next edge as its end. Stepped with setDate rather than subtracting a
+  // fixed 24 hours: the day the clocks go back is 25 hours long, and a fixed
+  // offset would shift every earlier cell to 01:00–01:00 for the rest of the
+  // window — putting an event just after midnight in the wrong day.
+  const edges = [];
+  const walk = new Date(now);
+  walk.setHours(0, 0, 0, 0);
+  walk.setDate(walk.getDate() - (days - 1));
+  for (let i = 0; i <= days; i++) {
+    edges.push(walk.getTime());
+    walk.setDate(walk.getDate() + 1);
+  }
+
+  for (let i = 0; i < days; i++) {
+    const start = edges[i];
+    const end = edges[i + 1];
     let state;
 
     if (since != null && end <= since) {

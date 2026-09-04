@@ -155,7 +155,7 @@
 <div class="scrim" id="scrim"></div>
 
 <script type="module">
-import { DAY, fmtDate, fmtWhen, mapStatusOf } from './lib/format.js';
+import { DAY, fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
 import { renderCards } from './lib/cards.js';
 
@@ -241,16 +241,31 @@ function paintCoverage(data, now) {
   const starts = data.monitors.map((m) => m.since).filter((s) => s != null);
   if (!starts.length) { note.hidden = true; return; }
 
+  // Calendar days, not elapsed 24-hour periods. The first reading landed at
+  // 17:35, so a floor of (now - started) said "4 days" on the 5th calendar day
+  // — the strip counts local days, and the reader counts them off a calendar, so
+  // this has to as well. Round, not floor: an hour goes missing when the clocks
+  // change, which would otherwise lose a day for good after late October.
   const started = Math.min(...starts);
-  const depth = Math.floor((now - started) / DAY);
+  const depth = Math.round((midnightOn(now) - midnightOn(started)) / DAY);
   if (depth >= data.window_days) { note.hidden = true; return; }
 
+  const began = depth === 0
+    ? 'today'
+    : `${depth} day${depth === 1 ? '' : 's'} ago (or fewer)`;
+
   note.textContent =
-    `This record only began ` + `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`} `+ `on ${fmtDate(started)}. ` +
-    'Days before that are hatched: nothing is known about them either way, and ' +
-    'nothing here counts them — the totals and dates on each card cover only the ' +
-    'time this record has actually been running.';
+    `Each overflow below shows a rolling ${data.window_days} days, one bar per day. ` +
+    `Recording began ${began}, so earlier days are hatched in grey and the totals ` +
+    'count only what was recorded.';
   note.hidden = false;
+}
+
+/** Local midnight starting the day that contains `ms`. Honours BST/GMT. */
+function midnightOn(ms) {
+  const d = new Date(ms);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
 }
 
 // --- panel (one drawer, tabs: timeline / about / safety / sources) ---

@@ -243,8 +243,7 @@ function paintCoverage(data, now) {
   note.textContent =
     `This record only began ` + `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`} `+ `on ${fmtDate(started)}. ` +
     
-    'Some older discharges do appear: Wessex publish their latest event with the ' +
-    'first reading, so that single a spill is known even though the days around it are not.';
+    'Past days before record collecting began are displayed as hatched lines. Some older discharges do appear as Wessex Water publishes their latest event with the first reading, so that a single spill is known even though the days around it are not.';
   note.hidden = false;
 }
 

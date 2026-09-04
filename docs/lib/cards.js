@@ -20,10 +20,10 @@ const LOUPE =
 
 // Standalone status lines for the day tooltip (a coloured dot sits before each).
 const CELL_LABEL = {
-  nodata: 'Before recording began',
+  nodata: 'Before record began',
   dry: 'No discharge',
   offline: 'Monitor offline',
-  recent: 'Within 48h of a discharge',
+  recent: 'Within 48h of discharge',
   spill: 'Discharge recorded',
 };
 
@@ -87,7 +87,7 @@ export function renderCards(container, data, onSeeOnMap) {
       // that, rather than implying the whole day predates the record.
       const partial = monitor.since != null
         && cell.start <= monitor.since && monitor.since < cell.end;
-      if (partial) d.dataset.tipNote = 'Recording began part-way through this day';
+      if (partial) d.dataset.tipNote = 'Record began part-way through this day';
       strip.append(d);
     }
 

@@ -283,7 +283,13 @@ body {
   text-transform: uppercase;
 }
 
+/* Each row is coloured by state (`.legend--discharging` etc.), so the label
+   takes the colour and the dot rides on currentColor. */
 .legend li { display: flex; align-items: center; gap: 7px; }
+.legend--discharging { color: var(--oxide); }
+.legend--recent      { color: var(--amber); }
+.legend--dry         { color: var(--dry); }
+.legend--offline     { color: var(--silt); }
 
 .legend .mappin {
   position: static;
@@ -291,6 +297,7 @@ body {
   height: 13px;
   flex: none;
   transform: none;
+  background: currentColor;
 }
 
 /* Square, flush to the top-right corner — same 75px footprint as the panel's

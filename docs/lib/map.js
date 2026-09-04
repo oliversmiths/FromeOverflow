@@ -59,8 +59,9 @@ export const LEGEND = [
 export function renderLegend(ul) {
   for (const [key, text] of LEGEND) {
     const li = document.createElement('li');
+    li.className = `legend--${key}`;   // colours the dot and the label together
     const dot = document.createElement('span');
-    dot.className = `mappin mappin--${key}`;
+    dot.className = 'mappin';
     li.append(dot, document.createTextNode(text));
     ul.append(li);
   }

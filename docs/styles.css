@@ -438,6 +438,19 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .panel-body[hidden] { display: none; }
 
+/* About tab: column layout so .credit can be pushed to the foot with margin-top:
+   auto — it sits at the bottom when the content is short, and just follows the
+   text when it's long enough to scroll. */
+#tabpanel-about { display: flex; flex-direction: column; }
+
+.credit {
+  margin-top: auto;
+  padding-top: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+.credit a { color: var(--sewage); }
+
 .stamp { font-family: var(--data); font-size: 11px; color:  rgba(255, 255, 255, 0.62); margin: 0 0 4px; }
 .standfirst { margin: 8px 0 20px; color: var(--sewage); font-size: 18px; }
 

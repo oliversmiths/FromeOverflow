@@ -83,9 +83,10 @@
       a day: red where it discharged, amber for the 48 hours after, green when it was clear,
       dark grey where the monitor was offline, hatched before this record began.</p>
     <p>Dark grey and hatched are both gaps, not clear days – the sensor sent nothing, or
-      nobody here was watching yet. Nothing is shown or counted inside the hatching: while
-      this record is younger than 90 days, each card says the date it starts from, and its
-      totals cover only that period.</p>
+      nobody here was watching yet. Nothing is shown or counted inside the hatching. Where
+      an overflow has been watched for less than 90 days – at the start of this record, or
+      because it was added later – its card says the date it starts from, and its figures
+      cover only that period.</p>
 
     <h3>River Frome</h3>
     <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome.
@@ -226,11 +227,15 @@ function paintStatus(data) {
   paintCoverage(data, now);
 }
 
-// The strips are always 90 days wide, but this record only goes back as far as
-// the first poll. While it is shallower than the window, say so — most of every
-// strip is "we weren't watching yet", and hatching alone doesn't explain the
-// discharges that show up before the record starts. Once the history catches up
-// with the window this note stops appearing on its own.
+// TEMPORARY — the one piece here that really does retire. It reads the *site's*
+// earliest record, so once the oldest monitor passes window_days (~28 Nov 2026)
+// this note never shows again and the function can be deleted. Until then most
+// of every strip is "we weren't watching yet", which is worth saying once at the
+// top rather than on all 38 cards.
+//
+// The per-monitor equivalents — windowPhrase, dayCells' hatching, exportJson's
+// event filter — are NOT temporary: they key off each monitor's own `since`, so
+// a monitor added years from now gets the same treatment for its first 90 days.
 function paintCoverage(data, now) {
   const note = $('coverage');
   const starts = data.monitors.map((m) => m.since).filter((s) => s != null);

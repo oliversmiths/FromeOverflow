@@ -78,9 +78,12 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   a day before the monitor's `since` is unknown and stays unknown, whatever the
   feed claims about it. `offlineMs` totals a monitor's offline time; `rankByTotal`
   clips each spill to `since`, so a total never counts time the record doesn't
-  cover. **`windowPhrase` is temporary** — while a monitor's record is shallower
-  than `window_days` the copy says "since 30 Aug 2026" instead of "in the last 90
-  days"; it reverts on its own and the header comment says how to delete it.
+  cover. **`windowPhrase` is permanent, not a launch-window patch** — while a
+  monitor's *own* record is shallower than `window_days` the copy says "since 30
+  Aug 2026" instead of "in the last 90 days". It reads per-monitor `since`, so a
+  monitor added later (a new Wessex outfall, or an extended `PIN_TO_IDS`) gets the
+  same honesty for its first 90 days and switches over by itself. Only
+  `paintCoverage` in index.html is temporary.
 - **`docs/lib/cards.js`** — `renderCards(container, data, onSeeOnMap)`: the
   per-monitor list. One card each (ranked by total discharge time) with a
   `statusOf` badge, a summary line, and a GitHub-status-style 90-day strip — one

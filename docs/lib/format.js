@@ -82,15 +82,19 @@ export function statusOf(status) {
   return { key: 'dry', text: 'Dry' };
 }
 
-// ---------------------------------------------------------------------------
-// TEMPORARY — remove once the record is `windowDays` deep (about 28 Nov 2026).
-//
-// The strips and the popup both describe a 90-day window, but the record only
-// reaches back to a monitor's first reading. Until those match, "in the last 90
-// days" overstates what is known, so the copy names the date the record actually
-// starts instead. To retire this: delete the function and inline
-// `in the last ${windowDays} days` at its call sites in cards.js and map.js.
-// ---------------------------------------------------------------------------
+/**
+ * How to describe the period a monitor's figures cover: "in the last 90 days"
+ * once its record is that deep, otherwise "since 30 Aug 2026".
+ *
+ * **Keep this permanently.** It reads the monitor's *own* `since`, not the
+ * site's, so it is not just a launch-window patch: any monitor added later —
+ * Wessex commission a new outfall, or you extend `PIN_TO_IDS` — starts its own
+ * record from scratch, and for its first 90 days "in the last 90 days" would
+ * claim a history nobody has. It switches over per monitor, on its own.
+ *
+ * `dayCells` (hatching before `since`) and `exportJson`'s event filter handle
+ * the same case the same way, for the same reason.
+ */
 export function windowPhrase(monitor, windowDays, now) {
   const started = monitor?.since;
   if (started == null || now - started >= windowDays * DAY) {

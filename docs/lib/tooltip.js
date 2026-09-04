@@ -22,8 +22,9 @@
  * scroll rather than trying to track the target.
  */
 
-const EDGE = 8;    // keep this clear of the viewport edge
-const GAP = 8;     // between the target and the tooltip
+const EDGE = 14;   // clearance from the viewport edge
+const GAP = 14;    // between the target and the tooltip — tune for how the
+                   // now-tall tooltip sits against the strip and the card above
 
 let tip = null;
 let showing = null;
@@ -71,10 +72,12 @@ function build(el, d) {
     el.classList.add('tip--rows');
     for (const [cls, text, state] of rows) {
       const row = document.createElement('div');
-      row.className = cls;
+      // `tip-status--dry` etc. colours the whole row; the dot rides on
+      // currentColor, so text and dot always match.
+      row.className = state ? `${cls} ${cls}--${state}` : cls;
       if (state) {
         const dot = document.createElement('span');
-        dot.className = `tip-dot tip-dot--${state}`;
+        dot.className = 'tip-dot';
         row.append(dot);
       }
       row.append(text);

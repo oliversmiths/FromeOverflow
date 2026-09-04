@@ -554,7 +554,6 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   background: none;
   font: inherit;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--silt);
   cursor: pointer;
 }
@@ -570,12 +569,12 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .tip {
   position: fixed;
   z-index: 60;
-  max-width: min(260px, calc(100vw - 16px));
+  max-width: min(300px, calc(100vw - 16px));
   background: var(--chalk);
   border: 1px solid var(--weir);
   color: var(--weir);
   font-family: var(--data);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.35;
   pointer-events: none;   /* never let it swallow the hover that opened it */
 }
@@ -585,22 +584,28 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
    each row, with a hairline between them so date / status / caveat read apart. */
 .tip:not(.tip--rows) { padding: 6px 9px; }
 .tip--rows > * { padding: 6px 10px; }
-.tip--rows > * + * { border-top: 1px solid var(--hairline); }
+.tip--rows > * + * { border-top: 1px solid var(--weir); }
 
-.tip-date { font-family: var(--body); font-size: 12px; }
-
-.tip-status { display: flex; align-items: center; gap: 7px; }
+/* Never wraps — it sets the tooltip's minimum width. Coloured per state, with
+   the dot riding on currentColor so text and dot can't drift apart. */
+.tip-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  color: var(--dry);        /* default: a plain dry day */
+}
+.tip-status--spill   { color: var(--oxide); }
+.tip-status--recent  { color: var(--amber); }
+.tip-status--offline { color: var(--silt); }
+.tip-status--nodata  { color: var(--silt); }
 .tip-dot {
   flex: none;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--dry);   /* default; --state overrides below */
+  background: currentColor;
 }
-.tip-dot--spill   { background: var(--oxide); }
-.tip-dot--recent  { background: var(--amber); }
-.tip-dot--offline { background: var(--day-offline); }
-.tip-dot--nodata  { background: var(--day-nodata-line); }
 
 .tip-note { color: var(--silt); }
 

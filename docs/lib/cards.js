@@ -8,8 +8,8 @@
  */
 
 import {
-  dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, statusOf,
-  windowPhrase,
+  dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, recordIsYoung,
+  statusOf, windowPhrase,
 } from './format.js';
 
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
@@ -26,6 +26,32 @@ const CELL_LABEL = {
   recent: 'Within 48h of discharge',
   spill: 'Discharge recorded',
 };
+
+/**
+ * The `.o-meta` line as `.o-meta-item` spans joined by `.o-meta-sep` dots,
+ * rather than one text node — so CSS can wrap and hide individual pieces
+ * (`o-meta.textContent = bits.join(' · ')` can't target "just this separator").
+ * `lastIndex` marks the one item allowed to drop to its own line on a narrow
+ * card; -1 if none should.
+ */
+function metaRow(bits, lastIndex) {
+  const frag = document.createDocumentFragment();
+  bits.forEach((text, i) => {
+    const isLast = i === lastIndex;
+    if (i > 0) {
+      const sep = document.createElement('span');
+      sep.className = isLast ? 'o-meta-sep o-meta-sep--last' : 'o-meta-sep';
+      sep.setAttribute('aria-hidden', 'true');
+      sep.textContent = '·';
+      frag.append(sep);
+    }
+    const item = document.createElement('span');
+    item.className = isLast ? 'o-meta-item o-meta-item--last' : 'o-meta-item';
+    item.textContent = text;
+    frag.append(item);
+  });
+  return frag;
+}
 
 export function renderCards(container, data, onSeeOnMap) {
   const now = data.polled_at;
@@ -46,7 +72,7 @@ export function renderCards(container, data, onSeeOnMap) {
     heading.textContent = monitor.label;
     const where = document.createElement('span');
     where.className = 'o-where';
-    where.textContent = ` into ${monitor.watercourse}`;
+    where.textContent = ` ${monitor.watercourse}`;
     heading.append(document.createTextNode(''), where);
     head.append(heading);
 
@@ -54,16 +80,23 @@ export function renderCards(container, data, onSeeOnMap) {
     // part of the window, so the offline total rides alongside it.
     const dark = offlineMs(monitor, now);
     const window = windowPhrase(monitor, data.window_days, now);
+    // "(when recording began)" only when that's actually true — Wessex hand over
+    // their latest event with the first reading, so most zero-event monitors are
+    // hiding a real spill from just before the record starts (`priorSpill`), and
+    // saying it began clean would overstate what "no discharge" here means.
+    const clean = !runs && recordIsYoung(monitor, data.window_days, now) && !monitor.priorSpill;
     const bits = runs
       ? [`${runs} discharge${runs === 1 ? '' : 's'} ${window}`,
          `${fmtDuration(monitor.total)} total`,
          `last was ${fmtWhen(last.start, now)}`]
-      : [`no discharge ${window}`];
+      : [`no discharge ${window}${clean ? ' (when recording began)' : ''}`];
     if (dark > 0) bits.push(`offline for ${fmtDuration(dark)}`);
 
     const meta = document.createElement('p');
     meta.className = 'o-meta';
-    meta.textContent = bits.join(' · ');
+    // "last was …" (index 2, only when there are discharges to report) gets the
+    // wrap-to-its-own-line treatment in CSS; every other separator is plain.
+    meta.append(metaRow(bits, runs ? 2 : -1));
 
     const cells = dayCells(monitor, now, data.window_days);
     const tally = cells.reduce((t, c) => (t[c.state]++, t),

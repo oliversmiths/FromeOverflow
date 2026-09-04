@@ -512,7 +512,27 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .o-where {  }
 
-.o-meta { margin: 3px 0 0; font-size: 11px; color: var(--weir); font-weight: 400; }
+.o-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--weir);
+  font-weight: 400;
+}
+.o-meta-item { min-width: 0; }   /* lets a long item wrap instead of overflowing */
+.o-meta-sep { opacity: 0.5; }
+
+/* "last was …" drops to its own line rather than trail a lone "·" at the start
+   of a wrapped line: hidden separator + a flex item forced to full width, so it
+   can't share a row with anything before it. Untouched above this width, where
+   the row is usually wide enough for all three items anyway. */
+@media (max-width: 640px) {
+  .o-meta-sep--last  { display: none; }
+  .o-meta-item--last { flex-basis: 100%; }
+}
 
 .o-strip {
   display: flex;

@@ -83,6 +83,16 @@ export function statusOf(status) {
 }
 
 /**
+ * True while a monitor's own record is shallower than `windowDays` — the shared
+ * condition behind `windowPhrase`, so a caller that needs to know *which* phrase
+ * applies (not just read it) doesn't re-implement the check.
+ */
+export function recordIsYoung(monitor, windowDays, now) {
+  const started = monitor?.since;
+  return started != null && now - started < windowDays * DAY;
+}
+
+/**
  * How to describe the period a monitor's figures cover: "in the last 90 days"
  * once its record is that deep, otherwise "since 30 Aug 2026".
  *
@@ -96,11 +106,9 @@ export function statusOf(status) {
  * the same case the same way, for the same reason.
  */
 export function windowPhrase(monitor, windowDays, now) {
-  const started = monitor?.since;
-  if (started == null || now - started >= windowDays * DAY) {
-    return `in the last ${windowDays} days`;
-  }
-  return `since ${fmtDate(started)}`;
+  return recordIsYoung(monitor, windowDays, now)
+    ? `since ${fmtDate(monitor.since)}`
+    : `in the last ${windowDays} days`;
 }
 
 /** A discharge that ended within this long counts as "recent" on the map. */

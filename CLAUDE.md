@@ -91,7 +91,16 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
   450px wide, shrinking below that. When `offlineMs` is non-zero the summary line
   appends "offline for …" — "no discharge recorded" means less when part of the
-  record is missing. Each bar carries the structured `data-tip-*` attributes, not
+  record is missing. When there are no discharges and the record is still young
+  (`recordIsYoung`), the line adds "(when recording began)" — **unconditionally,
+  not gated on whether an earlier discharge is hidden off-page.** Its job is to
+  disambiguate what the cited date *means*: read plainly, "no discharge since 30
+  Aug 2026" sounds like ordinary English for "it last happened around then",
+  which the exported `events` (filtered to the monitor's own record — see below)
+  can't rule out. The parenthetical says the date is when *we* started watching,
+  which is true regardless of what Wessex's own history holds further back —
+  so it always applies, not only for monitors that happen to have no earlier
+  history at all. Each bar carries the structured `data-tip-*` attributes, not
   `title`.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
   anything with a `data-tip*` attribute, delegated from `document`. Two forms:

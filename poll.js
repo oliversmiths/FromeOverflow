@@ -413,14 +413,6 @@ async function exportJson(db, rows, polledAt) {
       AND (end_ms IS NULL OR end_ms >= ?)
     ORDER BY start_ms`);
 
-  // A monitor can show zero *published* events while still having a real spill
-  // hidden just before its record starts (see above) — "no discharge" is then
-  // true only of the window we can show, not of the outfall's whole history.
-  // exportJson uses this to gate copy that implies the latter, e.g. "(when
-  // recording began)".
-  const priorSpillFor = db.prepare(
-    'SELECT 1 FROM events WHERE monitor_id = ? AND end_ms < ? LIMIT 1');
-
   // Overlap, not start-within: a spell that began before the window but ran into
   // it still belongs on the strip.
   const offlineFor = db.prepare(`
@@ -456,7 +448,6 @@ async function exportJson(db, rows, polledAt) {
         .map((e) => ({ start: e.start_ms, end: e.end_ms })),
       offline: offlineFor.all(m.id, cutoff)
         .map((o) => ({ start: o.start_ms, end: o.end_ms })),
-      priorSpill: !!priorSpillFor.get(m.id, m.first_seen ?? 0),
     }));
 
   await mkdir(dirname(JSON_PATH), { recursive: true });

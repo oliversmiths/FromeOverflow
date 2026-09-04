@@ -131,7 +131,7 @@ export function mapStatusOf(monitor, now) {
 
 /**
  * One cell per day for the last `days` days (oldest first) — the data behind
- * the per-monitor 90-day strip on the page. Each cell is `{ start, state }`,
+ * the per-monitor 90-day strip on the page. Each cell is `{ start, end, state }`,
  * `start` being the local-midnight epoch ms of that day and `state` one of:
  *   'nodata'  – the day is before this monitor's first reading
  *   'spill'   – a discharge overlapped the day
@@ -189,7 +189,7 @@ export function dayCells(monitor, now, days = 90) {
     } else {
       state = 'dry';
     }
-    cells.push({ start, state });
+    cells.push({ start, end, state });
   }
   return cells;
 }

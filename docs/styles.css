@@ -564,6 +564,24 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .empty { padding: 24px; background: #fff; color: var(--ink); font-family: var(--body); font-size: 17px; }
 
+/* Shared tooltip for [data-tip] — replaces the native title, which is slow,
+   unstyleable and invisible on touch. lib/tooltip.js sets left/top in px,
+   clamped to the viewport, so a bar at either edge of the strip still reads. */
+.tip {
+  position: fixed;
+  z-index: 60;
+  max-width: min(260px, calc(100vw - 16px));
+  padding: 6px 9px;
+  background: var(--chalk);
+  border: 1px solid var(--weir);
+  color: var(--weir);
+  font-family: var(--data);
+  font-size: 11px;
+  line-height: 1.35;
+  pointer-events: none;   /* never let it swallow the hover that opened it */
+}
+.tip[hidden] { display: none; }
+
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }
   /* .map-ctrl { display: none; } */

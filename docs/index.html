@@ -158,6 +158,7 @@
 import { DAY, fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
 import { renderCards } from './lib/cards.js';
+import { initTooltips } from './lib/tooltip.js';
 
 // Fraction of the fully-zoomed-out view to open on. Opens on the town and its
 // immediate surrounds (~6 km); pan/zoom out reaches the Mells and the
@@ -341,6 +342,7 @@ try {
   if (!res.ok) throw new Error(String(res.status));
   const data = await res.json();
 
+  initTooltips();
   paintStatus(data);
   renderLegend($('legend'));
   const map = buildMap($('overflow-map'), data, { initialZoom: INITIAL_ZOOM });

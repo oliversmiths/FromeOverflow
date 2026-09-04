@@ -78,12 +78,13 @@ export function renderCards(container, data, onSeeOnMap) {
     for (const cell of cells) {
       const d = document.createElement('span');
       d.className = cell.state === 'dry' ? 'o-day' : `o-day o-day--${cell.state}`;
-      // A discharge can sit before our own record starts — Wessex hand over their
-      // latest event with the first reading. Say so, or it implies we were
-      // watching the whole surrounding stretch.
-      const early = monitor.since != null && cell.start < monitor.since;
-      d.title = `${fmtDate(cell.start)} — ${CELL_LABEL[cell.state]}` +
-        (early && cell.state !== 'nodata' ? ' (before this record began)' : '');
+      // Exactly one day per monitor is only *partly* covered: the one recording
+      // started during. It is not a `nodata` day — we watched some of it — so say
+      // that, rather than implying the whole day predates the record.
+      const partial = monitor.since != null
+        && cell.start <= monitor.since && monitor.since < cell.end;
+      d.dataset.tip = `${fmtDate(cell.start)} — ${CELL_LABEL[cell.state]}` +
+        (partial ? ' (recording began part-way through this day)' : '');
       strip.append(d);
     }
 

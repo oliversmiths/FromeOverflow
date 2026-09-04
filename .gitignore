@@ -14,5 +14,10 @@ npm-debug.log*
 docs/_*.html
 docs/_*.json
 
-# NOTE: overflows.db and docs/*.json are generated but *committed on purpose*
-# (the repo is the database; the GitHub Action commits new readings back).
+# The database lives on the orphan `db` branch, not on main — it is rewritten
+# every poll, and keeping its history here grew .git without bound. Fetch it with:
+#   git fetch origin db && git show origin/db:overflows.db > overflows.db
+overflows.db
+
+# NOTE: docs/data.json IS committed on purpose — the Action commits each reading
+# back to main, and archive/*.sql.gz is the permanent weekly record.

@@ -86,6 +86,12 @@ const WATERCOURSES = [
 
 const EXPORT_DAYS = 90;
 
+// How long the raw poll log is kept. `events` and `offline` are the permanent
+// record and are never pruned; `snapshots` exists only so a recent stretch can
+// be re-read with better logic, and it is ~99% of the database by size. Raising
+// this costs about 3.4 MB per extra 10 days at the current cadence.
+const SNAPSHOT_DAYS = 30;
+
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(ROOT, 'overflows.db');
 const JSON_PATH = join(ROOT, 'docs', 'data.json');
@@ -119,6 +125,19 @@ CREATE TABLE IF NOT EXISTS events (
   PRIMARY KEY (monitor_id, start_ms)
 );
 
+-- Offline spells, shaped exactly like events. Materialised here rather than
+-- re-derived from snapshots on every export, so that snapshots can be pruned
+-- without losing the record of when a monitor was dark.
+CREATE TABLE IF NOT EXISTS offline (
+  monitor_id   TEXT NOT NULL,
+  start_ms     INTEGER NOT NULL,
+  end_ms       INTEGER,         -- NULL while still offline
+  PRIMARY KEY (monitor_id, start_ms)
+);
+
+-- The raw poll log. Kept only as a short recovery buffer (SNAPSHOT_DAYS) — the
+-- permanent record lives in events + offline, which are tiny. Almost every row
+-- here is identical to the one before it, so this is where all the bulk is.
 CREATE TABLE IF NOT EXISTS snapshots (
   polled_at       INTEGER NOT NULL,
   monitor_id      TEXT NOT NULL,
@@ -156,6 +175,82 @@ function migrate(db) {
       db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
     }
   }
+
+  // One-off: `offline` used to be derived from the snapshot log on every export.
+  // Now that snapshots are pruned, the spells have to be materialised before the
+  // raw rows behind them are dropped. Runs once — after this the table is
+  // non-empty and `store` maintains it.
+  const haveSpans = db.prepare('SELECT 1 FROM offline LIMIT 1').get();
+  const haveRawOffline = db.prepare('SELECT 1 FROM snapshots WHERE status = -1 LIMIT 1').get();
+  if (!haveSpans && haveRawOffline) {
+    const n = backfillOffline(db);
+    console.log(`  recovered ${n} offline spell(s) from the snapshot log`);
+  }
+}
+
+// Two offline readings this far apart are treated as separate spells. Only
+// needed for rows written before `status_start_ms` existed; generous against the
+// 15-min cadence because GitHub's own schedule is unreliable.
+const OFFLINE_GAP_MS = 90 * MINUTE;
+
+/**
+ * One-off rebuild of the `offline` table from the raw snapshot log.
+ *
+ * Wessex only ever describe *discharges* in `LatestEventStart`/`LatestEventEnd`
+ * — those stay frozen on the last spill while a monitor is offline. An offline
+ * spell is visible only as a run of `Status = -1` readings, so this stitches
+ * those back into `{start, end}` spans. `status_start_ms` gives the exact
+ * transition and groups a run; rows written before that column existed have NULL
+ * and fall back to poll timestamps split on `OFFLINE_GAP_MS`.
+ */
+function backfillOffline(db) {
+  const readings = db.prepare(`
+    SELECT polled_at, status_start_ms FROM snapshots
+    WHERE monitor_id = ? AND status = -1
+    ORDER BY polled_at`);
+
+  const nextClear = db.prepare(`
+    SELECT polled_at, status_start_ms FROM snapshots
+    WHERE monitor_id = ? AND polled_at > ? AND status IS NOT -1
+    ORDER BY polled_at LIMIT 1`);
+
+  const insert = db.prepare(
+    'INSERT OR IGNORE INTO offline (monitor_id, start_ms, end_ms) VALUES (?, ?, ?)');
+
+  let spans = 0;
+  for (const { id } of db.prepare('SELECT id FROM monitors').all()) {
+    const runs = [];
+    for (const r of readings.all(id)) {
+      const open = runs.at(-1);
+      const continues = open && (
+        r.status_start_ms != null && open.statusStart != null
+          ? r.status_start_ms === open.statusStart
+          : r.polled_at - open.lastAt <= OFFLINE_GAP_MS);
+      if (continues) open.lastAt = r.polled_at;
+      else runs.push({ statusStart: r.status_start_ms, firstAt: r.polled_at, lastAt: r.polled_at });
+    }
+
+    for (const run of runs) {
+      const clear = nextClear.get(id, run.lastAt);
+      insert.run(
+        id,
+        run.statusStart ?? run.firstAt,
+        clear ? (clear.status_start_ms ?? clear.polled_at) : null);
+      spans += 1;
+    }
+  }
+  return spans;
+}
+
+/**
+ * Drop raw poll rows past the retention window. `events` and `offline` are the
+ * permanent record and are never touched. No VACUUM: deletes free pages that the
+ * next inserts reuse, so the file settles at a steady size on its own.
+ */
+function pruneSnapshots(db, polledAt) {
+  return db
+    .prepare('DELETE FROM snapshots WHERE polled_at < ?')
+    .run(polledAt - SNAPSHOT_DAYS * DAY).changes;
 }
 
 /** node:sqlite rejects `undefined`, which ArcGIS hands us for absent fields. */
@@ -248,6 +343,15 @@ function store(db, rows, polledAt) {
     ON CONFLICT(monitor_id, start_ms) DO UPDATE SET
       end_ms = COALESCE(excluded.end_ms, events.end_ms)`);
 
+  // Offline is a status, not an event: Wessex never put it in LatestEventStart.
+  // `StatusStart` is the exact moment the current status began, so it both opens
+  // a spell and — read from the *next* status — closes it.
+  const openOffline = db.prepare(
+    'INSERT OR IGNORE INTO offline (monitor_id, start_ms, end_ms) VALUES (?, ?, NULL)');
+
+  const closeOffline = db.prepare(
+    'UPDATE offline SET end_ms = ? WHERE monitor_id = ? AND end_ms IS NULL AND start_ms <> ?');
+
   let fresh = 0;
 
   db.exec('BEGIN');
@@ -262,6 +366,16 @@ function store(db, rows, polledAt) {
       recordSnapshot.run(
         polledAt, id, val(row.Status), val(row.StatusStart),
         val(row.LatestEventStart), val(row.LatestEventEnd));
+
+      // Track the offline spell first — it has to happen even for a monitor with
+      // no event history at all, which the `continue` below would skip.
+      const since = row.StatusStart ?? polledAt;
+      if (row.Status === -1) {
+        closeOffline.run(since, id, since);   // a *different* spell was left open
+        openOffline.run(id, since);
+      } else {
+        closeOffline.run(since, id, 0);       // 0 never matches a real start
+      }
 
       const start = row.LatestEventStart;
       if (start == null) continue;
@@ -284,55 +398,6 @@ function store(db, rows, polledAt) {
 
 // --- Exporting -------------------------------------------------------------
 
-// Two offline readings this far apart are treated as separate spells. Only used
-// for rows written before `status_start_ms` existed; generous against the 15-min
-// cadence because GitHub's own schedule is unreliable.
-const OFFLINE_GAP_MS = 90 * MINUTE;
-
-/**
- * Rebuilds a monitor's offline spells from the snapshot log.
- *
- * Wessex only ever describe *discharges* in `LatestEventStart`/`LatestEventEnd`
- * — those stay frozen on the last spill while a monitor is offline. An offline
- * spell is only visible as a run of `Status = -1` readings, so we stitch those
- * back into `{ start, end }` spans shaped like events. `status_start_ms` gives
- * the exact transition; rows written before that column existed have NULL, and
- * fall back to poll timestamps split on `OFFLINE_GAP_MS`. A spell still running
- * at the latest poll gets `end: null`, exactly like an ongoing discharge.
- */
-function offlineReader(db) {
-  const readings = db.prepare(`
-    SELECT polled_at, status_start_ms FROM snapshots
-    WHERE monitor_id = ? AND status = -1 AND polled_at >= ?
-    ORDER BY polled_at`);
-
-  const nextClear = db.prepare(`
-    SELECT polled_at, status_start_ms FROM snapshots
-    WHERE monitor_id = ? AND polled_at > ? AND status IS NOT -1
-    ORDER BY polled_at LIMIT 1`);
-
-  return function spansFor(id, cutoff) {
-    const runs = [];
-    for (const r of readings.all(id, cutoff)) {
-      const open = runs.at(-1);
-      const continues = open && (
-        r.status_start_ms != null && open.statusStart != null
-          ? r.status_start_ms === open.statusStart
-          : r.polled_at - open.lastAt <= OFFLINE_GAP_MS);
-      if (continues) open.lastAt = r.polled_at;
-      else runs.push({ statusStart: r.status_start_ms, firstAt: r.polled_at, lastAt: r.polled_at });
-    }
-
-    return runs.map((run) => {
-      const clear = nextClear.get(id, run.lastAt);
-      return {
-        start: run.statusStart ?? run.firstAt,
-        end: clear ? (clear.status_start_ms ?? clear.polled_at) : null,
-      };
-    });
-  };
-}
-
 async function exportJson(db, rows, polledAt) {
   const liveStatus = new Map(rows.map((r) => [String(r.Id), r.Status]));
   const cutoff = polledAt - EXPORT_DAYS * DAY;
@@ -342,7 +407,12 @@ async function exportJson(db, rows, polledAt) {
     WHERE monitor_id = ? AND start_ms >= ?
     ORDER BY start_ms`);
 
-  const offlineFor = offlineReader(db);
+  // Overlap, not start-within: a spell that began before the window but ran into
+  // it still belongs on the strip.
+  const offlineFor = db.prepare(`
+    SELECT start_ms, end_ms FROM offline
+    WHERE monitor_id = ? AND (end_ms IS NULL OR end_ms >= ?)
+    ORDER BY start_ms`);
 
   // Only publish monitors the filter has matched recently. A monitor that drops
   // out — because you narrowed the catchment, or Wessex stopped listing it —
@@ -370,7 +440,8 @@ async function exportJson(db, rows, polledAt) {
       status: liveStatus.get(m.id) ?? null,
       events: eventsFor.all(m.id, cutoff)
         .map((e) => ({ start: e.start_ms, end: e.end_ms })),
-      offline: offlineFor(m.id, cutoff),
+      offline: offlineFor.all(m.id, cutoff)
+        .map((o) => ({ start: o.start_ms, end: o.end_ms })),
     }));
 
   await mkdir(dirname(JSON_PATH), { recursive: true });
@@ -404,6 +475,7 @@ async function main() {
   migrate(db);
 
   const fresh = store(db, local, polledAt);
+  const dropped = pruneSnapshots(db, polledAt);
   const count = await exportJson(db, local, polledAt);
   db.close();
 
@@ -417,6 +489,7 @@ async function main() {
     `  ${discharging.length} discharging` +
     (ongoing.length ? ` (longest running ${fmtDuration(Math.max(...ongoing))})` : '') +
     `, ${offline} offline, ${fresh} new spill${fresh === 1 ? '' : 's'} recorded`);
+  if (dropped) console.log(`  pruned ${dropped} snapshot row(s) past ${SNAPSHOT_DAYS} days`);
   console.log(`  wrote docs/data.json (${count} monitors)`);
 }
 

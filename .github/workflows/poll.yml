@@ -25,21 +25,50 @@ jobs:
         with:
           node-version: "24"
 
+      # The database lives on the orphan `db` branch, not on main. Committing it
+      # to main meant every reading was a permanent copy of a growing binary,
+      # which grew .git without bound. The branch is force-pushed to a single
+      # commit each poll, so it never accumulates history.
+      - name: Restore the database
+        run: |
+          if git fetch --depth=1 --quiet origin db 2>/dev/null; then
+            git show FETCH_HEAD:overflows.db > overflows.db
+            echo "Restored $(du -h overflows.db | cut -f1) from the db branch."
+          else
+            echo "::warning::No db branch — poll.js will start a fresh database."
+          fi
+
       # No install step — poll.js has no dependencies.
       - name: Fetch a reading
         run: node poll.js
 
-      - name: Commit the new reading
+      # `snapshots` is pruned to 30 days, so the permanent record is monitors +
+      # events + offline. That dumps to a couple of KB gzipped, so a weekly copy
+      # on main is a cheap, public, forkable archive — and the recovery path if a
+      # force-push to the db branch ever writes something broken.
+      - name: Archive the permanent record (weekly)
+        run: |
+          mkdir -p archive
+          week="archive/$(date -u +'%G-W%V').sql.gz"
+          if [ -e "$week" ]; then
+            echo "Already archived $week"
+          else
+            sqlite3 overflows.db ".dump monitors" ".dump events" ".dump offline" \
+              | gzip -9 > "$week"
+            echo "Wrote $week ($(du -h "$week" | cut -f1))"
+          fi
+
+      - name: Publish the reading to main
         run: |
           git config user.name  "overflow-bot"
           git config user.email "actions@github.com"
-          git add overflows.db docs/data.json
+          git add docs/data.json archive
           git diff --staged --quiet && { echo "Nothing changed."; exit 0; }
-          git commit -m "Reading at $(date -u +'%Y-%m-%d %H:%M')"
+          git commit -m "Reading at $(date -u +'%Y-%m-%d %H:%M') UTC"
 
           # A manual push can land between checkout and push. The reading only
-          # touches overflows.db + docs/data.json, which hand commits never do,
-          # so a rebase onto origin is always clean — just retry the race.
+          # touches docs/data.json and archive/, which hand commits never do, so
+          # a rebase onto origin is always clean — just retry the race.
           for attempt in 1 2 3 4 5; do
             if git pull --rebase origin "${GITHUB_REF_NAME}" && git push; then
               exit 0
@@ -50,23 +79,20 @@ jobs:
           echo "Could not push after 5 attempts."
           exit 1
 
-      # --- Deploy to SiteGround --------------------------------------------
-      # Skipped until you add the SG_SSH_KEY secret, so polling works on its
-      # own from day one and you can wire up hosting whenever you're ready.
-
-      - name: Deploy docs/ to SiteGround
-        if: ${{ vars.DEPLOY_TO_SITEGROUND == 'true' }}
+      # Built in a temp dir so the checked-out main is never disturbed. The
+      # branch is always exactly one commit — force-pushing replaces it wholesale.
+      - name: Publish the database
         env:
-          SG_HOST: ${{ secrets.SG_HOST }}
-          SG_USER: ${{ secrets.SG_USER }}
-          SG_PATH: ${{ secrets.SG_PATH }}
-          SG_PORT: ${{ secrets.SG_PORT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SG_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "${SG_PORT:-18765}" "$SG_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/id_ed25519 -p ${SG_PORT:-18765} -o StrictHostKeyChecking=yes" \
-            docs/ "$SG_USER@$SG_HOST:$SG_PATH/"
+          tmp=$(mktemp -d)
+          cp overflows.db "$tmp/"
+          cd "$tmp"
+          git init -q
+          git checkout -qb db
+          git add overflows.db
+          git -c user.name="overflow-bot" -c user.email="actions@github.com" \
+              commit -qm "Database at $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push -qf \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" db
+          echo "Pushed $(du -h overflows.db | cut -f1) to the db branch."

@@ -1,7 +1,7 @@
 # Setting it up
 
-Three parts: get it running on your Mac, put it on GitHub, then point your
-SiteGround site at it. Do them in order — each one assumes the last worked.
+Three parts: get it running on your Mac, put it on GitHub, then put it online.
+Do them in order — each one assumes the last worked.
 
 ---
 
@@ -188,33 +188,27 @@ repo costs you — the poll still runs on GitHub's runners and still bills the s
 minutes. Two things bite on the **Free** plan:
 
 - **GitHub Pages is disabled for private repos.** You'd need GitHub **Pro**
-  (~$4/mo) to keep the `github.io` page, or serve the static `docs/` from
-  SiteGround instead (Part 3, Option B) — that works regardless of repo
-  visibility.
+  (~$4/mo) to keep the `github.io` page, or copy the static `docs/` to any other
+  host — nothing in it depends on GitHub.
 - **Actions minutes become metered:** 2,000 min/month free. A ~1-minute job
   every 15 minutes is ~2,900 min/month, over the limit. Options: GitHub Pro
   (3,000 min), drop the cadence to every 30 minutes (~1,400 min), or accept the
   per-minute overage charge.
 
 So the cheapest "keep everything working, but private" answer is GitHub Pro at
-~$4/mo, which covers both. If you don't want to pay, either stay public or move
-hosting to SiteGround and slow the poll to 30 minutes.
+~$4/mo, which covers both. If you don't want to pay, either stay public or slow
+the poll to 30 minutes.
 
 ---
 
-## Part 3 — Deploying to SiteGround
+## Part 3 — Putting it online
 
-### First, know what you're deploying
+### What you're deploying
 
-Nothing runs on SiteGround. GitHub Actions does the polling and produces three
-static files in `docs/`. SiteGround serves them. That's the whole deployment.
+Nothing runs on the host. GitHub Actions does the polling and produces the static
+files in `docs/`. The host just serves them. That's the whole deployment.
 
-This means it works on **any** SiteGround plan, including StartUp — you're not
-relying on Node support they may not offer.
-
-### Option A — Just use GitHub Pages (easiest)
-
-If you don't specifically need it on your own domain, skip SiteGround entirely.
+### GitHub Pages
 
 Repo → **Settings → Pages** → under **Source** pick **Deploy from a branch**,
 branch `main`, folder `/docs`. Save.
@@ -222,83 +216,9 @@ branch `main`, folder `/docs`. Save.
 A minute later it's live at `https://yourname.github.io/frome-overflow-watch/`.
 Nothing else to configure, and it updates itself every time the poller commits.
 
-You can still put it on your own domain: add a `CNAME` file in `docs/`
-containing `overflows.yourdomain.com`, then in SiteGround's **Site Tools → Domain
-→ DNS Zone Editor** add a CNAME record pointing `overflows` at
-`yourname.github.io`.
-
-### Option B — Serve it from SiteGround over SSH
-
-Do this if you want the files genuinely on your own hosting.
-
-**Check you have SSH.** Site Tools → **Devs → SSH Keys Manager**. If the section
-isn't there, your plan doesn't include SSH — use Option A or C.
-
-**1. Generate a key** on your Mac, dedicated to this deploy:
-
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/frome_deploy -N "" -C "frome-overflow-watch"
-```
-
-Two files appear: `frome_deploy` (private — never commit this) and
-`frome_deploy.pub` (public).
-
-**2. Give SiteGround the public key.** In SSH Keys Manager, choose to import an
-existing key, and paste the contents of:
-
-```bash
-cat ~/.ssh/frome_deploy.pub
-```
-
-The panel then shows you the **hostname, username and port** for SSH. Write them
-down — the port is not 22.
-
-**3. Test it** before involving GitHub:
-
-```bash
-ssh -i ~/.ssh/frome_deploy -p PORT USERNAME@HOSTNAME
-```
-
-Once you're in, find where your site lives and make a folder for this:
-
-```bash
-ls ~/www
-mkdir -p ~/www/yourdomain.com/public_html/overflows
-pwd                    # note the full path
-exit
-```
-
-**4. Add the secrets to GitHub.** Repo → **Settings → Secrets and variables →
-Actions**.
-
-Under **Secrets**, add four:
-
-| Name | Value |
-|---|---|
-| `SG_SSH_KEY` | the whole of `cat ~/.ssh/frome_deploy`, including the BEGIN and END lines |
-| `SG_HOST` | the hostname from Site Tools |
-| `SG_USER` | the username from Site Tools |
-| `SG_PATH` | the full path you noted, e.g. `/home/customer/www/yourdomain.com/public_html/overflows` |
-| `SG_PORT` | the port from Site Tools (usually `18765`) |
-
-Then switch to the **Variables** tab and add `DEPLOY_TO_SITEGROUND` set to
-`true`. The deploy step is skipped until this exists, which is why polling
-worked fine before you got here.
-
-**5. Run the workflow by hand** again and watch the deploy step. Your page
-should be live at `https://yourdomain.com/overflows/`.
-
-Note that the workflow uses `rsync --delete`, so the target folder is wiped to
-match `docs/`. Point `SG_PATH` at a folder that holds nothing else.
-
-### Option C — Drag and drop
-
-Perfectly reasonable if you just want to see it working. Site Tools → **Site →
-File Manager**, navigate to your `public_html`, upload the contents of `docs/`.
-
-The catch is that it's a snapshot. `data.json` goes stale the moment the poller
-next runs, so you'd be re-uploading by hand forever. Fine for a first look, not
-for leaving up.
+To put it on your own domain: add a `CNAME` file in `docs/` containing
+`overflows.yourdomain.com`, then at your DNS provider add a CNAME record pointing
+`overflows` at `yourname.github.io`.
 
 ---
 

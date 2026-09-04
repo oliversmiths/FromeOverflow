@@ -87,7 +87,7 @@ export function renderCards(container, data, onSeeOnMap) {
       // that, rather than implying the whole day predates the record.
       const partial = monitor.since != null
         && cell.start <= monitor.since && monitor.since < cell.end;
-      if (partial) d.dataset.tipNote = 'Record began part-way through this day';
+      if (partial) d.dataset.tipNote = 'Incomplete day';
       strip.append(d);
     }
 

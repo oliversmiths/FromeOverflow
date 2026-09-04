@@ -440,8 +440,9 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 /* About tab: column layout so .credit can be pushed to the foot with margin-top:
    auto — it sits at the bottom when the content is short, and just follows the
-   text when it's long enough to scroll. */
-#tabpanel-about { display: flex; flex-direction: column; }
+   text when it's long enough to scroll. `:not([hidden])` so this does not
+   outrank `.panel-body[hidden] { display: none }` when the tab is inactive. */
+#tabpanel-about:not([hidden]) { display: flex; flex-direction: column; }
 
 .credit {
   margin-top: auto;

@@ -82,6 +82,23 @@ export function statusOf(status) {
   return { key: 'dry', text: 'Dry' };
 }
 
+// ---------------------------------------------------------------------------
+// TEMPORARY — remove once the record is `windowDays` deep (about 28 Nov 2026).
+//
+// The strips and the popup both describe a 90-day window, but the record only
+// reaches back to a monitor's first reading. Until those match, "in the last 90
+// days" overstates what is known, so the copy names the date the record actually
+// starts instead. To retire this: delete the function and inline
+// `in the last ${windowDays} days` at its call sites in cards.js and map.js.
+// ---------------------------------------------------------------------------
+export function windowPhrase(monitor, windowDays, now) {
+  const started = monitor?.since;
+  if (started == null || now - started >= windowDays * DAY) {
+    return `in the last ${windowDays} days`;
+  }
+  return `since ${fmtDate(started)}`;
+}
+
 /** A discharge that ended within this long counts as "recent" on the map. */
 export const RECENT_HOURS = 48;
 export const RECENT_MS = RECENT_HOURS * HOUR;
@@ -112,16 +129,17 @@ export function mapStatusOf(monitor, now) {
  * One cell per day for the last `days` days (oldest first) — the data behind
  * the per-monitor 90-day strip on the page. Each cell is `{ start, state }`,
  * `start` being the local-midnight epoch ms of that day and `state` one of:
+ *   'nodata'  – the day is before this monitor's first reading
  *   'spill'   – a discharge overlapped the day
  *   'recent'  – within RECENT_HOURS of a discharge ending, but not spilling
  *   'offline' – the monitor was reporting no signal for part of the day
- *   'nodata'  – nothing known, and the day is before this monitor's first reading
  *   'dry'     – monitored that day, no discharge, nothing recent
- * checked in that order, so a confirmed discharge always outranks a gap in the
- * record. An ongoing event (`end == null`) counts as spilling right up to `now`,
- * and so does an unfinished offline spell. A known event is always drawn even if
- * it predates `since` — the first reading Wessex hands us carries the latest
- * event, so that one spill is real history.
+ * checked in that order. `nodata` comes first deliberately: Wessex hand over
+ * their latest event with the first reading, so a monitor can carry one spill
+ * from months before we were watching. Drawing it put a lone red bar in a field
+ * of hatching and implied the whole stretch was covered. Days before `since` are
+ * unknown, and stay unknown. An ongoing event (`end == null`) counts as spilling
+ * right up to `now`, and so does an unfinished offline spell.
  */
 export function dayCells(monitor, now, days = 90) {
   const midnight = new Date(now);
@@ -136,14 +154,16 @@ export function dayCells(monitor, now, days = 90) {
     const end = start + DAY;
     let state;
 
-    if (events.some((e) => e.start < end && (e.end ?? now) > start)) {
+    if (since != null && end <= since) {
+      // Checked first: a day before this monitor's record began is unknown, and
+      // stays unknown even if a stray event from the feed happens to cover it.
+      state = 'nodata';
+    } else if (events.some((e) => e.start < end && (e.end ?? now) > start)) {
       state = 'spill';
     } else if (events.some((e) => e.end != null && start < e.end + RECENT_MS && end > e.end)) {
       state = 'recent';
     } else if (offline.some((o) => o.start < end && (o.end ?? now) > start)) {
       state = 'offline';
-    } else if (since != null && end <= since) {
-      state = 'nodata';
     } else {
       state = 'dry';
     }
@@ -168,13 +188,18 @@ export function offlineMs(monitor, now) {
  * Monitors sorted by total discharge time within the window, longest first,
  * each given a `total` field (ms). Ties break alphabetically by label. Input
  * monitors are not mutated.
+ *
+ * A spill is clipped to the monitor's own record: if one was already running
+ * when we first saw the monitor, only the part we actually watched is counted,
+ * so the total never claims time the record doesn't cover.
  */
 export function rankByTotal(monitors, now) {
   return monitors
     .map((m) => ({
       ...m,
       total: m.events.reduce((sum, e) => {
-        const ms = spillMs(e, now);
+        const start = m.since == null ? e.start : Math.max(e.start, m.since);
+        const ms = spillMs({ start, end: e.end }, now);
         return Number.isFinite(ms) ? sum + Math.max(0, ms) : sum;
       }, 0),
     }))

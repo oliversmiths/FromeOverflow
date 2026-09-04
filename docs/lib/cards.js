@@ -9,6 +9,7 @@
 
 import {
   dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, statusOf,
+  windowPhrase,
 } from './format.js';
 
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
@@ -51,11 +52,12 @@ export function renderCards(container, data, onSeeOnMap) {
     // "No discharge recorded" is only half the story if the sensor was dark for
     // part of the window, so the offline total rides alongside it.
     const dark = offlineMs(monitor, now);
+    const window = windowPhrase(monitor, data.window_days, now);
     const bits = runs
-      ? [`${runs} discharge${runs === 1 ? '' : 's'} in the last ${data.window_days} days`,
+      ? [`${runs} discharge${runs === 1 ? '' : 's'} ${window}`,
          `${fmtDuration(monitor.total)} total`,
          `last was ${fmtWhen(last.start, now)}`]
-      : [`no discharge in the last ${data.window_days} days`];
+      : [`no discharge ${window}`];
     if (dark > 0) bits.push(`offline for ${fmtDuration(dark)}`);
 
     const meta = document.createElement('p');

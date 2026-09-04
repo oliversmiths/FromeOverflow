@@ -72,11 +72,15 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   live activity feed** (Id + watercourse, state, last discharge, offline total,
   coordinates); **below it, `CONTEXT_ROWS`** renders the static
   `overflow_context` fields as a `.pop-context` term/value grid. Rows with no
-  value are skipped, so an unfetched monitor just shows the feed half. `dayCells` turns a monitor's events *and its offline spells*
-  into one cell per day for the last 90
-  (`spill`/`recent`/`offline`/`nodata`/`dry`, checked in that order, so a
-  confirmed discharge always outranks a gap in the record) — the per-monitor
-  strip. `offlineMs` totals a monitor's offline time over the window.
+  value are skipped, so an unfetched monitor just shows the feed half. `dayCells`
+  turns a monitor's events *and its offline spells* into one cell per day for the
+  last 90 — `nodata`/`spill`/`recent`/`offline`/`dry`, **checked in that order**:
+  a day before the monitor's `since` is unknown and stays unknown, whatever the
+  feed claims about it. `offlineMs` totals a monitor's offline time; `rankByTotal`
+  clips each spill to `since`, so a total never counts time the record doesn't
+  cover. **`windowPhrase` is temporary** — while a monitor's record is shallower
+  than `window_days` the copy says "since 30 Aug 2026" instead of "in the last 90
+  days"; it reverts on its own and the header comment says how to delete it.
 - **`docs/lib/cards.js`** — `renderCards(container, data, onSeeOnMap)`: the
   per-monitor list. One card each (ranked by total discharge time) with a
   `statusOf` badge, a summary line, and a GitHub-status-style 90-day strip — one
@@ -221,7 +225,12 @@ Four tables (schema in [poll.js](poll.js) `SCHEMA`):
   *separately* and appears in the popup's context block, not as the title.
 - **`events`** — keyed on `(monitor_id, start_ms)`. Wessex give us only the latest
   event's start/end, so: a start we've seen before just fills in `end_ms`
-  (`COALESCE`, never overwritten); an unseen start is a new spill.
+  (`COALESCE`, never overwritten); an unseen start is a new spill. **`exportJson`
+  publishes only events that reach into the monitor's own record** (`end_ms IS
+  NULL OR end_ms >= first_seen`). The first reading hands over Wessex's latest
+  event, which can be months old — 33 of 37 were, at cutover — and drawing those
+  put a lone red bar in a field of hatching, implying we had covered the whole
+  stretch. They stay in the table, just off the page.
 - **`offline`** — offline spells as `{monitor_id, start_ms, end_ms}`, shaped
   exactly like `events` and maintained by `store` from `StatusStart`. **This is
   the permanent record of when a monitor was dark** — it used to be re-derived

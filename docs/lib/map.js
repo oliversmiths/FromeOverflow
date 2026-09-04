@@ -11,6 +11,7 @@
 
 import {
   RECENT_HOURS, fmtDuration, fmtWhen, mapStatusOf, mapsUrl, offlineMs, spillMs,
+  windowPhrase,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -78,7 +79,7 @@ const CONTEXT_ROWS = [
   ['Cause', 'cause'],
 ];
 
-function popup(monitor, now) {
+function popup(monitor, now, windowDays) {
   const state = mapStatusOf(monitor, now);
   const last = monitor.events.at(-1);
   const el = document.createElement('div');
@@ -120,7 +121,7 @@ function popup(monitor, now) {
   d.className = 'pop-last';
   d.textContent = last
     ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtDuration(spillMs(last, now))}.`
-    : 'No discharge recorded in the last 90 days.';
+    : `No discharge recorded ${windowPhrase(monitor, windowDays, now)}.`;
 
   el.append(h, d);
 
@@ -163,7 +164,7 @@ export function buildMap(host, data, opts = {}) {
   fetch(`basemap.json?${Date.now()}`)
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((bm) => {
-      api = drawMap(host, bm, data.monitors, data.polled_at, initialZoom);
+      api = drawMap(host, bm, data.monitors, data.polled_at, initialZoom, data.window_days);
       for (const m of pending) api.focus(m);
       pending.length = 0;
     })
@@ -179,7 +180,7 @@ export function buildMap(host, data, opts = {}) {
   };
 }
 
-function drawMap(host, bm, monitors, now, initialZoom) {
+function drawMap(host, bm, monitors, now, initialZoom, windowDays) {
   const [BW, BS, BE, BN] = bm.box;
   const [GW, GH] = bm.size;
 
@@ -410,7 +411,7 @@ function drawMap(host, bm, monitors, now, initialZoom) {
       { type: 'button', className: 'pop-close', textContent: '×' });
     close.setAttribute('aria-label', 'Close');
     close.addEventListener('click', (e) => { e.stopPropagation(); closePopup(); });
-    pop.append(close, popup(m, now));
+    pop.append(close, popup(m, now, windowDays));
     pop.hidden = false;
     const r = pop.getBoundingClientRect();
     popW = r.width;

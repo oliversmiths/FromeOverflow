@@ -402,9 +402,15 @@ async function exportJson(db, rows, polledAt) {
   const liveStatus = new Map(rows.map((r) => [String(r.Id), r.Status]));
   const cutoff = polledAt - EXPORT_DAYS * DAY;
 
+  // Wessex hand over their latest event with the very first reading, so most
+  // monitors carry one spill from before we were watching — sometimes months
+  // before. Publishing those put a lone red bar in a sea of hatching and implied
+  // we had covered the whole stretch. Only events that reach into this monitor's
+  // own record are published; the rest stay in the database, just off the page.
   const eventsFor = db.prepare(`
     SELECT start_ms, end_ms FROM events
     WHERE monitor_id = ? AND start_ms >= ?
+      AND (end_ms IS NULL OR end_ms >= ?)
     ORDER BY start_ms`);
 
   // Overlap, not start-within: a spell that began before the window but ran into
@@ -438,7 +444,7 @@ async function exportJson(db, rows, polledAt) {
       cause: m.cause,
       since: m.first_seen,
       status: liveStatus.get(m.id) ?? null,
-      events: eventsFor.all(m.id, cutoff)
+      events: eventsFor.all(m.id, cutoff, m.first_seen ?? 0)
         .map((e) => ({ start: e.start_ms, end: e.end_ms })),
       offline: offlineFor.all(m.id, cutoff)
         .map((o) => ({ start: o.start_ms, end: o.end_ms })),

@@ -83,9 +83,9 @@
       a day: red where it discharged, amber for the 48 hours after, green when it was clear,
       dark grey where the monitor was offline, hatched before this record began.</p>
     <p>Dark grey and hatched are both gaps, not clear days – the sensor sent nothing, or
-      nobody here was watching yet. A discharge can still appear inside the hatching: the
-      first reading carries Wessex’s latest event, so that one spill is known even when the
-      days around it are not.</p>
+      nobody here was watching yet. Nothing is shown or counted inside the hatching: while
+      this record is younger than 90 days, each card says the date it starts from, and its
+      totals cover only that period.</p>
 
     <h3>River Frome</h3>
     <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome.
@@ -242,8 +242,9 @@ function paintCoverage(data, now) {
 
   note.textContent =
     `This record only began ` + `${depth === 0 ? 'today' : `${depth} day${depth === 1 ? '' : 's'} ago`} `+ `on ${fmtDate(started)}. ` +
-    
-    'Past days before record collecting began are displayed as hatched lines. Some older discharges do appear as Wessex Water publishes their latest event with the first reading, so that a single spill is known even though the days around it are not.';
+    'Days before that are hatched: nothing is known about them either way, and ' +
+    'nothing here counts them — the totals and dates on each card cover only the ' +
+    'time this record has actually been running.';
   note.hidden = false;
 }
 

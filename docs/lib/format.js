@@ -38,20 +38,24 @@ export function fmtDuration(ms) {
 export const mapsUrl = (lat, lon) =>
   `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
 
-const DATE = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric', month: 'short', year: 'numeric',
-});
-
-/** Absolute calendar date: "5 Aug 2026". */
+/**
+ * Absolute calendar date: "01.09.26" (DD.MM.YY, local calendar day). Numeric and
+ * zero-padded rather than "1 Sept 2026" — shorter, and unambiguous for a UK
+ * audience without pulling in a locale formatter for three extra characters.
+ */
 export function fmtDate(ms) {
-  return DATE.format(new Date(ms));
+  const d = new Date(ms);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}.${mm}.${yy}`;
 }
 
 /**
  * Relative phrasing for anything within the last week ("just now", "12 min ago",
- * "3 hours ago", "yesterday", "4 days ago"), falling back to an absolute date
- * beyond that. `now` defaults to the wall clock so the page can call it with a
- * single argument.
+ * "3 hours ago", "yesterday", "4d ago"), falling back to an absolute date beyond
+ * that. `now` defaults to the wall clock so the page can call it with a single
+ * argument.
  */
 export function fmtWhen(ms, now = Date.now()) {
   const delta = now - ms;
@@ -66,7 +70,7 @@ export function fmtWhen(ms, now = Date.now()) {
   }
   if (delta < 7 * DAY) {
     const d = Math.round(delta / DAY);
-    return d === 1 ? 'yesterday' : `${d} days ago`;
+    return d === 1 ? 'yesterday' : `${d}d ago`;
   }
   return fmtDate(ms);
 }

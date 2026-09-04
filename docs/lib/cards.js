@@ -20,7 +20,7 @@ const LOUPE =
 
 // Standalone status lines for the day tooltip (a coloured dot sits before each).
 const CELL_LABEL = {
-  nodata: 'Before record began',
+  nodata: 'Before watching began',
   dry: 'No discharge',
   offline: 'Monitor offline',
   recent: 'Within 48h of discharge',
@@ -80,9 +80,9 @@ export function renderCards(container, data, onSeeOnMap) {
     // part of the window, so the offline total rides alongside it.
     const dark = offlineMs(monitor, now);
     const window = windowPhrase(monitor, data.window_days, now);
-    // "(when recording began)" isn't a claim about history — it disambiguates
-    // what the date in `window` means. Read plainly, "no discharge since 30 Aug
-    // 2026" sounds like ordinary English for "it last happened around then",
+    // "(when watching began)" isn't a claim about history — it disambiguates
+    // what the date in `window` means. Read plainly, "no discharge since
+    // 30.08.26" sounds like ordinary English for "it last happened around then",
     // which may or may not be true (Wessex's own history can reach further back
     // than what this page publishes). The parenthetical says the date is when
     // *we* started watching, not a discharge date — true regardless of what,
@@ -93,7 +93,7 @@ export function renderCards(container, data, onSeeOnMap) {
       ? [`${runs} discharge${runs === 1 ? '' : 's'} ${window}`,
          `${fmtDuration(monitor.total)} total`,
          `last was ${fmtWhen(last.start, now)}`]
-      : [`no discharge ${window}${showBegan ? ' (when recording began)' : ''}`];
+      : [`no discharge ${window}${showBegan ? ' (when watching began)' : ''}`];
     if (dark > 0) bits.push(`offline for ${fmtDuration(dark)}`);
 
     const meta = document.createElement('p');
@@ -112,14 +112,14 @@ export function renderCards(container, data, onSeeOnMap) {
     strip.setAttribute('aria-label',
       `${data.window_days}-day history: ${tally.spill} day${tally.spill === 1 ? '' : 's'} ` +
       `with a discharge, ${tally.recent} within 48h after, ${tally.offline} with the ` +
-      `monitor offline, ${tally.dry} clear, ${tally.nodata} before monitoring began`);
+      `monitor offline, ${tally.dry} clear, ${tally.nodata} before watching began`);
     for (const cell of cells) {
       const d = document.createElement('span');
       d.className = cell.state === 'dry' ? 'o-day' : `o-day o-day--${cell.state}`;
       d.dataset.tipDate = fmtDate(cell.start);
       d.dataset.tipStatus = CELL_LABEL[cell.state];
       d.dataset.tipState = cell.state;
-      // Exactly one day per monitor is only *partly* covered: the one recording
+      // Exactly one day per monitor is only *partly* covered: the one watching
       // started during. It is not a `nodata` day — we watched some of it — so say
       // that, rather than implying the whole day predates the record.
       const partial = monitor.since != null

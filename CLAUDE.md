@@ -79,11 +79,13 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   feed claims about it. `offlineMs` totals a monitor's offline time; `rankByTotal`
   clips each spill to `since`, so a total never counts time the record doesn't
   cover. **`windowPhrase` is permanent, not a launch-window patch** — while a
-  monitor's *own* record is shallower than `window_days` the copy says "since 30
-  Aug 2026" instead of "in the last 90 days". It reads per-monitor `since`, so a
+  monitor's *own* record is shallower than `window_days` the copy says "since
+  30.08.26" instead of "in the last 90 days". It reads per-monitor `since`, so a
   monitor added later (a new Wessex outfall, or an extended `PIN_TO_IDS`) gets the
   same honesty for its first 90 days and switches over by itself. Only
-  `paintCoverage` in index.html is temporary.
+  `paintCoverage` in index.html is temporary. `fmtDate` is `DD.MM.YY` (numeric,
+  zero-padded — "01.09.26"), chosen for brevity on the card's meta line;
+  `fmtWhen`'s day branch matches it, "4d ago" not "4 days ago".
 - **`docs/lib/cards.js`** — `renderCards(container, data, onSeeOnMap)`: the
   per-monitor list. One card each (ranked by total discharge time) with a
   `statusOf` badge, a summary line, and a GitHub-status-style 90-day strip — one
@@ -92,16 +94,21 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   450px wide, shrinking below that. When `offlineMs` is non-zero the summary line
   appends "offline for …" — "no discharge recorded" means less when part of the
   record is missing. When there are no discharges and the record is still young
-  (`recordIsYoung`), the line adds "(when recording began)" — **unconditionally,
+  (`recordIsYoung`), the line adds "(when watching began)" — **unconditionally,
   not gated on whether an earlier discharge is hidden off-page.** Its job is to
-  disambiguate what the cited date *means*: read plainly, "no discharge since 30
-  Aug 2026" sounds like ordinary English for "it last happened around then",
+  disambiguate what the cited date *means*: read plainly, "no discharge since
+  30.08.26" sounds like ordinary English for "it last happened around then",
   which the exported `events` (filtered to the monitor's own record — see below)
   can't rule out. The parenthetical says the date is when *we* started watching,
   which is true regardless of what Wessex's own history holds further back —
   so it always applies, not only for monitors that happen to have no earlier
-  history at all. Each bar carries the structured `data-tip-*` attributes, not
-  `title`.
+  history at all. **`docs/lib/map.js`'s popup mirrors this exactly** (its own
+  `showBegan`, same condition, same wording) so the card and the pin never
+  disagree about the same monitor. "Watch"/"watching" is the vocabulary
+  throughout — this project is Overflow *Watch* — never "record[ing]" for the
+  live-monitoring sense (`overflows.db`/"record" is fine for the *data*, e.g.
+  "keeps its own history"). Each bar carries the structured `data-tip-*`
+  attributes, not `title`.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
   anything with a `data-tip*` attribute, delegated from `document`. Two forms:
   `data-tip="…"` is one plain line; `data-tip-date` / `data-tip-status`

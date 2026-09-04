@@ -91,13 +91,18 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
   450px wide, shrinking below that. When `offlineMs` is non-zero the summary line
   appends "offline for …" — "no discharge recorded" means less when part of the
-  record is missing. Each bar carries `data-tip`, not `title`.
+  record is missing. Each bar carries the structured `data-tip-*` attributes, not
+  `title`.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
-  anything with `data-tip`, delegated from `document`. Replaces the native
-  `title`, which is slow to appear, unstyleable and invisible on touch. Positions
-  `fixed` and clamps to the viewport, which matters because the 90-day bars are
-  ~4px wide and sit against both edges of a 500px panel; flips below the target
-  when there is no room above, and hides on scroll rather than tracking.
+  anything with a `data-tip*` attribute, delegated from `document`. Two forms:
+  `data-tip="…"` is one plain line; `data-tip-date` / `data-tip-status`
+  (+ `data-tip-state` for a colour dot) / `data-tip-note` render as up to three
+  separately styled rows (`.tip-date` / `.tip-status` + `.tip-dot--{state}` /
+  `.tip-note`), any subset. Replaces the native `title`, which is slow to appear,
+  unstyleable and invisible on touch. Positions `fixed` and clamps to the
+  viewport, which matters because the 90-day bars are ~4px wide and sit against
+  both edges of a 500px panel; flips below the target when there is no room
+  above, and hides on scroll rather than tracking.
 - **`docs/lib/map.js`** — `buildMap(host, data, { initialZoom })` + `renderLegend`.
   **No library, no tile service.** Fetches `basemap.json` and draws roads/
   waterways as one SVG whose `viewBox` is the camera; pins/labels/popups are an

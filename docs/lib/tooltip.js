@@ -1,8 +1,16 @@
 /**
- * One shared tooltip for anything carrying `data-tip`.
+ * One shared tooltip for anything carrying a `data-tip*` attribute.
  *
  *   initTooltips();                 // once, after the page has rendered
+ *
+ * Plain — a single line:
  *   <span data-tip="5 Aug 2026 — no discharge">
+ *
+ * Structured — up to three separately styled rows, any subset:
+ *   <span data-tip-date="1 Sept 2026"
+ *         data-tip-status="No discharge" data-tip-state="dry"
+ *         data-tip-note="Recording began part-way through this day">
+ * `data-tip-state` adds a colour dot (`.tip-dot--{state}`) to the status row.
  *
  * Replaces the native `title`, which takes about half a second to appear, can't
  * be styled, and never shows on touch. This appears at once, in the site's own
@@ -51,11 +59,38 @@ function place(target) {
   el.style.top = `${Math.round(top)}px`;
 }
 
+function build(el, d) {
+  el.replaceChildren();
+
+  const rows = [];
+  if (d.tipDate) rows.push(['tip-date', d.tipDate]);
+  if (d.tipStatus) rows.push(['tip-status', d.tipStatus, d.tipState]);
+  if (d.tipNote) rows.push(['tip-note', d.tipNote]);
+
+  if (rows.length) {
+    el.classList.add('tip--rows');
+    for (const [cls, text, state] of rows) {
+      const row = document.createElement('div');
+      row.className = cls;
+      if (state) {
+        const dot = document.createElement('span');
+        dot.className = `tip-dot tip-dot--${state}`;
+        row.append(dot);
+      }
+      row.append(text);
+      el.append(row);
+    }
+    return true;
+  }
+
+  el.classList.remove('tip--rows');
+  if (d.tip) { el.textContent = d.tip; return true; }
+  return false;
+}
+
 function show(target) {
-  const text = target.dataset.tip;
-  if (!text) return;
   const el = ensure();
-  el.textContent = text;
+  if (!build(el, target.dataset)) return;
   el.hidden = false;
   showing = target;
   place(target);           // measured only once it has content and is visible
@@ -68,7 +103,7 @@ function hide() {
 }
 
 export function initTooltips(root = document) {
-  const find = (e) => e.target.closest?.('[data-tip]');
+  const find = (e) => e.target.closest?.('[data-tip], [data-tip-date], [data-tip-status]');
 
   root.addEventListener('pointerover', (e) => {
     const t = find(e);

@@ -18,12 +18,13 @@ const LOUPE =
   'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
   '<circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>';
 
+// Standalone status lines for the day tooltip (a coloured dot sits before each).
 const CELL_LABEL = {
-  nodata: 'before this record began',
-  dry: 'no discharge',
-  offline: 'monitor offline',
-  recent: 'within 48h of a discharge',
-  spill: 'discharging',
+  nodata: 'Before recording began',
+  dry: 'No discharge',
+  offline: 'Monitor offline',
+  recent: 'Within 48h of a discharge',
+  spill: 'Discharge recorded',
 };
 
 export function renderCards(container, data, onSeeOnMap) {
@@ -78,13 +79,15 @@ export function renderCards(container, data, onSeeOnMap) {
     for (const cell of cells) {
       const d = document.createElement('span');
       d.className = cell.state === 'dry' ? 'o-day' : `o-day o-day--${cell.state}`;
+      d.dataset.tipDate = fmtDate(cell.start);
+      d.dataset.tipStatus = CELL_LABEL[cell.state];
+      d.dataset.tipState = cell.state;
       // Exactly one day per monitor is only *partly* covered: the one recording
       // started during. It is not a `nodata` day — we watched some of it — so say
       // that, rather than implying the whole day predates the record.
       const partial = monitor.since != null
         && cell.start <= monitor.since && monitor.since < cell.end;
-      d.dataset.tip = `${fmtDate(cell.start)} — ${CELL_LABEL[cell.state]}` +
-        (partial ? ' (recording began part-way through this day)' : '');
+      if (partial) d.dataset.tipNote = 'Recording began part-way through this day';
       strip.append(d);
     }
 

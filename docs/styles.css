@@ -564,14 +564,13 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .empty { padding: 24px; background: #fff; color: var(--ink); font-family: var(--body); font-size: 17px; }
 
-/* Shared tooltip for [data-tip] — replaces the native title, which is slow,
+/* Shared tooltip for [data-tip*] — replaces the native title, which is slow,
    unstyleable and invisible on touch. lib/tooltip.js sets left/top in px,
    clamped to the viewport, so a bar at either edge of the strip still reads. */
 .tip {
   position: fixed;
   z-index: 60;
   max-width: min(260px, calc(100vw - 16px));
-  padding: 6px 9px;
   background: var(--chalk);
   border: 1px solid var(--weir);
   color: var(--weir);
@@ -581,6 +580,29 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   pointer-events: none;   /* never let it swallow the hover that opened it */
 }
 .tip[hidden] { display: none; }
+
+/* Plain (single string): its own padding. Structured (.tip--rows): padding on
+   each row, with a hairline between them so date / status / caveat read apart. */
+.tip:not(.tip--rows) { padding: 6px 9px; }
+.tip--rows > * { padding: 6px 10px; }
+.tip--rows > * + * { border-top: 1px solid var(--hairline); }
+
+.tip-date { font-family: var(--body); font-size: 12px; }
+
+.tip-status { display: flex; align-items: center; gap: 7px; }
+.tip-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dry);   /* default; --state overrides below */
+}
+.tip-dot--spill   { background: var(--oxide); }
+.tip-dot--recent  { background: var(--amber); }
+.tip-dot--offline { background: var(--day-offline); }
+.tip-dot--nodata  { background: var(--day-nodata-line); }
+
+.tip-note { color: var(--silt); }
 
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }

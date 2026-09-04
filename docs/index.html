@@ -242,10 +242,15 @@ function paintCoverage(data, now) {
   if (!starts.length) { note.hidden = true; return; }
 
   // Calendar days, not elapsed 24-hour periods. The first reading landed at
-  // 17:35, so a floor of (now - started) said "4 days" on the 5th calendar day
-  // — the strip counts local days, and the reader counts them off a calendar, so
-  // this has to as well. Round, not floor: an hour goes missing when the clocks
-  // change, which would otherwise lose a day for good after late October.
+  // 17:35, so a floor of (now - started) said "4 days" on the 5th calendar day —
+  // the bars count local days, and the reader counts them off a calendar, so this
+  // has to as well.
+  //
+  // Round, not floor. The day the clocks go forward is 23 hours, so once the
+  // window spans a spring change the division lands on 46.9583 rather than 47 and
+  // a floor would report one day fewer for as long as the note is shown. (The
+  // autumn 25-hour day errs the other way, 57.0417, which a floor survives.)
+  // Both directions round correctly.
   const started = Math.min(...starts);
   const depth = Math.round((midnightOn(now) - midnightOn(started)) / DAY);
   if (depth >= data.window_days) { note.hidden = true; return; }

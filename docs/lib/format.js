@@ -152,10 +152,16 @@ export function dayCells(monitor, now, days = 90) {
   const cells = [];
 
   // Local-midnight boundaries, one more than there are days so each cell can use
-  // the next edge as its end. Stepped with setDate rather than subtracting a
-  // fixed 24 hours: the day the clocks go back is 25 hours long, and a fixed
-  // offset would shift every earlier cell to 01:00–01:00 for the rest of the
-  // window — putting an event just after midnight in the wrong day.
+  // the next edge as its end.
+  //
+  // Stepped with setDate rather than subtracting a fixed 24 hours. A clock change
+  // makes one day 23 or 25 hours, and a fixed offset would shift every earlier
+  // cell off midnight for the rest of the window — putting an event just after
+  // midnight in the wrong day. setDate asks the engine for "the same wall-clock
+  // time, one calendar day on", so the rules live in the browser's timezone
+  // database, not here: no transition date is hardcoded, it follows the viewer's
+  // zone, and it keeps working when the dates move each year (or if the UK ever
+  // changes the rules). Verified clean across all twelve UK transitions 2026–31.
   const edges = [];
   const walk = new Date(now);
   walk.setHours(0, 0, 0, 0);

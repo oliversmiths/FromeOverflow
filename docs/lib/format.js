@@ -98,7 +98,17 @@ export function recordIsYoung(monitor, windowDays, now) {
 
 /**
  * How to describe the period a monitor's figures cover: "in the last 90 days"
- * once its record is that deep, otherwise "since 30 Aug 2026".
+ * once its record is that deep, otherwise "(watching since 30.08.26)".
+ *
+ * The "watching since" wording isn't a claim about history — it disambiguates
+ * what the date means. A bare "since 30.08.26" reads as ordinary English for
+ * "that's when it last happened", which may or may not be true (Wessex's own
+ * history can reach further back than what this page publishes). Saying it's
+ * when *we* started watching is true regardless of what, if anything, happened
+ * before it — so it applies whenever the phrase is in its "since" form, for
+ * every card, not just ones with no discharge. It's parenthesised rather than
+ * inline ("3 discharges since watching began …") because that reads as a
+ * trailing aside on the count, not a claim baked into the sentence.
  *
  * **Keep this permanently.** It reads the monitor's *own* `since`, not the
  * site's, so it is not just a launch-window patch: any monitor added later —
@@ -111,7 +121,7 @@ export function recordIsYoung(monitor, windowDays, now) {
  */
 export function windowPhrase(monitor, windowDays, now) {
   return recordIsYoung(monitor, windowDays, now)
-    ? `since ${fmtDate(monitor.since)}`
+    ? `(watching since ${fmtDate(monitor.since)})`
     : `in the last ${windowDays} days`;
 }
 

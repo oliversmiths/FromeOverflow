@@ -516,7 +516,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 2px 6px;
+  gap: 2px 4px;
   margin: 3px 0 0;
   font-size: 11px;
   color: var(--weir);

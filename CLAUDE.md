@@ -79,10 +79,19 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   feed claims about it. `offlineMs` totals a monitor's offline time; `rankByTotal`
   clips each spill to `since`, so a total never counts time the record doesn't
   cover. **`windowPhrase` is permanent, not a launch-window patch** — while a
-  monitor's *own* record is shallower than `window_days` the copy says "since
-  30.08.26" instead of "in the last 90 days". It reads per-monitor `since`, so a
-  monitor added later (a new Wessex outfall, or an extended `PIN_TO_IDS`) gets the
-  same honesty for its first 90 days and switches over by itself. Only
+  monitor's *own* record is shallower than `window_days` the copy says
+  "(watching since 30.08.26)" instead of "in the last 90 days". The "watching
+  since" wording isn't a claim about history — a bare "since 30.08.26" sounds
+  like ordinary English for "that's when it last happened", which may not be
+  true (Wessex's own history can reach further back than what this page
+  publishes); saying it's when *we* started watching is true regardless of what,
+  if anything, happened before it, so it applies uniformly, on every card and
+  popup in its "since" form, not just ones with no discharge. It's parenthesised
+  — a trailing aside on the count, not a claim baked into the sentence — rather
+  than inline ("3 discharges since watching began …"). It reads
+  per-monitor `since`, so a monitor added later (a new Wessex outfall, or an
+  extended `PIN_TO_IDS`) gets the same honesty for its first 90 days and
+  switches over by itself. Only
   `paintCoverage` in index.html is temporary. `fmtDate` is `DD.MM.YY` (numeric,
   zero-padded — "01.09.26"), chosen for brevity on the card's meta line;
   `fmtWhen`'s day branch matches it, "4d ago" not "4 days ago".
@@ -93,18 +102,13 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
   450px wide, shrinking below that. When `offlineMs` is non-zero the summary line
   appends "offline for …" — "no discharge recorded" means less when part of the
-  record is missing. When there are no discharges and the record is still young
-  (`recordIsYoung`), the line adds "(when watching began)" — **unconditionally,
-  not gated on whether an earlier discharge is hidden off-page.** Its job is to
-  disambiguate what the cited date *means*: read plainly, "no discharge since
-  30.08.26" sounds like ordinary English for "it last happened around then",
-  which the exported `events` (filtered to the monitor's own record — see below)
-  can't rule out. The parenthetical says the date is when *we* started watching,
-  which is true regardless of what Wessex's own history holds further back —
-  so it always applies, not only for monitors that happen to have no earlier
-  history at all. **`docs/lib/map.js`'s popup mirrors this exactly** (its own
-  `showBegan`, same condition, same wording) so the card and the pin never
-  disagree about the same monitor. "Watch"/"watching" is the vocabulary
+  record is missing. The "watching since" wording lives entirely in
+  `windowPhrase` (see above) — the summary line just interpolates it, whether
+  or not there were discharges, so "3 discharges (watching since 30.08.26)"
+  and "0 discharge (watching since 30.08.26)" read the same way.
+  **`docs/lib/map.js`'s popup uses the same `windowPhrase`** for its own
+  no-discharge line, so the card and the pin never disagree about the same
+  monitor. "Watch"/"watching" is the vocabulary
   throughout — this project is Overflow *Watch* — never "record[ing]" for the
   live-monitoring sense (`overflows.db`/"record" is fine for the *data*, e.g.
   "keeps its own history"). Each bar carries the structured `data-tip-*`

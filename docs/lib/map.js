@@ -11,7 +11,7 @@
 
 import {
   RECENT_HOURS, fmtDuration, fmtWhen, mapStatusOf, mapsUrl, offlineMs,
-  recordIsYoung, spillMs, windowPhrase,
+  spillMs, windowPhrase,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -120,14 +120,9 @@ function popup(monitor, now, windowDays) {
 
   const d = document.createElement('p');
   d.className = 'pop-last';
-  // Mirrors the timeline card: "(when watching began)" only clarifies what the
-  // cited date means (see cards.js), so it applies whenever the phrase itself
-  // is in its "since" form, not only when nothing earlier is known to exist.
-  const showBegan = !last && recordIsYoung(monitor, windowDays, now);
   d.textContent = last
     ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtDuration(spillMs(last, now))}.`
-    : `No discharge recorded ${windowPhrase(monitor, windowDays, now)}` +
-      `${showBegan ? ' (when watching began)' : ''}.`;
+    : `0 discharge recorded ${windowPhrase(monitor, windowDays, now)}.`;
 
   el.append(h, d);
 

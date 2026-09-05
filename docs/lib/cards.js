@@ -8,8 +8,8 @@
  */
 
 import {
-  dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, recordIsYoung,
-  statusOf, windowPhrase,
+  dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, statusOf,
+  windowPhrase,
 } from './format.js';
 
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
@@ -80,20 +80,11 @@ export function renderCards(container, data, onSeeOnMap) {
     // part of the window, so the offline total rides alongside it.
     const dark = offlineMs(monitor, now);
     const window = windowPhrase(monitor, data.window_days, now);
-    // "(when watching began)" isn't a claim about history — it disambiguates
-    // what the date in `window` means. Read plainly, "no discharge since
-    // 30.08.26" sounds like ordinary English for "it last happened around then",
-    // which may or may not be true (Wessex's own history can reach further back
-    // than what this page publishes). The parenthetical says the date is when
-    // *we* started watching, not a discharge date — true regardless of what,
-    // if anything, happened before it, so it always applies while the window
-    // phrase is in its "since" form.
-    const showBegan = !runs && recordIsYoung(monitor, data.window_days, now);
     const bits = runs
       ? [`${runs} discharge${runs === 1 ? '' : 's'} ${window}`,
          `${fmtDuration(monitor.total)} total`,
          `last was ${fmtWhen(last.start, now)}`]
-      : [`no discharge ${window}${showBegan ? ' (when watching began)' : ''}`];
+      : [`0 discharge recorded ${window}`];
     if (dark > 0) bits.push(`offline for ${fmtDuration(dark)}`);
 
     const meta = document.createElement('p');

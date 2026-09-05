@@ -28,25 +28,23 @@ const CELL_LABEL = {
 };
 
 /**
- * The `.o-meta` line as `.o-meta-item` spans joined by `.o-meta-sep` dots,
- * rather than one text node — so CSS can wrap and hide individual pieces
- * (`o-meta.textContent = bits.join(' · ')` can't target "just this separator").
- * `lastIndex` marks the one item allowed to drop to its own line on a narrow
- * card; -1 if none should.
+ * A row of items as `.<itemClass>` spans joined by `.<sepClass>` dots, rather
+ * than one text node — so CSS can wrap and style individual pieces
+ * (`el.textContent = bits.join(' · ')` can't target "just this separator" or
+ * colour one item differently from another).
  */
-function metaRow(bits, lastIndex) {
+function joinRow(bits, itemClass, sepClass) {
   const frag = document.createDocumentFragment();
-  bits.forEach((text, i) => {
-    const isLast = i === lastIndex;
+  bits.forEach(({ text, className }, i) => {
     if (i > 0) {
       const sep = document.createElement('span');
-      sep.className = isLast ? 'o-meta-sep o-meta-sep--last' : 'o-meta-sep';
+      sep.className = sepClass;
       sep.setAttribute('aria-hidden', 'true');
       sep.textContent = '·';
       frag.append(sep);
     }
     const item = document.createElement('span');
-    item.className = isLast ? 'o-meta-item o-meta-item--last' : 'o-meta-item';
+    item.className = className ? `${itemClass} ${className}` : itemClass;
     item.textContent = text;
     frag.append(item);
   });
@@ -76,22 +74,19 @@ export function renderCards(container, data, onSeeOnMap) {
     heading.append(document.createTextNode(''), where);
     head.append(heading);
 
-    // "No discharge recorded" is only half the story if the sensor was dark for
-    // part of the window, so the offline total rides alongside it.
+    // Both running totals — time spent discharging, time spent dark — move to
+    // the foot row (see below), alongside "View on map", leaving this line to
+    // just say what happened and when.
     const dark = offlineMs(monitor, now);
     const window = windowPhrase(monitor, data.window_days, now);
     const bits = runs
       ? [`${runs} discharge${runs === 1 ? '' : 's'} ${window}`,
-         `${fmtDuration(monitor.total)} total`,
          `last was ${fmtWhen(last.start, now)}`]
       : [`0 discharge recorded ${window}`];
-    if (dark > 0) bits.push(`offline for ${fmtDuration(dark)}`);
 
     const meta = document.createElement('p');
     meta.className = 'o-meta';
-    // "last was …" (index 2, only when there are discharges to report) gets the
-    // wrap-to-its-own-line treatment in CSS; every other separator is plain.
-    meta.append(metaRow(bits, runs ? 2 : -1));
+    meta.append(joinRow(bits.map((text) => ({ text })), 'o-meta-item', 'o-meta-sep'));
 
     const cells = dayCells(monitor, now, data.window_days);
     const tally = cells.reduce((t, c) => (t[c.state]++, t),
@@ -127,16 +122,30 @@ export function renderCards(container, data, onSeeOnMap) {
 
     card.append(head, meta, strip, scale);
 
+    // The foot row: the two running totals on the left, "View on map" on the
+    // right — using the space the button leaves spare rather than crowding
+    // both totals into the meta line above. Colour-coded to match their
+    // meaning elsewhere (oxide = discharging, silt = offline).
+    const stats = [];
+    if (runs) stats.push({ text: `${fmtDuration(monitor.total)} total`, className: 'o-total' });
+    if (dark > 0) stats.push({ text: `${fmtDuration(dark)} offline`, className: 'o-offline' });
+
+    const foot = document.createElement('div');
+    foot.className = 'o-foot';
+    if (stats.length) {
+      const stat = document.createElement('span');
+      stat.className = 'o-stats';
+      stat.append(joinRow(stats, 'o-stat', 'o-stat-sep'));
+      foot.append(stat);
+    }
     if (monitor.lat != null && monitor.lon != null) {
-      const geo = document.createElement('p');
-      geo.className = 'o-geo';
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.innerHTML = `${LOUPE}<span>View on map</span>`;
       btn.addEventListener('click', () => onSeeOnMap?.(monitor));
-      geo.append(btn);
-      card.append(geo);
+      foot.append(btn);
     }
+    if (foot.children.length) card.append(foot);
 
     container.append(card);
   }

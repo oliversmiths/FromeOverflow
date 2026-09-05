@@ -525,20 +525,11 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-meta-item { min-width: 0; }   /* lets a long item wrap instead of overflowing */
 .o-meta-sep { opacity: 0.5; }
 
-/* "last was …" drops to its own line rather than trail a lone "·" at the start
-   of a wrapped line: hidden separator + a flex item forced to full width, so it
-   can't share a row with anything before it. Untouched above this width, where
-   the row is usually wide enough for all three items anyway. */
-@media (max-width: 640px) {
-  .o-meta-sep--last  { display: none; }
-  .o-meta-item--last { flex-basis: 100%; }
-}
-
 .o-strip {
   display: flex;
   gap: 1px;
   width: 100%;
-  max-width: 450px;
+  max-width: 640px;
   height: 32px;
   margin: 11px 0 0;
 }
@@ -563,7 +554,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   display: flex;
   justify-content: space-between;
   width: 100%;
-  max-width: 450px;
+  max-width: 640px;
   margin: 4px 0 0;
   padding-top: 5px;
   font-family: var(--data);
@@ -585,8 +576,22 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-scale::before { left: 0; }
 .o-scale::after  { right: 0; }
 
-.o-geo { margin: 12px 0 0; font-family: var(--data); font-size: 10px; }
-.o-geo button {
+.o-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 0;
+  font-family: var(--data);
+  font-size: 10px;
+}
+.o-stats { min-width: 0; }   /* lets it wrap/truncate before pushing the button out */
+.o-stat-sep { opacity: 0.5; }
+/* Colour-coded to match their meaning everywhere else on the page: oxide for
+   time spent discharging (the strip's spill bars, the discharging pin/state),
+   silt for time spent offline (the strip's offline bars, the offline pin/state). */
+.o-total   { color: var(--oxide); }
+.o-offline { color: var(--silt); }
+.o-foot button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -597,10 +602,11 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   text-transform: uppercase;
   color: var(--silt);
   cursor: pointer;
+  margin-left: auto;   /* hugs the right edge whether or not a total sits left */
 }
-.o-geo button:hover span { text-decoration: underline; }
-.o-geo .ico { flex: none; }
-.o-geo button:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
+.o-foot button:hover span { text-decoration: underline; }
+.o-foot .ico { flex: none; }
+.o-foot button:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
 
 .empty { padding: 24px; background: #fff; color: var(--ink); font-family: var(--body); font-size: 17px; }
 

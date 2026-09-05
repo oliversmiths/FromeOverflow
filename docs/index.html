@@ -17,7 +17,7 @@
 <body>
 
 <div class="splash" id="splash">
-  <p class="splash-verdict" id="splash-verdict">Reading the feed…</p>
+  <p class="splash-verdict" id="splash-verdict"></p>
   <img class="splash-img" id="splash-img" src="assets/overflow-img.webp" alt="">
   <p class="splash-brand">Overflow&nbsp;Watch <span>Frome</span></p>
 </div>
@@ -165,16 +165,26 @@ const INITIAL_ZOOM = 0.28;
 const $ = (id) => document.getElementById(id);
 
 // --- intro splash: hold ~5s then fade; tap to skip, the fl mark replays it ---
+// Sequenced in two beats: background + image show immediately, then (once the
+// verdict is known *and* that first beat has had a moment to register) the
+// words stagger-fade in. Splitting it like this is also what keeps a fragment
+// of placeholder text from ever flashing up before the real verdict is ready —
+// there's no placeholder any more, the words simply don't exist until reveal.
 const splash = $('splash');
 $('splash-img').addEventListener('error', (e) => e.target.remove());
-let holdTimer, hideTimer;
+let holdTimer, hideTimer, revealTimer;
+let verdictText = null, pauseDone = false;
 
 function showSplash() {
   clearTimeout(holdTimer);
   clearTimeout(hideTimer);
+  clearTimeout(revealTimer);
   splash.hidden = false;
   void splash.offsetWidth;                 // restart the transition
   splash.classList.remove('is-gone');
+  $('splash-verdict').classList.remove('is-ready');
+  pauseDone = false;
+  revealTimer = setTimeout(() => { pauseDone = true; revealVerdict(); }, 500);
   holdTimer = setTimeout(dismissSplash, 5000);
 }
 function dismissSplash() {
@@ -184,24 +194,40 @@ function dismissSplash() {
 }
 
 holdTimer = setTimeout(dismissSplash, 5000);
+revealTimer = setTimeout(() => { pauseDone = true; revealVerdict(); }, 500);
 splash.addEventListener('click', dismissSplash);
 $('replay-splash').addEventListener('click', showSplash);
 addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
 
-// Splash verdict: set the text as one <span> per word, each on its own line, so
-// the stylesheet can range them at different indents for a hand-set look.
+// Splash verdict: set the text as one <span> per word, each on its own line —
+// the stylesheet ranges them at different indents for a hand-set look, and
+// staggers their fade-in by the `--i` custom property set here.
 function setSplashVerdict(text) {
   const el = $('splash-verdict');
   el.replaceChildren();
-  for (const word of text.split(/\s+/)) {
+  text.split(/\s+/).forEach((word, i) => {
     const w = document.createElement('span');
     w.className = 'sv-word';
+    w.style.setProperty('--i', i);
     w.textContent = word;
     el.append(w);
-  }
+  });
 }
 
-setSplashVerdict($('splash-verdict').textContent.trim());
+// The words don't reveal until both the verdict is known (setVerdict, called
+// from the fetch success/failure paths below) and the background-and-image
+// beat has had its moment — whichever finishes second triggers it.
+function setVerdict(text) {
+  verdictText = text;
+  revealVerdict();
+}
+function revealVerdict() {
+  if (verdictText == null || !pauseDone) return;
+  const el = $('splash-verdict');
+  setSplashVerdict(verdictText);
+  void el.offsetWidth;                     // restart the stagger on replay
+  el.classList.add('is-ready');
+}
 
 function paintStatus(data) {
   const now = data.polled_at;
@@ -219,7 +245,7 @@ function paintStatus(data) {
     text = 'No overflows discharging right now';
   }
 
-  setSplashVerdict(text);
+  setVerdict(text);
   $('stamp').textContent =
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
   paintCoverage(data, now);
@@ -351,7 +377,7 @@ try {
   const h = location.hash.slice(1);
   if (TABS.includes(h)) openPanel(h);
 } catch {
-  setSplashVerdict('No data yet');
+  setVerdict('No data yet');
   renderLegend($('legend'));
   $('overflows').innerHTML = '<div class="empty">The history builds from here.</div>';
 }

@@ -701,12 +701,25 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .sv-word {
   display: block;
   width: fit-content;
+  opacity: 0;   /* invisible until sequenced in — see .is-ready below */
+  transform: translateY(0.15em);
 }
 .sv-word:nth-child(2) { margin-left: 1.2em; }
 .sv-word:nth-child(3) { margin-left: auto; }   /* ranged fully right */
 .sv-word:nth-child(4) { margin-left: 2.4em; }
 .sv-word:nth-child(5) { margin-left: 0.6em; }
 .sv-word:nth-child(6) { margin-left: 3em; }
+
+/* Words stay invisible (background + image alone first) until JS adds this,
+   once the verdict is known and that first beat has had its moment — then
+   each staggers in by its `--i` index, set alongside .sv-word in the JS. */
+.splash-verdict.is-ready .sv-word {
+  animation: sv-word-in 0.5s ease forwards;
+  animation-delay: calc(var(--i, 0) * 0.15s);
+}
+@keyframes sv-word-in {
+  to { opacity: 1; transform: none; }
+}
 
 .splash-img {
   position: absolute;
@@ -761,4 +774,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .splash { transition-duration: 0.3s; }
+  /* Still sequenced (image, then verdict), just an instant appearance
+     rather than a staggered fade-and-rise. */
+  .splash-verdict.is-ready .sv-word { animation: none; opacity: 1; transform: none; }
 }

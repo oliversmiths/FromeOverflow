@@ -61,6 +61,13 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
 - **[poll.js](poll.js)** — the whole backend. Pages the entire Wessex feed
   (`fetchAll`, 2000/request), filters to the Frome catchment (`isLocal`), upserts
   into SQLite (`store`), then writes the last 90 days as JSON (`exportJson`).
+  `fetchAll`'s per-page request goes through `fetchPage`, which retries
+  (`FETCH_RETRIES`, 5s apart) on the failures a flaky connection produces —
+  `fetch()` throwing outright (Node reports a dropped connection or DNS blip as
+  a bare "fetch failed") and 5xx responses — since a run every 15 minutes hits
+  Wessex's server often enough that one is expected noise, not an outage. A 4xx
+  or an ArcGIS-reported `body.error` fails immediately instead, since those mean
+  the request itself is wrong and won't change on retry.
 - **`docs/lib/format.js`** — shared duration maths and formatting (`spillMs`,
   `fmtDuration`, `rankByTotal`, `statusOf`, `mapStatusOf`, `dayCells`, `mapsUrl`,
   `DAY`, `RECENT_HOURS`, …). **Imported by `poll.js` and every page/lib module**

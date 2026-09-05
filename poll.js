@@ -23,6 +23,12 @@ const API =
 
 const PAGE_SIZE = 2000; // Wessex's documented per-request ceiling
 
+// A run every 15 min hits Wessex's server enough that an occasional dropped
+// connection or 5xx is expected noise, not a real outage — worth a couple of
+// retries before failing the whole poll (and losing that snapshot) over it.
+const FETCH_RETRIES = 3;
+const RETRY_DELAY_MS = 5_000;
+
 // Frome town centre. Keep in step with CENTRE in scripts/build-basemap.js.
 const CENTRE = { lat: 51.2308, lon: -2.3208 };
 
@@ -258,6 +264,46 @@ const val = (x) => (x === undefined ? null : x);
 
 // --- Fetching --------------------------------------------------------------
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * One page, retrying on the failures a flaky connection produces: `fetch()`
+ * throwing outright (DNS/TLS/reset — Node reports these as a bare "fetch
+ * failed") and 5xx responses. A 4xx or an ArcGIS-reported `body.error` means
+ * the request itself is wrong, so those fail immediately rather than
+ * burning retries on something that won't change.
+ */
+async function fetchPage(params) {
+  for (let attempt = 1; ; attempt++) {
+    let response;
+    try {
+      response = await fetch(`${API}?${params}`, {
+        signal: AbortSignal.timeout(60_000),
+        headers: { accept: 'application/json' },
+      });
+    } catch (error) {
+      if (attempt >= FETCH_RETRIES) throw error;
+      console.warn(`  fetch attempt ${attempt} failed (${error.message}), retrying…`);
+      await sleep(RETRY_DELAY_MS);
+      continue;
+    }
+
+    if (!response.ok) {
+      if (response.status >= 500 && attempt < FETCH_RETRIES) {
+        console.warn(`  fetch attempt ${attempt} got ${response.status}, retrying…`);
+        await sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      throw new Error(`Wessex feed returned ${response.status}`);
+    }
+
+    const body = await response.json();
+    // ArcGIS reports failures with HTTP 200 and an error object.
+    if (body.error) throw new Error(`Wessex feed: ${body.error.message}`);
+    return body;
+  }
+}
+
 async function fetchAll() {
   const rows = [];
   for (let offset = 0; ; offset += PAGE_SIZE) {
@@ -270,16 +316,7 @@ async function fetchAll() {
       resultRecordCount: String(PAGE_SIZE),
     });
 
-    const response = await fetch(`${API}?${params}`, {
-      signal: AbortSignal.timeout(60_000),
-      headers: { accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error(`Wessex feed returned ${response.status}`);
-
-    const body = await response.json();
-    // ArcGIS reports failures with HTTP 200 and an error object.
-    if (body.error) throw new Error(`Wessex feed: ${body.error.message}`);
-
+    const body = await fetchPage(params);
     const page = (body.features ?? []).map((f) => f.attributes);
     rows.push(...page);
 

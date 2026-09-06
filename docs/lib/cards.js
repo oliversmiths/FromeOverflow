@@ -115,13 +115,16 @@ export function renderCards(container, data, onSeeOnMap) {
       // that, rather than implying the whole day predates the record.
       const partial = monitor.since != null
         && cell.start <= monitor.since && monitor.since < cell.end;
-      // A spill/recent cell carries every event that earned it that state —
-      // show each one's real start/end/length rather than leaving the reader
-      // with just the generic label. One per line (`.tip-note` is
+      // A spill cell carries every event that earned it that state — show
+      // each one's real start/end/length rather than leaving the reader with
+      // just the generic label. One per line (`.tip-note` is
       // `white-space: pre-line`) rather than comma-separated, so two spills
-      // read as two distinct events, not a single run-on span.
+      // read as two distinct events, not a single run-on span. `recent` skips
+      // this: the spill itself is shown in full on its own (earlier) day, and
+      // that day can fall just outside the visible window — not worth
+      // special-casing for.
       const notes = [];
-      if (cell.events) notes.push(...cell.events.map((e) => fmtSpillSpan(e, now)));
+      if (cell.state === 'spill') notes.push(...cell.events.map((e) => fmtSpillSpan(e, now)));
       if (partial) notes.push('Incomplete day');
       if (notes.length) d.dataset.tipNote = notes.join('\n');
       strip.append(d);

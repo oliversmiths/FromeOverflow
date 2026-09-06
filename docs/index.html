@@ -79,7 +79,7 @@
     <h3>Reading the timeline</h3>
     <p>Each overflow monitor is represented by a card, ranked by total discharge time. The 90-day status strip shows one bar
       a day: red where it discharged, amber for the 48 hours after, green when it was clear,
-      dark grey where the monitor was offline, grey-hatched before watching began.</p>
+      dark grey where the monitor was offline, striped before watching began.</p>
     
 
     <h3>River Frome</h3>
@@ -121,26 +121,32 @@
   <div class="panel-body prose" id="tabpanel-sources" role="tabpanel"
     aria-labelledby="tab-sources" tabindex="0" hidden>
     <h3>Data</h3>
-    <p>Overflow activity comes from Wessex Water’s near real-time event duration
-      monitoring (EDM) feed – an ArcGIS service published to Water UK’s
-      <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub"
-      target="_blank" rel="noopener">National Storm Overflow Hub</a>. It reports only each
-      monitor’s current status.</p>
+    <p>Overflow activity comes from Wessex Water’s near real-time event duration monitoring
+      (EDM) feed, an ArcGIS service. It reports only each monitor’s current status, not
+      history – this site polls it every 15 minutes and keeps its own day-by-day record.</p>
 
-    <p><a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
-      target="_blank" rel="noopener">Wessex Water Storm Overflow Activity</a> © Wessex Water,
-      licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
-      rel="noopener">CC BY 4.0</a>, used here filtered to the Frome catchment and rebuilt
-      into a day-by-day record.</p>
-
-    <p>Site names, waterbody, overflow type, treatment and cause come from a second Wessex
-      layer,
-      <a href="https://data-wessexwater.opendata.arcgis.com/datasets/3ff7018195fd496da08e1009185d4600_0/explore"
-      target="_blank" rel="noopener">overflow context</a>. Waterbody names are the
-      Environment Agency’s Water Framework Directive catchments – look one up in the
-      <a href="https://environment.data.gov.uk/catchment-planning/" target="_blank"
-      rel="noopener">Catchment Data Explorer</a>. No Environment Agency data is used
-      directly, and nothing here is regulator-verified.</p>
+    <ul>
+      <li><strong>Storm overflow activity</strong> – fetched from the
+        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Storm_Overflow_Activity/FeatureServer"
+        target="_blank" rel="noopener">live ArcGIS feed</a>; browsable as
+        <a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
+        target="_blank" rel="noopener">Wessex Water Storm Overflow Activity</a> on Water UK’s
+        <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub"
+        target="_blank" rel="noopener">National Storm Overflow Hub</a>. © Wessex Water,
+        licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+        rel="noopener">CC BY 4.0</a>. Filtered here to the Frome catchment and rebuilt into a
+        day-by-day record.</li>
+      <li><strong>Site metadata</strong> (site name, waterbody, overflow type, treatment,
+        cause) – fetched from a second, separately licensed Wessex layer,
+        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/overflow_context/FeatureServer"
+        target="_blank" rel="noopener">overflow context</a>. Wessex haven’t published a
+        browsable Hub page for this one, only the raw API linked above.</li>
+      <li><strong>Waterbody names</strong> follow the Environment Agency’s Water Framework
+        Directive catchments – look one up in the
+        <a href="https://environment.data.gov.uk/catchment-planning/" target="_blank"
+        rel="noopener">Catchment Data Explorer</a>. No Environment Agency data is used
+        directly, and nothing here is regulator-verified.</li>
+    </ul>
 
     <h3>Map</h3>
     <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
@@ -284,9 +290,9 @@ function paintCoverage(data, now) {
     : `${depth} day${depth === 1 ? '' : 's'} ago (or fewer)`;
 
   note.textContent =
-    `Each overflow below shows a rolling ${data.window_days} days, one bar per day. ` +
-    `Watching began ${began}, so earlier days are in grey and the totals ` +
-    'count only what was recorded.';
+    `Each card below shows one overflow monitor in the Frome catchment. The status strip shows a rolling ${data.window_days} days, one bar per day. ` +
+    `Watching began ${began} – days before that are shown with diagonal stripes, not green: there's ` +
+    "no record for them either way, and the totals below only count what's been watched so far.";
   note.hidden = false;
 }
 

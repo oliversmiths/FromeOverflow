@@ -475,6 +475,9 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .coverage[hidden] { display: none; }
 
 .prose p { margin: 0 0 12px; }
+.prose ul { margin: 0 0 12px; padding-left: 18px; }
+.prose li { margin: 0 0 8px; }
+.prose li:last-child { margin-bottom: 0; }
 .prose h3 {
   font-family: var(--display);
   font-weight: 400;
@@ -654,7 +657,9 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   background: currentColor;
 }
 
-.tip-note { color: var(--silt); }
+/* pre-line: a note with several spills (one per line) keeps its line breaks;
+   a single-line note just wraps as normal text would. */
+.tip-note { color: var(--silt); white-space: pre-line; }
 
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }

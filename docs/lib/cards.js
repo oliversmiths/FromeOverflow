@@ -8,8 +8,8 @@
  */
 
 import {
-  dayCells, fmtDate, fmtDuration, fmtWhen, offlineMs, rankByTotal, statusOf,
-  windowPhrase,
+  dayCells, fmtDate, fmtDuration, fmtSpillSpan, fmtWhen, offlineMs, rankByTotal,
+  statusOf, windowPhrase,
 } from './format.js';
 
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
@@ -103,14 +103,27 @@ export function renderCards(container, data, onSeeOnMap) {
       const d = document.createElement('span');
       d.className = cell.state === 'dry' ? 'o-day' : `o-day o-day--${cell.state}`;
       d.dataset.tipDate = fmtDate(cell.start);
-      d.dataset.tipStatus = CELL_LABEL[cell.state];
+      // A day can hold more than one discrete spill (or more than one
+      // recently-ended one) — say so in the status line rather than the
+      // generic singular label, since the note below lists them all.
+      d.dataset.tipStatus = cell.state === 'spill' && cell.events.length > 1
+        ? `${cell.events.length} discharges recorded`
+        : CELL_LABEL[cell.state];
       d.dataset.tipState = cell.state;
       // Exactly one day per monitor is only *partly* covered: the one watching
       // started during. It is not a `nodata` day — we watched some of it — so say
       // that, rather than implying the whole day predates the record.
       const partial = monitor.since != null
         && cell.start <= monitor.since && monitor.since < cell.end;
-      if (partial) d.dataset.tipNote = 'Incomplete day';
+      // A spill/recent cell carries every event that earned it that state —
+      // show each one's real start/end/length rather than leaving the reader
+      // with just the generic label. One per line (`.tip-note` is
+      // `white-space: pre-line`) rather than comma-separated, so two spills
+      // read as two distinct events, not a single run-on span.
+      const notes = [];
+      if (cell.events) notes.push(...cell.events.map((e) => fmtSpillSpan(e, now)));
+      if (partial) notes.push('Incomplete day');
+      if (notes.length) d.dataset.tipNote = notes.join('\n');
       strip.append(d);
     }
 

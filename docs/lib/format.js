@@ -52,6 +52,36 @@ export function fmtDate(ms) {
 }
 
 /**
+ * Clock time only: "14:32" (24h, local, zero-padded) — paired with `fmtDate`
+ * when a tooltip needs to say exactly when a spill started or ended, not just
+ * which day it fell on.
+ */
+export function fmtTime(ms) {
+  const d = new Date(ms);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+/**
+ * One-line description of a single spill's span and length, for the day-cell
+ * tooltip: "14:32–16:05 · 1h 33m" when it starts and ends the same calendar
+ * day, "04.09.26 14:32–05.09.26 02:10 · 11h 38m" when it crosses midnight (so
+ * the reader isn't left assuming a same-day span), "14:32–ongoing · 3h 10m"
+ * while still discharging.
+ */
+export function fmtSpillSpan(event, now) {
+  const endMs = event.end ?? now;
+  const startDay = fmtDate(event.start);
+  const endDay = fmtDate(endMs);
+  const startStr = startDay === endDay ? fmtTime(event.start) : `${startDay} ${fmtTime(event.start)}`;
+  const endStr = event.end == null
+    ? 'ongoing'
+    : startDay === endDay ? fmtTime(event.end) : `${endDay} ${fmtTime(event.end)}`;
+  return `${startStr}–${endStr} · ${fmtDuration(spillMs(event, now))}`;
+}
+
+/**
  * Relative phrasing for anything within the last week ("just now", "12 min ago",
  * "3 hours ago", "yesterday", "4d ago"), falling back to an absolute date beyond
  * that. `now` defaults to the wall clock so the page can call it with a single
@@ -166,6 +196,12 @@ export function mapStatusOf(monitor, now) {
  * of hatching and implied the whole stretch was covered. Days before `since` are
  * unknown, and stay unknown. An ongoing event (`end == null`) counts as spilling
  * right up to `now`, and so does an unfinished offline spell.
+ *
+ * A `spill`/`recent` cell also carries `events` — every event that earned it
+ * that state, oldest first — so a caller can show actual start/end times
+ * rather than just the generic label. Usually one, but a day can hold more
+ * than one discrete spill (or more than one recently-ended one), so this is
+ * always an array, never a single event.
  */
 export function dayCells(monitor, now, days = 90) {
   const since = monitor.since ?? null;
@@ -197,21 +233,22 @@ export function dayCells(monitor, now, days = 90) {
     const start = edges[i];
     const end = edges[i + 1];
     let state;
+    let matches;
 
     if (since != null && end <= since) {
       // Checked first: a day before this monitor's record began is unknown, and
       // stays unknown even if a stray event from the feed happens to cover it.
       state = 'nodata';
-    } else if (events.some((e) => e.start < end && (e.end ?? now) > start)) {
+    } else if ((matches = events.filter((e) => e.start < end && (e.end ?? now) > start)).length) {
       state = 'spill';
-    } else if (events.some((e) => e.end != null && start < e.end + RECENT_MS && end > e.end)) {
+    } else if ((matches = events.filter((e) => e.end != null && start < e.end + RECENT_MS && end > e.end)).length) {
       state = 'recent';
     } else if (offline.some((o) => o.start < end && (o.end ?? now) > start)) {
       state = 'offline';
     } else {
       state = 'dry';
     }
-    cells.push({ start, end, state });
+    cells.push(matches?.length ? { start, end, state, events: matches } : { start, end, state });
   }
   return cells;
 }

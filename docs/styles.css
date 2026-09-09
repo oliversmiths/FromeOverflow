@@ -702,10 +702,20 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 /* Hand-set look: one word per line, each ranged at its own indent. The
    nth-child rules are a fixed pattern — no JS randomness. One word (the 3rd)
-   is pushed hard right against the block edge. */
+   is pushed hard right against the block edge.
+
+   `overflow-wrap: anywhere` is a safety net, not the everyday behaviour: a
+   fixed em indent plus a long word can, at a large enough font-size, add up
+   to more than the space left in the box — `width: fit-content` can't save
+   it, since a single unbreakable word's min-content *is* its full rendered
+   width, so fit-content is forced back up to that regardless of how little
+   room remains. Letting it break mid-word only where that actually happens
+   keeps it on screen (`.splash` clips at its own edge) instead of silently
+   running off it. */
 .sv-word {
   display: block;
   width: fit-content;
+  overflow-wrap: anywhere;
   opacity: 0;   /* invisible until sequenced in — see .is-ready below */
   transform: translateY(0.15em);
 }
@@ -762,6 +772,13 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
     font-size: clamp(42px, 15vw, 96px);
     line-height: 1.05;
   }
+  /* The 4th word's 2.4em desktop indent is safe against the smaller desktop
+     font-size, but at this breakpoint's much larger font it eats too much
+     of a phone-width box — a ten-letter word there ("discharged",
+     "discharging") no longer has room to fit. Pulled in for phones only;
+     the `overflow-wrap` safety net above still catches anything this
+     doesn't. */
+  .sv-word:nth-child(4) { margin-left: 0.8em; }
   .splash-img {
     right: auto;
     left: 50%;

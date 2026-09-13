@@ -33,7 +33,7 @@
 </button>
 
 <button class="fab fab--menu" id="open-panel" aria-controls="panel"
-  aria-expanded="false" aria-label="Timeline, about, safety and sources">
+  aria-expanded="false" aria-label="Timeline and about">
   <svg viewBox="0 0 21 48" aria-hidden="true">
     <path fill="currentColor" d="M13.248 7.04V0H20.288V7.04H13.248ZM6.4 44.16L7.104 44.8C8.256 44.032 12.224 40.448 14.464 37.888H17.024C14.336 40.96 9.408 46.016 6.528 48H2.688C0.96 46.848 0.832 44.16 2.176 40.576L9.728 20.352L9.024 19.712C8.512 20.16 6.72 21.888 2.56 26.88H0C4.224 21.248 7.872 17.536 10.24 16H14.08C14.848 16.32 15.744 17.152 15.744 18.56C15.744 19.712 15.488 20.864 14.72 22.784L6.4 44.16Z"/>
   </svg>
@@ -46,10 +46,6 @@
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
       <button class="tab" type="button" role="tab" id="tab-about" tabindex="-1"
         aria-controls="tabpanel-about" aria-selected="false">About</button>
-      <button class="tab" type="button" role="tab" id="tab-safety" tabindex="-1"
-        aria-controls="tabpanel-safety" aria-selected="false">Safety</button>
-      <button class="tab" type="button" role="tab" id="tab-sources" tabindex="-1"
-        aria-controls="tabpanel-sources" aria-selected="false">Sources</button>
     </div>
     <button class="panel-close" type="button" aria-label="Close">&times;</button>
   </div>
@@ -64,94 +60,107 @@
 
   <div class="panel-body prose" id="tabpanel-about" role="tabpanel"
     aria-labelledby="tab-about" tabindex="0" hidden>
-    <h3>What this is</h3>
     <p>Overflow Watch is a single-town monitor of storm overflows on the River Frome and its tributaries around
       Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
       every 15 minutes and keeps its own history.</p>
-    <p>The Overflow Watch is not affiliated with Wessex Water. It covers the Frome
-      catchment only and does not try to replace the national trackers.</p>
-
-    <h3>Reading the map</h3>
-    <p>Each pin is an overflow, coloured by its state at the last check: red discharging
-      now, amber discharged within the last 48 hours, green not discharging,
-      grey no signal.</p>
-
-    <h3>Reading the timeline</h3>
-    <p>Each overflow monitor is represented by a card, ranked by total discharge time. The 90-day status strip shows one bar
-      a day: red where it discharged, amber for the 48 hours after, green when it was clear,
-      dark grey where the monitor was offline, striped before watching began.</p>
     
 
-    <h3>River Frome</h3>
-    <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome.
-      For more information and to get involved please visit
-      <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
-      of the River Frome</a>.</p>
+    <div class="acc">
+      <details class="acc-item" id="acc-how-to-use">
+        <summary class="acc-summary">How to use</summary>
+        <div class="acc-body">
+          <h3>Reading the map</h3>
+          <p>Each pin is an overflow, coloured by its state at the last check: red discharging
+            now, amber discharged within the last 48 hours, green not discharging,
+            grey no signal.</p>
+
+          <h3>Reading the timeline</h3>
+          <p>Each overflow monitor is represented by a card, ranked by total discharge time. The 90-day status strip shows one bar
+            a day: red where it discharged, amber for the 48 hours after, green when it was clear,
+            dark grey where the monitor was offline, striped before watching began.</p>
+        </div>
+      </details>
+
+      <details class="acc-item" id="acc-safety">
+        <summary class="acc-summary">Safety</summary>
+        <div class="acc-body">
+          <p>This site records <i>when</i> storm overflows discharge. It does not measure water
+            quality, and it cannot tell you whether a river is safe to enter.</p>
+          <p>A stretch showing no recent discharge is not therefore clean. Rivers carry bacteria
+            from farmland, wildlife and road runoff at all times, and hazards like cold or fast
+            water remain regardless of what the overflows are doing.</p>
+          <p>If you swim, paddle or let a dog in the Frome, judge each spot on its own merits. For
+            a bathing water’s official classification see the Environment Agency’s
+            <a href="https://environment.data.gov.uk/bwq/" target="_blank" rel="noopener">Swimfo</a>;
+            for live pollution alerts and overflows beyond this one town, see Surfers Against
+            Sewage’s <a href="https://www.sas.org.uk/sewage-map/" target="_blank" rel="noopener">Sewage
+            Map</a>.</p>
+
+          <h3>What it can’t tell you</h3>
+          <p>A monitor records the start and end of an overflow – not how much was released, and
+            not what was in it. A monitor can also trigger on debris or vegetation, so an
+            activation <i>indicates</i> a discharge rather than confirming one.</p>
+
+          <h3>An incomplete picture</h3>
+          <p>If a monitor spills twice between two checks, only the second is recorded, so the
+            totals here are a floor, not an exact figure. These numbers will not match Wessex
+            Water’s regulator-verified annual returns, which are counted differently.</p>
+        </div>
+      </details>
+
+      <details class="acc-item" id="acc-sources">
+        <summary class="acc-summary">Sources</summary>
+        <div class="acc-body">
+          <h3>Data</h3>
+          <p>Overflow activity comes from Wessex Water’s near real-time event duration monitoring
+            (EDM) feed, an ArcGIS service. It reports only each monitor’s current status, not
+            history – this site polls it every 15 minutes and keeps its own day-by-day record.</p>
+
+          <ul>
+            <li><strong>Storm overflow activity</strong> – fetched from the
+              <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Storm_Overflow_Activity/FeatureServer"
+              target="_blank" rel="noopener">live ArcGIS feed</a>; browsable as
+              <a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
+              target="_blank" rel="noopener">Wessex Water Storm Overflow Activity</a> on Water UK’s
+              <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub"
+              target="_blank" rel="noopener">National Storm Overflow Hub</a>. © Wessex Water,
+              licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+              rel="noopener">CC BY 4.0</a>. Filtered here to the Frome catchment and rebuilt into a
+              day-by-day record.</li>
+            <li><strong>Site metadata</strong> (site name, waterbody, overflow type, treatment,
+              cause) – fetched from a second, separately licensed Wessex layer,
+              <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/overflow_context/FeatureServer"
+              target="_blank" rel="noopener">overflow context</a>.</li>
+          </ul>
+
+          <p>Waterbody names are Wessex’s own field, sourced from the Environment Agency’s
+            <a href="https://environment.data.gov.uk/catchment-planning/" target="_blank"
+            rel="noopener">Water Framework Directive catchment scheme</a>. No Environment
+            Agency data is used directly here, and nothing on this site is regulator-verified.</p>
+
+          <h3>Map</h3>
+          <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
+            target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Drawn as plain
+            SVG – no tile service, no map library.</p>
+        </div>
+      </details>
+
+      <details class="acc-item" id="acc-river-frome">
+        <summary class="acc-summary">River Frome</summary>
+        <div class="acc-body">
+          <p>The Overflow Watch is not affiliated with Wessex Water. It covers the Frome
+      catchment only and does not try to replace the national trackers.</p>
+
+          <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome.
+            For more information and to get involved please visit
+            <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
+            of the River Frome</a> and <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank" rel="noopener">Frome Families for the Future</a>.</p>
+        </div>
+      </details>
+    </div>
 
     <div class="credit">An independent project by <a href="https://www.smiths.studio/"
       target="_blank" rel="noopener">Smiths.Studio</a></div>
-  </div>
-
-  <div class="panel-body prose" id="tabpanel-safety" role="tabpanel"
-    aria-labelledby="tab-safety" tabindex="0" hidden>
-    <h3>Safety</h3>
-    <p>This site records <i>when</i> storm overflows discharge. It does not measure water
-      quality, and it cannot tell you whether a river is safe to enter.</p>
-    <p>A stretch showing no recent discharge is not therefore clean. Rivers carry bacteria
-      from farmland, wildlife and road runoff at all times, and hazards like cold or fast
-      water remain regardless of what the overflows are doing.</p>
-    <p>If you swim, paddle or let a dog in the Frome, judge each spot on its own merits. For
-      a bathing water’s official classification see the Environment Agency’s
-      <a href="https://environment.data.gov.uk/bwq/" target="_blank" rel="noopener">Swimfo</a>;
-      for live pollution alerts and overflows beyond this one town, see Surfers Against
-      Sewage’s <a href="https://www.sas.org.uk/sewage-map/" target="_blank" rel="noopener">Sewage
-      Map</a>.</p>
-
-    <h3>What it can’t tell you</h3>
-    <p>A monitor records the start and end of an overflow – not how much was released, and
-      not what was in it. A monitor can also trigger on debris or vegetation, so an
-      activation <i>indicates</i> a discharge rather than confirming one.</p>
-
-    <h3>An incomplete picture</h3>
-    <p>If a monitor spills twice between two checks, only the second is recorded, so the
-      totals here are a floor, not an exact figure. These numbers will not match Wessex
-      Water’s regulator-verified annual returns, which are counted differently.</p>
-  </div>
-
-  <div class="panel-body prose" id="tabpanel-sources" role="tabpanel"
-    aria-labelledby="tab-sources" tabindex="0" hidden>
-    <h3>Data</h3>
-    <p>Overflow activity comes from Wessex Water’s near real-time event duration monitoring
-      (EDM) feed, an ArcGIS service. It reports only each monitor’s current status, not
-      history – this site polls it every 15 minutes and keeps its own day-by-day record.</p>
-
-    <ul>
-      <li><strong>Storm overflow activity</strong> – fetched from the
-        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Storm_Overflow_Activity/FeatureServer"
-        target="_blank" rel="noopener">live ArcGIS feed</a>; browsable as
-        <a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
-        target="_blank" rel="noopener">Wessex Water Storm Overflow Activity</a> on Water UK’s
-        <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub"
-        target="_blank" rel="noopener">National Storm Overflow Hub</a>. © Wessex Water,
-        licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
-        rel="noopener">CC BY 4.0</a>. Filtered here to the Frome catchment and rebuilt into a
-        day-by-day record.</li>
-      <li><strong>Site metadata</strong> (site name, waterbody, overflow type, treatment,
-        cause) – fetched from a second, separately licensed Wessex layer,
-        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/overflow_context/FeatureServer"
-        target="_blank" rel="noopener">overflow context</a>. Wessex haven’t published a
-        browsable Hub page for this one, only the raw API linked above.</li>
-      <li><strong>Waterbody names</strong> follow the Environment Agency’s Water Framework
-        Directive catchments – look one up in the
-        <a href="https://environment.data.gov.uk/catchment-planning/" target="_blank"
-        rel="noopener">Catchment Data Explorer</a>. No Environment Agency data is used
-        directly, and nothing here is regulator-verified.</li>
-    </ul>
-
-    <h3>Map</h3>
-    <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
-      target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Drawn as plain
-      SVG – no tile service, no map library.</p>
   </div>
 </aside>
 
@@ -291,8 +300,7 @@ function paintCoverage(data, now) {
 
   note.textContent =
     `Each card below shows one overflow monitor in the Frome catchment. The status strip shows a rolling ${data.window_days} days, one bar per day. ` +
-    `Watching began ${began} – days before that are shown with diagonal stripes, not green: there's ` +
-    "no record for them either way, and the totals below only count what's been watched so far.";
+    `Watching began ${began} – days before that are shown with diagonal stripes.`;
   note.hidden = false;
 }
 
@@ -303,8 +311,14 @@ function midnightOn(ms) {
   return d.getTime();
 }
 
-// --- panel (one drawer, tabs: timeline / about / safety / sources) ---
-const TABS = ['timeline', 'about', 'safety', 'sources'];
+// --- panel (one drawer, tabs: timeline / about) ---
+//
+// About holds Safety and Sources too, as <details> accordions rather than
+// tabs of their own — see docs/lib's sibling comment in styles.css (.acc) for
+// why. `acc-*` ids let a link jump straight to one, expanded (see the hash
+// routing at the bottom of this script).
+const TABS = ['timeline', 'about'];
+const ACC_SECTIONS = ['how-to-use', 'safety', 'sources', 'river-frome'];
 const panel = $('panel');
 const openBtn = $('open-panel');
 const scrim = $('scrim');
@@ -365,6 +379,16 @@ tablist.addEventListener('keydown', (e) => {
   $(`tab-${next}`).focus();
 });
 
+// Only one About section open at a time. `toggle` doesn't bubble, so each
+// <details> needs its own listener rather than one delegated on `.acc`.
+const accItems = [...$('tabpanel-about').querySelectorAll('.acc-item')];
+for (const item of accItems) {
+  item.addEventListener('toggle', () => {
+    if (!item.open) return;
+    for (const other of accItems) if (other !== item) other.open = false;
+  });
+}
+
 // --- load ---
 try {
   const res = await fetch(`data.json?${Date.now()}`);
@@ -381,7 +405,13 @@ try {
   });
 
   const h = location.hash.slice(1);
-  if (TABS.includes(h)) openPanel(h);
+  if (ACC_SECTIONS.includes(h)) {
+    openPanel('about');
+    const details = $(`acc-${h}`);
+    if (details) { details.open = true; details.scrollIntoView({ block: 'start' }); }
+  } else if (TABS.includes(h)) {
+    openPanel(h);
+  }
 } catch {
   setVerdict('No data yet');
   renderLegend($('legend'));

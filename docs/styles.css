@@ -389,7 +389,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   justify-content: space-between;
   height: 75px;           /* = the FAB, so the close lands where it was */
   padding-left: 14px;
-  border-bottom: 1px solid  rgba(255, 255, 255, 0.62);;
+  border-bottom: 1px solid  rgba(255, 255, 255, 0.1);
 }
 
 .tabs {
@@ -479,7 +479,6 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .prose li { margin: 0 0 8px; }
 .prose li:last-child { margin-bottom: 0; }
 .prose h3 {
-  font-family: var(--display);
   font-weight: 400;
   font-size: 17px;
   margin: 22px 0 6px;
@@ -487,6 +486,47 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .prose h3:first-child { margin-top: 0; }
 .prose a { color: var(--sewage); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .prose a:hover { opacity: 0.8; }
+
+/* About's reference sections (How to use / Safety / Sources / River Frome)
+   as <details> accordions below the intro, rather than tabs of their own — a
+   tab strip that grew with every reference section added up fast (see
+   index.html's ACC_SECTIONS for the hash-routing that lets a link jump
+   straight to one, expanded). All closed on arrival, and opening one closes
+   the rest (see index.html's `toggle` listener) so the list stays scannable.
+   Native <details>/<summary> rather than a JS-driven widget: expand/collapse,
+   keyboard toggling and the closed-state semantics all come for free. */
+.acc { margin-top: 8px; }
+.acc-item { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.acc-item:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.acc-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 2px;
+  font-family: var(--display);
+  font-weight: 400;
+   font-size: 20px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--sewage);
+}
+.acc-summary::-webkit-details-marker { display: none; }
+.acc-summary::after {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+.acc-item[open] .acc-summary::after { margin-top: 2px; transform: rotate(-135deg); }
+.acc-summary:hover { opacity: 0.8; }
+.acc-summary:focus-visible { outline: 1px solid var(--sewage); outline-offset: 2px; }
+.acc-body { padding: 0 2px 18px; }
 
 /* --- Overflow list (the timeline panel) --- */
 
@@ -668,7 +708,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   .map-attr { bottom: 14px; }
   /* Four tabs plus the 75px close button — tighten so they fit a phone. */
   .panel-head { padding-left: 10px; }
-  .tab { padding: 8px 7px; font-size: 17px; }
+  .tab { padding: 8px 7px; font-size: 19px; }
 }
 
 /* --- Intro splash: shown on load, fades after 5s --- */

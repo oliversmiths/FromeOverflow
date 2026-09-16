@@ -285,7 +285,7 @@ export function fmtAnnualReturn(monitor) {
     ? `${latest.long_term_avg_spills.toFixed(1)} spills/yr since ${latest.data_start_year}`
     : null;
 
-  return { year: latest.year, latest: parts.join(', '), avg };
+  return { year: latest.year, latest: parts.join(', total: '), avg };
 }
 
 /**

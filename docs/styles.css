@@ -262,7 +262,8 @@ body {
 .pop-action:hover span { text-decoration: underline; }
 .pop-action:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
 /* beat the `#overflow-map svg { width:100% }` basemap rule */
-#overflow-map .map-popup .pin { flex: none; width: 11px; height: 11px; }
+#overflow-map .map-popup .pin,
+#overflow-map .map-popup .ico { flex: none; width: 11px; height: 11px; }
 .map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .map-popup .pop-state.is-discharging { color: var(--oxide); }
 .map-popup .pop-state.is-recent      { color: var(--amber); }

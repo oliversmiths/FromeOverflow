@@ -10,8 +10,8 @@
  */
 
 import {
-  RECENT_HOURS, fmtDuration, fmtWhen, mapStatusOf, mapsUrl, offlineMs,
-  spillMs, windowPhrase,
+  RECENT_HOURS, fmtAnnualReturn, fmtDuration, fmtWhen, mapStatusOf, mapsUrl,
+  offlineMs, spillMs, windowPhrase,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -138,7 +138,8 @@ function popup(monitor, now, windowDays) {
   el.append(top);
 
   const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
-  if (rows.length) {
+  const annualReturn = fmtAnnualReturn(monitor);
+  if (rows.length || annualReturn) {
     const dl = document.createElement('dl');
     dl.className = 'pop-context';
     for (const [term, key] of rows) {
@@ -146,6 +147,16 @@ function popup(monitor, now, windowDays) {
       dt.textContent = term;
       const dd = document.createElement('dd');
       dd.textContent = monitor[key];
+      dl.append(dt, dd);
+    }
+    if (annualReturn) {
+      // Not a CONTEXT_ROWS entry like the rest — it's computed from a list of
+      // yearly rows, not a flat field, so it gets its own row here rather than
+      // forcing that shape onto the table-driven ones above.
+      const dt = document.createElement('dt');
+      dt.textContent = 'EA annual return';
+      const dd = document.createElement('dd');
+      dd.textContent = annualReturn;
       dl.append(dt, dd);
     }
     el.append(dl);

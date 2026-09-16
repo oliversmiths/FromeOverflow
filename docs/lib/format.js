@@ -254,6 +254,37 @@ export function dayCells(monitor, now, days = 90) {
 }
 
 /**
+ * The Environment Agency's own regulator-verified figure for a monitor's most
+ * recent annual return, formatted for the map popup's context block: "58
+ * spills, 3d 9h in 2025 (avg 61.6/yr since 2019)". `null` when there's no
+ * annual-return data yet — a monitor `scripts/fetch-annual-returns.js` hasn't
+ * matched, or hasn't been run since this monitor was added.
+ *
+ * Deliberately the *other* number from everything else on this page: ours is
+ * a live-tracked floor that can miss a spill between two 15-minute polls (see
+ * CLAUDE.md's "Known undercount"); this is Wessex's official return, counted
+ * by EA's own 12–24h method. They're expected to disagree.
+ */
+export function fmtAnnualReturn(monitor) {
+  const returns = monitor.annual_returns;
+  if (!returns?.length) return null;
+  const latest = returns.at(-1);   // exported oldest first
+  if (latest.spill_count == null && latest.duration_hours == null) return null;
+
+  const parts = [];
+  if (latest.spill_count != null) {
+    parts.push(`${latest.spill_count} spill${latest.spill_count === 1 ? '' : 's'}`);
+  }
+  if (latest.duration_hours != null) parts.push(fmtDuration(latest.duration_hours * HOUR));
+
+  const avg = latest.long_term_avg_spills != null && latest.data_start_year != null
+    ? ` (avg ${latest.long_term_avg_spills.toFixed(1)}/yr since ${latest.data_start_year})`
+    : '';
+
+  return `${parts.join(', ')} in ${latest.year}${avg}`;
+}
+
+/**
  * Total time a monitor spent offline within the published window, in ms. The
  * counterpart to a monitor's discharge `total`: "no discharge recorded" means
  * much less when the sensor was dark for a stretch, so the card says both.

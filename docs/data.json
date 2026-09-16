@@ -1,5 +1,5 @@
 {
- "polled_at": 1789557326911,
+ "polled_at": 1789557737775,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -17,7 +17,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 9,
+     "duration_hours": 2.4666666984558105,
+     "long_term_avg_spills": 11.428571701049805,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 6,
+     "duration_hours": 1.0997600555419922,
+     "long_term_avg_spills": 11.857142448425293,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00062",
@@ -38,7 +54,23 @@
      "end": 1788145800000
     }
    ],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 72,
+     "duration_hours": 175.60000610351562,
+     "long_term_avg_spills": 63.28571319580078,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 58,
+     "duration_hours": 106.76482391357422,
+     "long_term_avg_spills": 63,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00120",
@@ -59,6 +91,22 @@
      "start": 1788423323862,
      "end": 1788426046794
     }
+   ],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 55,
+     "duration_hours": 853.7999877929688,
+     "long_term_avg_spills": 33,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 11,
+     "duration_hours": 131.5999755859375,
+     "long_term_avg_spills": 31.33333396911621,
+     "data_start_year": 2020
+    }
    ]
   },
   {
@@ -75,7 +123,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 59,
+     "duration_hours": 242.03334045410156,
+     "long_term_avg_spills": 33.875,
+     "data_start_year": 2017
+    },
+    {
+     "year": 2025,
+     "spill_count": 42,
+     "duration_hours": 162.23277282714844,
+     "long_term_avg_spills": 39.125,
+     "data_start_year": 2018
+    }
+   ]
   },
   {
    "id": "WXW00308",
@@ -91,7 +155,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 98,
+     "duration_hours": 1441.5,
+     "long_term_avg_spills": 86.125,
+     "data_start_year": 2017
+    },
+    {
+     "year": 2025,
+     "spill_count": 73,
+     "duration_hours": 779.5479736328125,
+     "long_term_avg_spills": 95.25,
+     "data_start_year": 2018
+    }
+   ]
   },
   {
    "id": "WXW00333",
@@ -107,7 +187,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 35,
+     "duration_hours": 13.366666793823242,
+     "long_term_avg_spills": 28.714284896850586,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 19,
+     "duration_hours": 5.566080093383789,
+     "long_term_avg_spills": 28.14285659790039,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00340",
@@ -123,7 +219,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 60,
+     "duration_hours": 539.2279663085938,
+     "long_term_avg_spills": 38.14285659790039,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 37,
+     "duration_hours": 422.3724060058594,
+     "long_term_avg_spills": 50.66666793823242,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00369",
@@ -139,7 +251,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 16,
+     "duration_hours": 151.4647216796875,
+     "long_term_avg_spills": 8.5,
+     "data_start_year": 2023
+    },
+    {
+     "year": 2025,
+     "spill_count": 2,
+     "duration_hours": 14.740833282470703,
+     "long_term_avg_spills": 9,
+     "data_start_year": 2024
+    }
+   ]
   },
   {
    "id": "WXW00401",
@@ -155,7 +283,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 68,
+     "duration_hours": 385.2207336425781,
+     "long_term_avg_spills": 58,
+     "data_start_year": 2022
+    },
+    {
+     "year": 2025,
+     "spill_count": 46,
+     "duration_hours": 218.6750030517578,
+     "long_term_avg_spills": 63.66666793823242,
+     "data_start_year": 2023
+    }
+   ]
   },
   {
    "id": "WXW00402",
@@ -171,7 +315,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 61,
+     "duration_hours": 657.4166870117188,
+     "long_term_avg_spills": 65.33333587646484,
+     "data_start_year": 2022
+    },
+    {
+     "year": 2025,
+     "spill_count": 46,
+     "duration_hours": 366.1867980957031,
+     "long_term_avg_spills": 68,
+     "data_start_year": 2023
+    }
+   ]
   },
   {
    "id": "WXW00420",
@@ -187,7 +347,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 5,
+     "duration_hours": 0.46666666865348816,
+     "long_term_avg_spills": 16.85714340209961,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 13,
+     "duration_hours": 0.566373348236084,
+     "long_term_avg_spills": 15.428571701049805,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00453",
@@ -203,7 +379,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 2,
+     "duration_hours": 3.816666603088379,
+     "long_term_avg_spills": 7.833333492279053,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 0,
+     "duration_hours": 0,
+     "long_term_avg_spills": 7.833333492279053,
+     "data_start_year": 2020
+    }
+   ]
   },
   {
    "id": "WXW00454",
@@ -219,7 +411,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 43,
+     "duration_hours": 153.1999969482422,
+     "long_term_avg_spills": 23.33333396911621,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 22,
+     "duration_hours": 60.09965515136719,
+     "long_term_avg_spills": 27,
+     "data_start_year": 2020
+    }
+   ]
   },
   {
    "id": "WXW00490",
@@ -264,6 +472,22 @@
      "start": 1788858120762,
      "end": 1788858930861
     }
+   ],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 65,
+     "duration_hours": 990.433349609375,
+     "long_term_avg_spills": 33.42856979370117,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 19,
+     "duration_hours": 95.11642456054688,
+     "long_term_avg_spills": 36.14285659790039,
+     "data_start_year": 2019
+    }
    ]
   },
   {
@@ -280,7 +504,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 55,
+     "duration_hours": 198.5,
+     "long_term_avg_spills": 41.42856979370117,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 26,
+     "duration_hours": 76.88391876220703,
+     "long_term_avg_spills": 40.57143020629883,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00654",
@@ -301,7 +541,23 @@
      "end": 1788145560000
     }
    ],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 69,
+     "duration_hours": 154,
+     "long_term_avg_spills": 61.57143020629883,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 58,
+     "duration_hours": 81.19845581054688,
+     "long_term_avg_spills": 61.57143020629883,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00693",
@@ -317,7 +573,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 0,
+     "duration_hours": 0,
+     "long_term_avg_spills": 0,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 0,
+     "duration_hours": 0,
+     "long_term_avg_spills": 0,
+     "data_start_year": 2020
+    }
+   ]
   },
   {
    "id": "WXW00709",
@@ -333,7 +605,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 4,
+     "duration_hours": 23.850000381469727,
+     "long_term_avg_spills": 2.2857143878936768,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 0,
+     "duration_hours": 0,
+     "long_term_avg_spills": 2.2857143878936768,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00710",
@@ -349,7 +637,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 2,
+     "duration_hours": 23.299999237060547,
+     "long_term_avg_spills": 13.875,
+     "data_start_year": 2017
+    },
+    {
+     "year": 2025,
+     "spill_count": 0,
+     "duration_hours": 0,
+     "long_term_avg_spills": 14.714285850524902,
+     "data_start_year": 2018
+    }
+   ]
   },
   {
    "id": "WXW00711",
@@ -365,7 +669,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 35,
+     "duration_hours": 10.566666603088379,
+     "long_term_avg_spills": 19.5,
+     "data_start_year": 2017
+    },
+    {
+     "year": 2025,
+     "spill_count": 17,
+     "duration_hours": 4.332666873931885,
+     "long_term_avg_spills": 21.5,
+     "data_start_year": 2018
+    }
+   ]
   },
   {
    "id": "WXW00788",
@@ -381,7 +701,23 @@
    "since": 1788262043425,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 16,
+     "duration_hours": 81,
+     "long_term_avg_spills": 6.666666507720947,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 4,
+     "duration_hours": 13.666720390319824,
+     "long_term_avg_spills": 7.199999809265137,
+     "data_start_year": 2020
+    }
+   ]
   },
   {
    "id": "WXW00805",
@@ -397,7 +733,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 5,
+     "duration_hours": 1.3666666746139526,
+     "long_term_avg_spills": 8.142857551574707,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 4,
+     "duration_hours": 0.6333333253860474,
+     "long_term_avg_spills": 6.4285712242126465,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00816",
@@ -434,6 +786,22 @@
      "start": 1789039840983,
      "end": 1788036840020
     }
+   ],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 81,
+     "duration_hours": 1245.25,
+     "long_term_avg_spills": 62.16666793823242,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 77,
+     "duration_hours": 1382.8017578125,
+     "long_term_avg_spills": 72,
+     "data_start_year": 2020
+    }
    ]
   },
   {
@@ -450,7 +818,23 @@
    "since": 1788262043425,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 23,
+     "duration_hours": 214.8385772705078,
+     "long_term_avg_spills": 8.833333015441895,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 5,
+     "duration_hours": 30.33363151550293,
+     "long_term_avg_spills": 9.5,
+     "data_start_year": 2020
+    }
+   ]
   },
   {
    "id": "WXW00880",
@@ -471,7 +855,23 @@
      "end": 1788144600000
     }
    ],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 19,
+     "duration_hours": 5.266666889190674,
+     "long_term_avg_spills": 17,
+     "data_start_year": 2023
+    },
+    {
+     "year": 2025,
+     "spill_count": 17,
+     "duration_hours": 2.1655466556549072,
+     "long_term_avg_spills": 18,
+     "data_start_year": 2024
+    }
+   ]
   },
   {
    "id": "WXW00934",
@@ -487,7 +887,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 5,
+     "duration_hours": 8.033333778381348,
+     "long_term_avg_spills": 17.14285659790039,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 2,
+     "duration_hours": 2.1998932361602783,
+     "long_term_avg_spills": 13.857142448425293,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00935",
@@ -503,7 +919,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 5,
+     "duration_hours": 30.100000381469727,
+     "long_term_avg_spills": 3.5714285373687744,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 3,
+     "duration_hours": 7.066693305969238,
+     "long_term_avg_spills": 4,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW00936",
@@ -519,7 +951,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 82,
+     "duration_hours": 1146.7781982421875,
+     "long_term_avg_spills": 46.88888931274414,
+     "data_start_year": 2016
+    },
+    {
+     "year": 2025,
+     "spill_count": 39,
+     "duration_hours": 522.283447265625,
+     "long_term_avg_spills": 65.85713958740234,
+     "data_start_year": 2017
+    }
+   ]
   },
   {
    "id": "WXW00979",
@@ -548,7 +996,23 @@
      "end": 1788862920000
     }
    ],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 67,
+     "duration_hours": 165.46665954589844,
+     "long_term_avg_spills": 38.42856979370117,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 29,
+     "duration_hours": 63.23320007324219,
+     "long_term_avg_spills": 49.66666793823242,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW01068",
@@ -591,11 +1055,31 @@
     },
     {
      "start": 1789555530101,
-     "end": 1789557326911
+     "end": 1789557588220
     },
     {
-     "start": 1789557326911,
+     "start": 1789557588220,
+     "end": 1789557737775
+    },
+    {
+     "start": 1789557737775,
      "end": null
+    }
+   ],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 11,
+     "duration_hours": 81.75,
+     "long_term_avg_spills": 7.666666507720947,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 1,
+     "duration_hours": 7.40015983581543,
+     "long_term_avg_spills": 7.833333492279053,
+     "data_start_year": 2020
     }
    ]
   },
@@ -613,7 +1097,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 81,
+     "duration_hours": 843.2833251953125,
+     "long_term_avg_spills": 54,
+     "data_start_year": 2019
+    },
+    {
+     "year": 2025,
+     "spill_count": 53,
+     "duration_hours": 584.3336791992188,
+     "long_term_avg_spills": 54.66666793823242,
+     "data_start_year": 2020
+    }
+   ]
   },
   {
    "id": "WXW01185",
@@ -629,7 +1129,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 6,
+     "duration_hours": 22.46666717529297,
+     "long_term_avg_spills": 5.5714287757873535,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 3,
+     "duration_hours": 11.433199882507324,
+     "long_term_avg_spills": 5.4285712242126465,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW01187",
@@ -645,7 +1161,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 27,
+     "duration_hours": 140.61666870117188,
+     "long_term_avg_spills": 16.5,
+     "data_start_year": 2021
+    },
+    {
+     "year": 2025,
+     "spill_count": 16,
+     "duration_hours": 122.93344116210938,
+     "long_term_avg_spills": 20.5,
+     "data_start_year": 2022
+    }
+   ]
   },
   {
    "id": "WXW01242",
@@ -661,7 +1193,23 @@
    "since": 1788107728322,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 2,
+     "duration_hours": 0.2666666805744171,
+     "long_term_avg_spills": 28.714284896850586,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 3,
+     "duration_hours": 0.16680000722408295,
+     "long_term_avg_spills": 25.285715103149414,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW01243",
@@ -677,7 +1225,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 62,
+     "duration_hours": 1037.25,
+     "long_term_avg_spills": 30.571428298950195,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 30,
+     "duration_hours": 421.0333251953125,
+     "long_term_avg_spills": 34.85714340209961,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW01245",
@@ -698,7 +1262,23 @@
      "end": 1788144480000
     }
    ],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 45,
+     "duration_hours": 25.066667556762695,
+     "long_term_avg_spills": 37.28571319580078,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 31,
+     "duration_hours": 10.232613563537598,
+     "long_term_avg_spills": 38,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW01272",
@@ -714,7 +1294,23 @@
    "since": 1788256544235,
    "status": 0,
    "events": [],
-   "offline": []
+   "offline": [],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 37,
+     "duration_hours": 341.75,
+     "long_term_avg_spills": 18.14285659790039,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 17,
+     "duration_hours": 163.0998992919922,
+     "long_term_avg_spills": 20.571428298950195,
+     "data_start_year": 2019
+    }
+   ]
   },
   {
    "id": "WXW01297",
@@ -786,6 +1382,22 @@
     {
      "start": 1789144243135,
      "end": 1788012840000
+    }
+   ],
+   "annual_returns": [
+    {
+     "year": 2024,
+     "spill_count": 40,
+     "duration_hours": 16.200000762939453,
+     "long_term_avg_spills": 35.28571319580078,
+     "data_start_year": 2018
+    },
+    {
+     "year": 2025,
+     "spill_count": 21,
+     "duration_hours": 6.833653450012207,
+     "long_term_avg_spills": 36.57143020629883,
+     "data_start_year": 2019
     }
    ]
   }

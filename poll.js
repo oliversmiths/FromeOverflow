@@ -474,6 +474,13 @@ async function exportJson(db, rows, polledAt) {
     WHERE monitor_id = ? AND (end_ms IS NULL OR end_ms >= ?)
     ORDER BY start_ms`);
 
+  // The regulator-verified figures, oldest first — unlike events/offline this
+  // isn't windowed by EXPORT_DAYS, since a year's return is meaningful on its
+  // own and there are only ever one or two rows per monitor.
+  const annualReturnsFor = db.prepare(`
+    SELECT year, spill_count, duration_hours, long_term_avg_spills, data_start_year
+    FROM annual_returns WHERE monitor_id = ? ORDER BY year`);
+
   // Only publish monitors the filter has matched recently. A monitor that drops
   // out — because you narrowed the catchment, or Wessex stopped listing it —
   // ages off the page after a week but keeps its history in the database.
@@ -502,6 +509,14 @@ async function exportJson(db, rows, polledAt) {
         .map((e) => ({ start: e.start_ms, end: e.end_ms })),
       offline: offlineFor.all(m.id, cutoff)
         .map((o) => ({ start: o.start_ms, end: o.end_ms })),
+      annual_returns: annualReturnsFor.all(m.id)
+        .map((r) => ({
+          year: r.year,
+          spill_count: r.spill_count,
+          duration_hours: r.duration_hours,
+          long_term_avg_spills: r.long_term_avg_spills,
+          data_start_year: r.data_start_year,
+        })),
     }));
 
   await mkdir(dirname(JSON_PATH), { recursive: true });

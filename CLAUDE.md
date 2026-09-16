@@ -83,8 +83,13 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   the traffic light. The map popup is split in two by a rule: **above it is the
   live activity feed** (Id + watercourse, state, last discharge, offline total,
   coordinates); **below it, `CONTEXT_ROWS`** renders the static
-  `overflow_context` fields as a `.pop-context` term/value grid. Rows with no
-  value are skipped, so an unfetched monitor just shows the feed half. `dayCells`
+  `overflow_context` fields as a `.pop-context` term/value grid, plus one more
+  row from `fmtAnnualReturn` — the Environment Agency's own regulator-verified
+  spill count/duration for the monitor's latest annual return, deliberately
+  the *other* number from everything else on the page (ours is a live-tracked
+  floor; theirs is official, counted differently, a year in arrears). Rows
+  with no value are skipped, so an unfetched monitor just shows the feed half,
+  and a monitor with no annual-return match just skips that one row. `dayCells`
   turns a monitor's events *and its offline spells* into one cell per day for the
   last 90 — `nodata`/`spill`/`recent`/`offline`/`dry`, **checked in that order**:
   a day before the monitor's `since` is unknown and stays unknown, whatever the

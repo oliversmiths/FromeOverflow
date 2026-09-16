@@ -134,7 +134,8 @@ b, strong { font-weight: 600; }
 
 .pin-layer .mappin { display: none; }
 .pin-layer .mappin.is-shown { display: block; }
-.mappin:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.mappin:focus-visible,
+.mappin.is-selected { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .mappin--discharging { background: var(--oxide); }
 .mappin--recent      { background: var(--amber); }

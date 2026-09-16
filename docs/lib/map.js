@@ -478,8 +478,15 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
     popW = r.width;
     popH = r.height;
     placePopup();
+    // Ring the pin its popup belongs to, so it stays visually tied to it
+    // rather than just wherever the popup happens to be pointing.
+    for (const p of pins) p.el.classList.toggle('is-selected', p.m.id === m.id);
   }
-  function closePopup() { openM = null; pop.hidden = true; }
+  function closePopup() {
+    openM = null;
+    pop.hidden = true;
+    for (const p of pins) p.el.classList.remove('is-selected');
+  }
 
   // Sit the popup above the pin, centred; flip below if it would clip the top,
   // then clamp so it never leaves the map — so an edge pin still gets a readable

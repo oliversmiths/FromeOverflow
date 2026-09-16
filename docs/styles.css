@@ -55,6 +55,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+b, strong { font-weight: 600; }
+
 /* --- The map fills the viewport --- */
 
 #overflow-map {

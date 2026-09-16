@@ -144,30 +144,38 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   el.append(top);
 
   const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
-  const annualReturn = fmtAnnualReturn(monitor);
-  if (rows.length || annualReturn) {
+  if (rows.length) {
     const dl = document.createElement('dl');
     dl.className = 'pop-context';
-    const addRow = (term, value) => {
+    for (const [term, key] of rows) {
       const dt = document.createElement('dt');
       dt.textContent = term;
       const dd = document.createElement('dd');
-      dd.textContent = value;
+      dd.textContent = monitor[key];
       dl.append(dt, dd);
-    };
-
-    for (const [term, key] of rows) addRow(term, monitor[key]);
-
-    // Not CONTEXT_ROWS entries like the rest — computed from a list of yearly
-    // rows, not a flat field. Two rows, not one: folding the average in as a
-    // trailing aside on the latest year read as if it belonged to that year,
-    // when it's a separate multi-year figure.
-    if (annualReturn) {
-      addRow(`EA ${annualReturn.year}`, annualReturn.latest);
-      if (annualReturn.avg) addRow('EA avg', annualReturn.avg);
     }
-
     el.append(dl);
+  }
+
+  // Its own box, not CONTEXT_ROWS entries like the rest above — a regulator's
+  // published figure reads as a claim of its own, not just another attribute
+  // of the monitor, so it's set apart rather than folded into that grid.
+  const annualReturn = fmtAnnualReturn(monitor);
+  if (annualReturn) {
+    const box = document.createElement('div');
+    box.className = 'pop-annual';
+    const heading = document.createElement('p');
+    heading.className = 'pop-annual-heading';
+    heading.textContent = 'Environment Agency Annual Return';
+    const yearLine = document.createElement('p');
+    yearLine.textContent = `${annualReturn.year}: ${annualReturn.latest}`;
+    box.append(heading, yearLine);
+    if (annualReturn.avg) {
+      const avgLine = document.createElement('p');
+      avgLine.textContent = `Average: ${annualReturn.avg}`;
+      box.append(avgLine);
+    }
+    el.append(box);
   }
 
   // The reverse of the timeline card's own "View on map" button.

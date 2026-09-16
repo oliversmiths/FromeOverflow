@@ -242,6 +242,27 @@ body {
 .map-popup a { display: inline-flex; align-items: center; gap: 4px; color: var(--silt); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover span { text-decoration: underline; }
 
+/* The Environment Agency's own regulator-verified figures — set apart in
+   their own bordered box rather than folded into .pop-context's grid, since
+   it's a published claim in its own right, not just another attribute. */
+.pop-annual {
+  margin: 11px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.pop-annual p { margin: 0; }
+.pop-annual > .pop-annual-heading {
+  margin-bottom: 4px;
+  font-family: var(--data);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--silt);
+}
+
 /* "View 90-day status" — the reverse of a card's own "View on map" button
    (.o-foot button), styled to match it. Always the last thing in the popup,
    whether or not a .pop-context grid came before it. */

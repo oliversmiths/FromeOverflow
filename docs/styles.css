@@ -248,19 +248,18 @@ body {
 .pop-annual {
   margin: 11px 0 0;
   padding: 8px 10px;
-  border: 1px solid var(--hairline);
-  border-radius: 3px;
+  background: #f7eeea;
   font-size: 11px;
   line-height: 1.4;
 }
-.pop-annual p { margin: 0; }
+.pop-annual p { margin: 0;color: var(--oxide)}
 .pop-annual > .pop-annual-heading {
   margin-bottom: 4px;
   font-family: var(--data);
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--silt);
+  color: var(--oxide);
 }
 
 /* "View 90-day status" — the reverse of a card's own "View on map" button

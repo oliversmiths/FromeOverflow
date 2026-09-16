@@ -87,9 +87,10 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   annual-return data gets a further, separate `.pop-annual` box below that —
   not folded into the grid, because a regulator's published figure reads as a
   claim of its own, not just another attribute — built from `fmtAnnualReturn`:
-  a heading, "`<year>`: N spills, total: `<duration>`", and "Average: N
-  spills/yr since `<year>`" when the long-term figure is there too. These are
-  the Environment Agency's own regulator-verified numbers, deliberately the
+  a heading, "N spills, total `<duration>` in `<year>`" (spill count and
+  duration in `<strong>`, the headline figures), and "N spills/yr avg since
+  `<year>`" when the long-term figure is there too. These are the Environment
+  Agency's own regulator-verified numbers, deliberately the
   *other* figure from everything else on the page (ours is a live-tracked
   floor; theirs is official, counted differently, a year in arrears). Rows
   and boxes with no value are skipped, so an unfetched monitor just shows the

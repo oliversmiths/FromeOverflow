@@ -167,12 +167,29 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
     const heading = document.createElement('p');
     heading.className = 'pop-annual-heading';
     heading.textContent = 'Environment Agency Annual Return';
+
+    // The spill count and duration are the headline figures, so they're bold
+    // — everything else ("spills, total", "in <year>") is just the sentence
+    // holding them together.
     const yearLine = document.createElement('p');
-    yearLine.textContent = `${annualReturn.year}: ${annualReturn.latest}`;
+    const { spillCount, duration, year } = annualReturn;
+    if (spillCount != null) {
+      const b = document.createElement('strong');
+      b.textContent = spillCount;
+      yearLine.append(b, ` spill${spillCount === 1 ? '' : 's'}`);
+    }
+    if (duration != null) {
+      yearLine.append(spillCount != null ? ', total ' : 'total ');
+      const b = document.createElement('strong');
+      b.textContent = duration;
+      yearLine.append(b);
+    }
+    yearLine.append(` in ${year}`);
+
     box.append(heading, yearLine);
     if (annualReturn.avg) {
       const avgLine = document.createElement('p');
-      avgLine.textContent = `Average: ${annualReturn.avg}`;
+      avgLine.textContent = annualReturn.avg;
       box.append(avgLine);
     }
     el.append(box);

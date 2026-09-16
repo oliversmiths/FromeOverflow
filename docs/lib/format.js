@@ -254,15 +254,16 @@ export function dayCells(monitor, now, days = 90) {
 }
 
 /**
- * The Environment Agency's own regulator-verified figures for a monitor, as
- * the two rows the map popup's context block shows them in — the year is
- * folded into the first row's own term ("EA 2025") rather than its value, so
- * the long-term average reads as its own line rather than a trailing aside:
- *   { year: 2025, latest: "58 spills, 3d 9h", avg: "61.6 spills/yr since 2019" }
- * `avg` is `null` on its own if that part is missing; the whole thing is
- * `null` when there's no annual-return data yet — a monitor
- * `scripts/fetch-annual-returns.js` hasn't matched, or hasn't been run since
- * this monitor was added.
+ * The Environment Agency's own regulator-verified figures for a monitor, for
+ * the map popup's own `.pop-annual` box — split so the caller can style the
+ * spill count and duration (the headline figures) differently from the rest
+ * of the sentence:
+ *   { year: 2025, spillCount: 58, duration: "3d 9h", avg: "61.6 spills/yr avg since 2019" }
+ * reading as "58 spills, total 3d 9h in 2025" / "61.6 spills/yr avg since 2019".
+ * `spillCount`/`duration`/`avg` are `null` independently if that part is
+ * missing; the whole thing is `null` when there's no annual-return data yet —
+ * a monitor `scripts/fetch-annual-returns.js` hasn't matched, or hasn't been
+ * run since this monitor was added.
  *
  * Deliberately the *other* number from everything else on this page: ours is
  * a live-tracked floor that can miss a spill between two 15-minute polls (see
@@ -275,17 +276,16 @@ export function fmtAnnualReturn(monitor) {
   const latest = returns.at(-1);   // exported oldest first
   if (latest.spill_count == null && latest.duration_hours == null) return null;
 
-  const parts = [];
-  if (latest.spill_count != null) {
-    parts.push(`${latest.spill_count} spill${latest.spill_count === 1 ? '' : 's'}`);
-  }
-  if (latest.duration_hours != null) parts.push(fmtDuration(latest.duration_hours * HOUR));
-
   const avg = latest.long_term_avg_spills != null && latest.data_start_year != null
-    ? `${latest.long_term_avg_spills.toFixed(1)} spills/yr since ${latest.data_start_year}`
+    ? `${latest.long_term_avg_spills.toFixed(1)} spills/yr avg since ${latest.data_start_year}`
     : null;
 
-  return { year: latest.year, latest: parts.join(', total: '), avg };
+  return {
+    year: latest.year,
+    spillCount: latest.spill_count,
+    duration: latest.duration_hours != null ? fmtDuration(latest.duration_hours * HOUR) : null,
+    avg,
+  };
 }
 
 /**

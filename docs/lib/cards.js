@@ -63,6 +63,9 @@ export function renderCards(container, data, onSeeOnMap) {
 
     const card = document.createElement('div');
     card.className = `o-card is-${state.key}`;
+    // Looked up by the map popup's "View 90-day status" link, the reverse of
+    // this card's own "View on map" button.
+    card.dataset.monitorId = monitor.id;
 
     const head = document.createElement('div');
     head.className = 'o-head';

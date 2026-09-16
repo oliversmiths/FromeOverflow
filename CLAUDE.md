@@ -131,7 +131,11 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   throughout — this project is Overflow *Watch* — never "record[ing]" for the
   live-monitoring sense (`overflows.db`/"record" is fine for the *data*, e.g.
   "keeps its own history"). Each bar carries the structured `data-tip-*`
-  attributes, not `title`.
+  attributes, not `title`. `onSeeOnMap` backs each card's "View on map"
+  button; `map.js`'s popup has the reverse, `onSeeInTimeline` (its "View
+  90-day status" link), which opens the Timeline tab and scrolls straight to
+  the matching card via `[data-monitor-id]` — set here on every card for
+  exactly that lookup.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
   anything with a `data-tip*` attribute, delegated from `document`. Two forms:
   `data-tip="…"` is one plain line; `data-tip-date` / `data-tip-status`
@@ -142,7 +146,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   viewport, which matters because the 90-day bars are ~4px wide and sit against
   both edges of a 500px panel; flips below the target when there is no room
   above, and hides on scroll rather than tracking.
-- **`docs/lib/map.js`** — `buildMap(host, data, { initialZoom })` + `renderLegend`.
+- **`docs/lib/map.js`** — `buildMap(host, data, { initialZoom, onSeeInTimeline })`
+  + `renderLegend`.
   **No library, no tile service.** Fetches `basemap.json` and draws roads/
   waterways as one SVG whose `viewBox` is the camera; pins/labels/popups are an
   HTML overlay repositioned each frame. The camera is clamped to **`CROP_KM`**

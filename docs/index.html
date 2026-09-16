@@ -411,7 +411,17 @@ try {
   initTooltips();
   paintStatus(data);
   renderLegend($('legend'));
-  const map = buildMap($('overflow-map'), data, { initialZoom: INITIAL_ZOOM });
+  const map = buildMap($('overflow-map'), data, {
+    initialZoom: INITIAL_ZOOM,
+    // The reverse of a card's own "View on map" below: open the timeline and
+    // scroll straight to this monitor's card.
+    onSeeInTimeline: (monitor) => {
+      map.closePopup();
+      openPanel('timeline');
+      $('overflows').querySelector(`[data-monitor-id="${CSS.escape(monitor.id)}"]`)
+        ?.scrollIntoView({ block: 'start' });
+    },
+  });
   renderCards($('overflows'), data, (monitor) => {
     closePanel();
     map.focus(monitor);

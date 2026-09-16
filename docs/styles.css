@@ -241,6 +241,26 @@ body {
 .map-popup .pop-context dd { margin: 0; }
 .map-popup a { display: inline-flex; align-items: center; gap: 4px; color: var(--silt); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover span { text-decoration: underline; }
+
+/* "View 90-day status" — the reverse of a card's own "View on map" button
+   (.o-foot button), styled to match it. Always the last thing in the popup,
+   whether or not a .pop-context grid came before it. */
+.pop-foot { margin: 11px 0 0; }
+.pop-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--data);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--silt);
+  cursor: pointer;
+}
+.pop-action:hover span { text-decoration: underline; }
+.pop-action:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
 /* beat the `#overflow-map svg { width:100% }` basemap rule */
 #overflow-map .map-popup .pin { flex: none; width: 11px; height: 11px; }
 .map-popup .pop-state { font-family: var(--data); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }

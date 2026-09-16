@@ -21,6 +21,12 @@ const PIN =
   '<svg class="pin" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">' +
   '<path fill="currentColor" d="M12 2a7.5 7.5 0 0 0-7.5 7.5c0 5.2 6.3 11.7 6.6 12a1.2 1.2 0 0 0 1.8 0' +
   'c.3-.3 6.6-6.8 6.6-12A7.5 7.5 0 0 0 12 2Zm0 10.2a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Z"/></svg>';
+// Three ascending bars for the popup's "View 90-day status" link — echoes the
+// timeline's own day strip, the reverse direction of cards.js's LOUPE.
+const BARS =
+  '<svg class="ico" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" ' +
+  'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
+  '<path d="M4 20V13"/><path d="M12 20V7"/><path d="M20 20V16"/></svg>';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
 const MAX_ZOOM_IN = 40;    // smallest viewBox = zoomed-out width / this
 // How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
@@ -80,7 +86,7 @@ const CONTEXT_ROWS = [
   ['Cause', 'cause'],
 ];
 
-function popup(monitor, now, windowDays) {
+function popup(monitor, now, windowDays, onSeeInTimeline) {
   const state = mapStatusOf(monitor, now);
   const last = monitor.events.at(-1);
   const el = document.createElement('div');
@@ -163,22 +169,37 @@ function popup(monitor, now, windowDays) {
 
     el.append(dl);
   }
+
+  // The reverse of the timeline card's own "View on map" button.
+  const foot = document.createElement('div');
+  foot.className = 'pop-foot';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'pop-action';
+  btn.innerHTML = `${BARS}<span>View 90-day status</span>`;
+  btn.addEventListener('click', () => onSeeInTimeline(monitor));
+  foot.append(btn);
+  el.append(foot);
+
   return el;
 }
 
 /**
  * Fetch `basemap.json` and draw the map into `host`. `opts.initialZoom` is the
  * fraction of the full 10 km box to open on (1 = whole box, 0.36 ≈ two clicks in).
+ * `opts.onSeeInTimeline(monitor)` is called when a popup's "View 90-day
+ * status" link is clicked — the reverse of a card's own "View on map".
  */
 export function buildMap(host, data, opts = {}) {
-  const { initialZoom = 1 } = opts;
+  const { initialZoom = 1, onSeeInTimeline = () => {} } = opts;
   let api = null;
   const pending = [];   // focus() calls made before the basemap finished loading
 
   fetch(`basemap.json?${Date.now()}`)
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((bm) => {
-      api = drawMap(host, bm, data.monitors, data.polled_at, initialZoom, data.window_days);
+      api = drawMap(host, bm, data.monitors, data.polled_at, initialZoom, data.window_days,
+        onSeeInTimeline);
       for (const m of pending) api.focus(m);
       pending.length = 0;
     })
@@ -191,10 +212,11 @@ export function buildMap(host, data, opts = {}) {
   // "See on map" links call this.
   return {
     focus(monitor) { api ? api.focus(monitor) : pending.push(monitor); },
+    closePopup() { api?.closePopup(); },
   };
 }
 
-function drawMap(host, bm, monitors, now, initialZoom, windowDays) {
+function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeline) {
   const [BW, BS, BE, BN] = bm.box;
   const [GW, GH] = bm.size;
 
@@ -425,7 +447,7 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays) {
       { type: 'button', className: 'pop-close', textContent: '×' });
     close.setAttribute('aria-label', 'Close');
     close.addEventListener('click', (e) => { e.stopPropagation(); closePopup(); });
-    pop.append(close, popup(m, now, windowDays));
+    pop.append(close, popup(m, now, windowDays, onSeeInTimeline));
     pop.hidden = false;
     const r = pop.getBoundingClientRect();
     popW = r.width;
@@ -574,5 +596,5 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays) {
   new ResizeObserver(recalc).observe(host);
   recalc();
 
-  return { focus };
+  return { focus, closePopup };
 }

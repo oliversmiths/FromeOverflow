@@ -142,23 +142,25 @@ function popup(monitor, now, windowDays) {
   if (rows.length || annualReturn) {
     const dl = document.createElement('dl');
     dl.className = 'pop-context';
-    for (const [term, key] of rows) {
+    const addRow = (term, value) => {
       const dt = document.createElement('dt');
       dt.textContent = term;
       const dd = document.createElement('dd');
-      dd.textContent = monitor[key];
+      dd.textContent = value;
       dl.append(dt, dd);
-    }
+    };
+
+    for (const [term, key] of rows) addRow(term, monitor[key]);
+
+    // Not CONTEXT_ROWS entries like the rest — computed from a list of yearly
+    // rows, not a flat field. Two rows, not one: folding the average in as a
+    // trailing aside on the latest year read as if it belonged to that year,
+    // when it's a separate multi-year figure.
     if (annualReturn) {
-      // Not a CONTEXT_ROWS entry like the rest — it's computed from a list of
-      // yearly rows, not a flat field, so it gets its own row here rather than
-      // forcing that shape onto the table-driven ones above.
-      const dt = document.createElement('dt');
-      dt.textContent = 'EA annual return';
-      const dd = document.createElement('dd');
-      dd.textContent = annualReturn;
-      dl.append(dt, dd);
+      addRow(`EA ${annualReturn.year}`, annualReturn.latest);
+      if (annualReturn.avg) addRow('EA avg', annualReturn.avg);
     }
+
     el.append(dl);
   }
   return el;

@@ -43,9 +43,10 @@ jobs:
         run: node poll.js
 
       # `snapshots` is pruned to 30 days, so the permanent record is monitors +
-      # events + offline. That dumps to a couple of KB gzipped, so a weekly copy
-      # on main is a cheap, public, forkable archive — and the recovery path if a
-      # force-push to the db branch ever writes something broken.
+      # events + offline + annual_returns. That dumps to a couple of KB gzipped,
+      # so a weekly copy on main is a cheap, public, forkable archive — and the
+      # recovery path if a force-push to the db branch ever writes something
+      # broken.
       - name: Archive the permanent record (weekly)
         run: |
           mkdir -p archive
@@ -54,7 +55,7 @@ jobs:
             echo "Already archived $week"
           else
             sqlite3 overflows.db ".dump monitors" ".dump events" ".dump offline" \
-              | gzip -9 > "$week"
+              ".dump annual_returns" | gzip -9 > "$week"
             echo "Wrote $week ($(du -h "$week" | cut -f1))"
           fi
 

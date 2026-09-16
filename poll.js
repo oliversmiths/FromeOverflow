@@ -154,6 +154,23 @@ CREATE TABLE IF NOT EXISTS snapshots (
   PRIMARY KEY (polled_at, monitor_id)
 );
 
+-- Regulator-verified annual spill figures from the Environment Agency's own
+-- EDM Storm Overflow Annual Return -- the *other* number from everything else
+-- in this file: our own totals are a live-tracked floor (see CLAUDE.md's
+-- "Known undercount"), this is Wessex's official return for the year. Static
+-- reference data, filled in only by scripts/fetch-annual-returns.js, never by
+-- the poller -- it changes once a year, not every 15 minutes.
+CREATE TABLE IF NOT EXISTS annual_returns (
+  monitor_id           TEXT NOT NULL,
+  year                 INTEGER NOT NULL,
+  spill_count          INTEGER,      -- 12-24h counted spills for that year
+  duration_hours       REAL,         -- total spill duration that year, hours
+  long_term_avg_spills REAL,         -- avg annual spill count, data_start_year..year
+  data_start_year      INTEGER,      -- first year behind the long-term average
+  fetched_at           INTEGER NOT NULL,
+  PRIMARY KEY (monitor_id, year)
+);
+
 CREATE INDEX IF NOT EXISTS idx_events_start ON events (start_ms);
 CREATE INDEX IF NOT EXISTS idx_snap_monitor ON snapshots (monitor_id, polled_at);
 `;

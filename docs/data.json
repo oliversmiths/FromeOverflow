@@ -1,5 +1,5 @@
 {
- "polled_at": 1789646449862,
+ "polled_at": 1789647328488,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -1499,5 +1499,49 @@
    ]
   }
  ],
- "swim_spots": []
+ "swim_spots": [
+  {
+   "id": "farleigh-hungerford",
+   "name": "Farleigh Hungerford",
+   "lat": 51.31783,
+   "lon": -2.28194,
+   "recognised": true,
+   "description": "A recognised bathing spot on the Frome, sampled weekly through the season.",
+   "dashboard_url": "https://www.arcgis.com/apps/dashboards/a058553168f44f02905dd0b9dd667875",
+   "flow": {
+    "value": 0.516,
+    "measured_at": 1786352400000
+   },
+   "water_quality": [
+    {
+     "determinand": "Enterococci",
+     "result": 66,
+     "units": "Enterococci/ 100 mL",
+     "status": "11/08/2026 show excellent indicative water quality at this location.",
+     "sampled_at": 1786441800000
+    },
+    {
+     "determinand": "E coli",
+     "result": 170,
+     "units": "E. Coli/ 100 mL",
+     "status": "11/08/2026 show excellent indicative water quality at this location.",
+     "sampled_at": 1786441800000
+    }
+   ]
+  },
+  {
+   "id": "tellisford-weir",
+   "name": "Tellisford Weir",
+   "lat": 51.297801,
+   "lon": -2.280823,
+   "recognised": false,
+   "description": "A popular spot on the Frome, just upstream of Farleigh Hungerford — not an officially recognised bathing water, so no water quality sampling here.",
+   "dashboard_url": null,
+   "flow": {
+    "value": 0.516,
+    "measured_at": 1786352400000
+   },
+   "water_quality": []
+  }
+ ]
 }

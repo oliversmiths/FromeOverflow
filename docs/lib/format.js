@@ -258,12 +258,15 @@ export function dayCells(monitor, now, days = 90) {
  * the map popup's own `.pop-annual` box — split so the caller can style the
  * spill count and duration (the headline figures) differently from the rest
  * of the sentence:
- *   { year: 2025, spillCount: 58, duration: "3d 9h", avg: "61.6 spills/yr avg since 2019" }
+ *   { year: 2025, spillCount: 58, duration: "3d 9h", durationMs: 291600000,
+ *     avg: "61.6 spills/yr avg since 2019" }
  * reading as "58 spills, total 3d 9h in 2025" / "61.6 spills/yr avg since 2019".
- * `spillCount`/`duration`/`avg` are `null` independently if that part is
- * missing; the whole thing is `null` when there's no annual-return data yet —
- * a monitor `scripts/fetch-annual-returns.js` hasn't matched, or hasn't been
- * run since this monitor was added.
+ * `durationMs` is the same figure as `duration`, unformatted, so a caller can
+ * threshold on it (the popup's `.pop-annual` box colour) without reparsing the
+ * display string. `spillCount`/`duration`/`durationMs`/`avg` are `null`
+ * independently if that part is missing; the whole thing is `null` when
+ * there's no annual-return data yet — a monitor `scripts/fetch-annual-returns.js`
+ * hasn't matched, or hasn't been run since this monitor was added.
  *
  * Deliberately the *other* number from everything else on this page: ours is
  * a live-tracked floor that can miss a spill between two 15-minute polls (see
@@ -284,6 +287,7 @@ export function fmtAnnualReturn(monitor) {
     year: latest.year,
     spillCount: latest.spill_count,
     duration: latest.duration_hours != null ? fmtDuration(latest.duration_hours * HOUR) : null,
+    durationMs: latest.duration_hours != null ? latest.duration_hours * HOUR : null,
     avg,
   };
 }

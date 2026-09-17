@@ -10,8 +10,9 @@
  */
 
 import {
-  RECENT_HOURS, fmtAnnualReturn, fmtDate, fmtDuration, fmtFlow, fmtWhen,
-  fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs, spillMs, windowPhrase,
+  DAY, MINUTE, RECENT_HOURS, fmtAnnualReturn, fmtDate, fmtDuration, fmtFlow,
+  fmtWhen, fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs, spillMs,
+  windowPhrase,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -159,7 +160,15 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   const annualReturn = fmtAnnualReturn(monitor);
   if (annualReturn) {
     const box = document.createElement('div');
-    box.className = 'pop-annual';
+    // Tinted by the total's own severity, same three-colour vocabulary as
+    // everywhere else on the page (pins, the 90-day strip): under a minute
+    // reads as noise rather than a real discharge (--dry), under a day is
+    // worth a second look (--amber), a day or more is the existing --oxide.
+    // `durationMs` is null when the return has a spill count but no duration
+    // — falls back to the oxide default rather than guessing.
+    const { durationMs } = annualReturn;
+    const tint = durationMs == null ? 'oxide' : durationMs < MINUTE ? 'dry' : durationMs < DAY ? 'amber' : 'oxide';
+    box.className = `pop-annual pop-annual--${tint}`;
     const heading = document.createElement('p');
     heading.className = 'pop-annual-heading';
     heading.textContent = 'Environment Agency Annual Return';
@@ -287,11 +296,12 @@ function swimPopup(spot) {
   el.append(top);
 
   // Only relevant where a spot is actually sampled — same "set apart, not
-  // just another attribute" treatment as popup()'s annual-return box.
+  // just another attribute" treatment as popup()'s annual-return box. Always
+  // the --oxide tint: unlike that box, there's no severity scale here.
   const wq = fmtWaterQuality(spot);
   if (wq) {
     const box = document.createElement('div');
-    box.className = 'pop-annual';
+    box.className = 'pop-annual pop-annual--oxide';
     const heading = document.createElement('p');
     heading.className = 'pop-annual-heading';
     heading.textContent = 'Water Quality';

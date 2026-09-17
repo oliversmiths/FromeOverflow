@@ -145,7 +145,7 @@ b, strong { font-weight: 600; }
    the traffic-light circles, so it never reads as another status colour.
    Its own ring colour too: the fill is already --water, so the shared
    .mappin.is-selected ring above would all but disappear on top of it. */
-.swimpin { background: var(--sewage); border: 2px solid var(--water); border-radius: 0; transform: translate(-50%, -50%) rotate(45deg); }
+.swimpin { background: var(--water); border: 2px solid var(--chalk); border-radius: 0; transform: translate(-50%, -50%) rotate(45deg); }
 .swimpin:focus-visible,
 .swimpin.is-selected { outline-color: var(--water);border-color: var(--chalk); }
 
@@ -282,19 +282,29 @@ b, strong { font-weight: 600; }
 .pop-annual {
   margin: 11px 0 0;
   padding: 8px 10px;
-  background: #f7eeea;
   font-size: 11px;
   line-height: 1.4;
 }
-.pop-annual p { margin: 0;color: var(--oxide)}
+.pop-annual p { margin: 0; }
 .pop-annual > .pop-annual-heading {
   margin-bottom: 4px;
   font-family: var(--data);
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--oxide);
 }
+
+/* Tinted by the annual total's own severity, same three-colour vocabulary as
+   pins and the 90-day strip — see map.js's popup() for the threshold (under a
+   minute / under a day / a day or more). `.pop-annual-heading` is itself a
+   <p>, so `.pop-annual--X p` covers both the heading and the sentence below
+   it in one rule. */
+.pop-annual--oxide { background: #f7eeea; }
+.pop-annual--oxide p { color: var(--oxide); }
+.pop-annual--amber { background: #fbf7eb; }
+.pop-annual--amber p { color: var(--amber); }
+.pop-annual--dry { background: #f2f7f3; }
+.pop-annual--dry p { color: var(--dry); }
 
 /* "View 90-day status" — the reverse of a card's own "View on map" button
    (.o-foot button), styled to match it. Always the last thing before any
@@ -383,7 +393,7 @@ b, strong { font-weight: 600; }
 /* .legend .mappin above resets transform to none for every dot — put the
    swim pin's diamond rotation back, just for this one. Comes after so it
    wins the tie (equal specificity, later rule). */
-.legend .swimpin { transform: rotate(45deg); background: var(--sewage); border: 2px solid currentColor; border-radius: 0; }
+.legend .swimpin { transform: rotate(45deg); background: var(--water); border-radius: 0; }
 
 /* Square, flush to the top-right corner — same 75px footprint as the panel's
    close button, so opening the panel just extends the block leftward. */

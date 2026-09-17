@@ -10,8 +10,8 @@
  */
 
 import {
-  RECENT_HOURS, fmtAnnualReturn, fmtDuration, fmtWhen, mapStatusOf, mapsUrl,
-  offlineMs, spillMs, windowPhrase,
+  RECENT_HOURS, fmtAnnualReturn, fmtDate, fmtDuration, fmtFlow, fmtWhen,
+  fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs, spillMs, windowPhrase,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -43,7 +43,12 @@ const SHOW_EDGE_MARKERS = false;
 // A label shows only once the view is at or below this fraction of the
 // fully-zoomed-out width (1 = zoomed right out, smaller = leaning in). Towns
 // always; villages/suburbs mid-zoom; hamlets and road names once you lean in.
-const LABEL_ZOOM = { town: 1.1, village: 1.1, road: 0.55, suburb: 0.5, hamlet: 0.22 };
+const LABEL_ZOOM = { town: 1.1, village: 1.1, road: 0.55, waterway: 0.55, suburb: 0.5, hamlet: 0.22 };
+
+// Named brooks/streams (build-basemap.js's OS Open Rivers pull) as labels on
+// the water lines themselves. Flip to false if that reads as clutter rather
+// than useful orientation — nothing else depends on it.
+const SHOW_WATERWAY_LABELS = true;
 
 // The camera is clamped to this rectangle, not the whole basemap — an asymmetric
 // box on the town (km from CENTRE) shaped to the Frome catchment: long N–S,
@@ -60,14 +65,15 @@ export const LEGEND = [
   ['recent', `Discharged recently`],
   ['dry', 'Not discharging'],
   ['offline', 'Offline'],
+  ['swim', 'Swimming spot', 'swimpin'],
 ];
 
 export function renderLegend(ul) {
-  for (const [key, text] of LEGEND) {
+  for (const [key, text, extraClass] of LEGEND) {
     const li = document.createElement('li');
     li.className = `legend--${key}`;   // colours the dot and the label together
     const dot = document.createElement('span');
-    dot.className = 'mappin';
+    dot.className = extraClass ? `mappin ${extraClass}` : 'mappin';
     li.append(dot, document.createTextNode(text));
     ul.append(li);
   }
@@ -77,12 +83,15 @@ export function renderLegend(ul) {
 // `overflow_context` layer, filled in by scripts/fetch-context.js. Everything
 // above the divider comes from the live activity feed; everything below is
 // context that explains it. Rows with no value are skipped, so a monitor whose
-// context hasn't been fetched simply shows the feed half.
+// context hasn't been fetched simply shows the feed half. `treatment` is
+// fetched and stored (scripts/fetch-context.js, monitors.treatment) but not
+// listed here — it reads like Wessex's own framing of the discharge rather
+// than a neutral fact, and it's one of the longer fields for the space it
+// bought. Still in the database and in data.json for anyone who wants it.
 const CONTEXT_ROWS = [
   ['Site', 'site_name'],
   ['Waterbody', 'waterbody'],
   ['Type', 'overflow_type'],
-  ['Treatment', 'treatment'],
   ['Cause', 'cause'],
 ];
 
@@ -143,23 +152,10 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
 
   el.append(top);
 
-  const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
-  if (rows.length) {
-    const dl = document.createElement('dl');
-    dl.className = 'pop-context';
-    for (const [term, key] of rows) {
-      const dt = document.createElement('dt');
-      dt.textContent = term;
-      const dd = document.createElement('dd');
-      dd.textContent = monitor[key];
-      dl.append(dt, dd);
-    }
-    el.append(dl);
-  }
-
-  // Its own box, not CONTEXT_ROWS entries like the rest above — a regulator's
-  // published figure reads as a claim of its own, not just another attribute
-  // of the monitor, so it's set apart rather than folded into that grid.
+  // Its own box, not CONTEXT_ROWS entries below — a regulator's published
+  // figure reads as a claim of its own, not just another attribute of the
+  // monitor. Ahead of the context divider, not after it: this is a live-ish
+  // fact worth seeing before you'd have to go looking for it.
   const annualReturn = fmtAnnualReturn(monitor);
   if (annualReturn) {
     const box = document.createElement('div');
@@ -195,9 +191,42 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
     el.append(box);
   }
 
+  // Collapsed by default. Not a native <details> — its content would have to
+  // live inside it, sharing .pop-foot's flex row with "View 90-day status"
+  // and getting squeezed into whatever width that leaves (a 2-column grid of
+  // full sentences doesn't fit in that); a plain toggle button lets the
+  // revealed .pop-context render full-width, below the row, once it's open.
+  const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
+  let toggle, dl;
+  if (rows.length) {
+    toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'pop-action pop-context-toggle';
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.innerHTML = '<span>+ More</span>';
+
+    dl = document.createElement('dl');
+    dl.className = 'pop-context';
+    dl.hidden = true;
+    for (const [term, key] of rows) {
+      const dt = document.createElement('dt');
+      dt.textContent = term;
+      const dd = document.createElement('dd');
+      dd.textContent = monitor[key];
+      dl.append(dt, dd);
+    }
+
+    toggle.addEventListener('click', () => {
+      dl.hidden = !dl.hidden;
+      toggle.setAttribute('aria-expanded', String(!dl.hidden));
+      toggle.querySelector('span').textContent = dl.hidden ? '+ More' : '− Less';
+    });
+  }
+
   // The reverse of the timeline card's own "View on map" button.
   const foot = document.createElement('div');
   foot.className = 'pop-foot';
+  if (toggle) foot.append(toggle);
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'pop-action';
@@ -205,6 +234,96 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   btn.addEventListener('click', () => onSeeInTimeline(monitor));
   foot.append(btn);
   el.append(foot);
+  if (dl) el.append(dl);
+
+  return el;
+}
+
+/**
+ * A swim spot's popup — a different shape of content entirely from an
+ * overflow monitor's, so its own renderer rather than forcing `popup()` to
+ * branch. Name, a recognised/not-recognised line, the description, the
+ * latest water-quality reading (its own box, same treatment as `popup()`'s
+ * annual-return one) and river flow if there is one, and a link out to
+ * Wessex's own dashboard for the full history.
+ */
+function swimPopup(spot) {
+  const el = document.createElement('div');
+
+  // Same shape as popup() above: heading, then the one live-ish fact, then
+  // state + coordinates sharing a row.
+  const h = document.createElement('h3');
+  const label = document.createElement('span');
+  label.className = 'pop-label';
+  label.textContent = spot.name;
+  h.append(label);
+
+  const flow = fmtFlow(spot);
+  const f = document.createElement('p');
+  f.className = 'pop-last';
+  f.textContent = flow ? `River flow at Tellisford: ${flow}` : 'No river flow reading yet.';
+
+  el.append(h, f);
+
+  const badge = document.createElement('p');
+  badge.className = `pop-state ${spot.recognised ? 'is-dry' : 'is-offline'}`;
+  badge.textContent = spot.recognised ? 'Recognised bathing spot' : 'Unofficial bathing spot';
+
+  const top = document.createElement('div');
+  top.className = 'pop-top';
+  top.append(badge);
+
+  if (spot.lat != null && spot.lon != null) {
+    const lat = spot.lat.toFixed(5);
+    const lon = spot.lon.toFixed(5);
+    const a = document.createElement('a');
+    a.href = mapsUrl(lat, lon);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.innerHTML = `${PIN}<span>${lat}, ${lon} ↗</span>`;
+    top.append(a);
+  }
+
+  el.append(top);
+
+  // Only relevant where a spot is actually sampled — same "set apart, not
+  // just another attribute" treatment as popup()'s annual-return box.
+  const wq = fmtWaterQuality(spot);
+  if (wq) {
+    const box = document.createElement('div');
+    box.className = 'pop-annual';
+    const heading = document.createElement('p');
+    heading.className = 'pop-annual-heading';
+    heading.textContent = 'Water Quality';
+    const statusLine = document.createElement('p');
+    statusLine.textContent = wq.status;
+    const readingsLine = document.createElement('p');
+    readingsLine.textContent = `${wq.readings.join(', ')} — ${wq.date}`;
+    box.append(heading, statusLine, readingsLine);
+    el.append(box);
+  }
+
+  // Below its own divider, same as popup()'s CONTEXT_ROWS — static background
+  // on the spot, not a live fact.
+  if (spot.description) {
+    const d = document.createElement('p');
+    d.className = 'pop-note';
+    d.textContent = spot.description;
+    el.append(d);
+  }
+
+  if (spot.dashboard_url) {
+    const foot = document.createElement('div');
+    foot.className = 'pop-foot';
+    const a = document.createElement('a');
+    a.href = spot.dashboard_url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.className = 'pop-action';
+    a.innerHTML = '<span>Water quality history ↗</span>';
+    foot.append(a);
+    el.append(foot);
+  }
 
   return el;
 }
@@ -223,8 +342,8 @@ export function buildMap(host, data, opts = {}) {
   fetch(`basemap.json?${Date.now()}`)
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((bm) => {
-      api = drawMap(host, bm, data.monitors, data.polled_at, initialZoom, data.window_days,
-        onSeeInTimeline);
+      api = drawMap(host, bm, data.monitors, data.swim_spots, data.polled_at, initialZoom,
+        data.window_days, onSeeInTimeline);
       for (const m of pending) api.focus(m);
       pending.length = 0;
     })
@@ -241,7 +360,7 @@ export function buildMap(host, data, opts = {}) {
   };
 }
 
-function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeline) {
+function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, onSeeInTimeline) {
   const [BW, BS, BE, BN] = bm.box;
   const [GW, GH] = bm.size;
 
@@ -323,7 +442,8 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
   const attr = document.createElement('div');
   attr.className = 'map-attr';
   attr.innerHTML =
-    'Streets © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+    'Streets © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> ' +
+    '· Waterways © OS &amp; EA';
   host.append(attr);
 
   const pop = document.createElement('div');
@@ -398,6 +518,20 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
       return { m, el, gx: projX(m.lon), gy: projY(m.lat) };
     });
 
+  // Points of interest, not overflow monitors — same layer, own shape/colour
+  // (.swimpin) so they don't read as another traffic-light state.
+  const swimPins = (swimSpots ?? [])
+    .filter((s) => s.lat != null && s.lon != null)
+    .map((s) => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'mappin swimpin';
+      el.setAttribute('aria-label', `${s.name} — swimming spot`);
+      el.addEventListener('click', (e) => { e.stopPropagation(); openSwimPopup(s); });
+      pinLayer.append(el);
+      return { s, el, gx: projX(s.lon), gy: projY(s.lat) };
+    });
+
   // Position within the crop first (so anything beyond it sticks to the edge),
   // then within the viewport (so one panned off-screen sticks too).
   function screenXY(gx, gy) {
@@ -411,7 +545,7 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
   }
 
   function placePins() {
-    for (const p of pins) {
+    for (const p of [...pins, ...swimPins]) {
       const { sx, sy, edge } = screenXY(p.gx, p.gy);
       if (edge && !SHOW_EDGE_MARKERS) { p.el.classList.remove('is-shown'); continue; }
       p.el.classList.add('is-shown');
@@ -426,10 +560,11 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
   // of suburb/hamlet (a street name locates an outfall better than a district).
   // build-basemap.js already sorts places and roads sensibly within each kind;
   // the sort here is stable so that order survives.
-  const RANK = { town: 0, village: 1, road: 2, suburb: 3, hamlet: 4 };
+  const RANK = { town: 0, village: 1, road: 2, waterway: 3, suburb: 4, hamlet: 5 };
   const labels = [
     ...(bm.labels?.places ?? []).map((l) => ({ ...l, kind: l.kind ?? 'suburb' })),
     ...(bm.labels?.roads ?? []).map((l) => ({ ...l, kind: 'road' })),
+    ...(SHOW_WATERWAY_LABELS ? (bm.labels?.waterways ?? []).map((l) => ({ ...l, kind: 'waterway' })) : []),
   ].sort((x, y) => RANK[x.kind] - RANK[y.kind]).map((l) => {
     const el = document.createElement('span');
     el.className = `map-label map-label--${l.kind}`;
@@ -462,17 +597,20 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
   }
 
   // --- popup ---
-  let openM = null;
+  // `openItem` is whichever monitor or swim spot the popup currently belongs
+  // to — both carry {lon, lat}, so placePopup() doesn't need to know which
+  // kind it's looking at, only showPopup()'s pin-ringing does.
+  let openItem = null;
   let popW = 0, popH = 0;   // measured once per open; content is fixed thereafter
 
-  function openPopup(m) {
-    openM = m;
+  function showPopup(content, item, pinEl) {
+    openItem = item;
     pop.replaceChildren();
     const close = Object.assign(document.createElement('button'),
       { type: 'button', className: 'pop-close', textContent: '×' });
     close.setAttribute('aria-label', 'Close');
     close.addEventListener('click', (e) => { e.stopPropagation(); closePopup(); });
-    pop.append(close, popup(m, now, windowDays, onSeeInTimeline));
+    pop.append(close, content);
     pop.hidden = false;
     const r = pop.getBoundingClientRect();
     popW = r.width;
@@ -480,20 +618,45 @@ function drawMap(host, bm, monitors, now, initialZoom, windowDays, onSeeInTimeli
     placePopup();
     // Ring the pin its popup belongs to, so it stays visually tied to it
     // rather than just wherever the popup happens to be pointing.
-    for (const p of pins) p.el.classList.toggle('is-selected', p.m.id === m.id);
+    for (const p of [...pins, ...swimPins]) p.el.classList.toggle('is-selected', p.el === pinEl);
+
+    // The "+ More" context toggle changes the popup's own height after the
+    // fact — popW/popH were measured before that, and `pop` sits inside
+    // `host`'s own overflow:hidden, so a stale position could clip the
+    // expanded content rather than just look slightly off. Re-measure and
+    // reposition whenever it opens or closes. A plain button + click, not a
+    // native <details>'s `toggle` event — see popup()'s own comment on why.
+    // Registered after popup()'s own click listener on the same element
+    // (which is what actually flips dl.hidden), so the geometry this reads
+    // is always the post-toggle one.
+    const contextToggle = pop.querySelector('.pop-context-toggle');
+    if (contextToggle) {
+      contextToggle.addEventListener('click', () => {
+        const r2 = pop.getBoundingClientRect();
+        popW = r2.width;
+        popH = r2.height;
+        placePopup();
+      });
+    }
+  }
+  function openPopup(m) {
+    showPopup(popup(m, now, windowDays, onSeeInTimeline), m, pins.find((p) => p.m.id === m.id)?.el);
+  }
+  function openSwimPopup(s) {
+    showPopup(swimPopup(s), s, swimPins.find((p) => p.s.id === s.id)?.el);
   }
   function closePopup() {
-    openM = null;
+    openItem = null;
     pop.hidden = true;
-    for (const p of pins) p.el.classList.remove('is-selected');
+    for (const p of [...pins, ...swimPins]) p.el.classList.remove('is-selected');
   }
 
   // Sit the popup above the pin, centred; flip below if it would clip the top,
   // then clamp so it never leaves the map — so an edge pin still gets a readable
   // popup.
   function placePopup() {
-    if (!openM) return;
-    const { sx, sy, edge } = screenXY(projX(openM.lon), projY(openM.lat));
+    if (!openItem) return;
+    const { sx, sy, edge } = screenXY(projX(openItem.lon), projY(openItem.lat));
     if (edge && !SHOW_EDGE_MARKERS) { pop.hidden = true; return; }
     pop.hidden = false;
 

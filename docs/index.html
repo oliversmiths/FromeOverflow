@@ -70,9 +70,10 @@
         <summary class="acc-summary">How to use</summary>
         <div class="acc-body">
           <h3>Reading the map</h3>
-          <p>Each pin is an overflow, coloured by its state at the last check: red discharging
+          <p>Each round pin is an overflow, coloured by its state at the last check: red discharging
             now, amber discharged within the last 48 hours, green not discharging,
-            grey no signal.</p>
+            grey no signal. Blue diamonds mark popular swimming spots, with the latest water
+            quality and river flow reading where there is one.</p>
 
           <h3>Reading the timeline</h3>
           <p>Each overflow monitor is represented by a card, ranked by total discharge time. The 90-day status strip shows one bar
@@ -84,8 +85,11 @@
       <details class="acc-item" id="acc-safety">
         <summary class="acc-summary">Safety</summary>
         <div class="acc-body">
-          <p>This site records <i>when</i> storm overflows discharge. It does not measure water
-            quality, and it cannot tell you whether a river is safe to enter.</p>
+          <p>This site records <i>when</i> storm overflows discharge. For most of the river it
+            does not measure water quality, and it cannot tell you whether a stretch is safe to
+            enter. Two spots – Farleigh Hungerford and Tellisford Weir – show the latest water
+            quality sample and river flow reading in their map popups, but sampling there is
+            roughly weekly in season, so even that is a recent snapshot, not a live guarantee.</p>
           <p>A stretch showing no recent discharge is not therefore clean. Rivers carry bacteria
             from farmland, wildlife and road runoff at all times, and hazards like cold or fast
             water remain regardless of what the overflows are doing.</p>
@@ -145,6 +149,13 @@
               the
               <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
               target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
+            <li><strong>Swim spot water quality and river flow</strong> (shown in the Farleigh
+              Hungerford and Tellisford Weir map popups) – fetched from a public ArcGIS
+              FeatureServer behind Wessex Water’s
+              <a href="https://www.arcgis.com/apps/dashboards/a058553168f44f02905dd0b9dd667875"
+              target="_blank" rel="noopener">Farleigh Hungerford Dashboard</a>. Water quality
+              sampling © Wessex Water; the river flow reading originates with the Environment
+              Agency’s hydrology API.</li>
           </ul>
 
           <p>Waterbody names are Wessex’s own field, sourced from the Environment Agency’s
@@ -153,8 +164,19 @@
 
           <h3>Map</h3>
           <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
-            target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Drawn as plain
-            SVG – no tile service, no map library.</p>
+            target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Rivers and streams
+            come from two Ordnance Survey/Environment Agency sources instead – OSM’s own waterway
+            tagging turned out to be thin for anything smaller than a named river near Frome.
+            Contains OS data and Environment Agency data © Crown copyright and database right,
+            licensed under the
+            <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+            target="_blank" rel="noopener">Open Government Licence v3</a>: the
+            <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/Statutory_Main_River_Map/FeatureServer"
+            target="_blank" rel="noopener">EA Statutory Main River Map</a> for designated main
+            rivers, and
+            <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers" target="_blank"
+            rel="noopener">OS Open Rivers</a> for the smaller named streams and brooks.
+            Drawn as plain SVG – no tile service, no map library.</p>
         </div>
       </details>
 

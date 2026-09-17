@@ -117,6 +117,10 @@ b, strong { font-weight: 600; }
 .map-label--suburb  { font-weight: 400; font-size: 10px; color: var(--silt); }
 .map-label--hamlet  { font-weight: 400; font-size: 10px; color: var(--silt); }
 .map-label--road    { font-size: 10px; letter-spacing: 0.02em; color: var(--silt); }
+/* Italic + water-blue rather than the grey/upright roads and places use —
+   reads as "this labels a line on the map", not a place, cartographic
+   convention for water features. */
+.map-label--waterway { font-size: 10px; font-style: italic; letter-spacing: 0.01em; color: var(--water); }
 
 .pin-layer { position: absolute; inset: 0; pointer-events: none; }
 
@@ -136,6 +140,14 @@ b, strong { font-weight: 600; }
 .pin-layer .mappin.is-shown { display: block; }
 .mappin:focus-visible,
 .mappin.is-selected { outline: 2px solid var(--water); outline-offset: 0px; }
+
+/* Points of interest, not overflow monitors — a rotated square rather than
+   the traffic-light circles, so it never reads as another status colour.
+   Its own ring colour too: the fill is already --water, so the shared
+   .mappin.is-selected ring above would all but disappear on top of it. */
+.swimpin { background: var(--sewage); border: 2px solid var(--water); border-radius: 0; transform: translate(-50%, -50%) rotate(45deg); }
+.swimpin:focus-visible,
+.swimpin.is-selected { outline-color: var(--water);border-color: var(--chalk); }
 
 .mappin--discharging { background: var(--oxide); }
 .mappin--recent      { background: var(--amber); }
@@ -203,7 +215,7 @@ b, strong { font-weight: 600; }
 
 .map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 13px; }
 .map-popup p { margin: 0 0 6px; }
-.map-popup .pop-label { color: var(--weir); }
+.map-popup .pop-label { color: var(--weir); text-transform: uppercase;}
 .map-popup .pop-watercourse { color: var(--weir); font-size: 13px;  }
 /* Status and coordinates on one line — status left, link right — closing the
    feed half just above the context divider. Wraps to two rows if they can't fit
@@ -221,18 +233,26 @@ b, strong { font-weight: 600; }
 .map-popup .pop-last { font-size: 11px; }
 .map-popup .pop-offline { font-size: 11px; color: var(--silt); }
 
-/* Below the divider: static context from overflow_context, as term/value pairs.
-   Everything above it comes from the live activity feed. */
+/* Static context from overflow_context, as term/value pairs — collapsed by
+   default behind the "+ More" / "− Less" button, .pop-context-toggle (a
+   plain button, not a native <details>: its content has to render full
+   popup width once open, not squeezed into whatever .pop-foot's flex row
+   leaves next to "View 90-day status", which is where a <details>'s own
+   content would be forced to live). No divider of its own: the .pop-annual
+   box above it (or the state/coordinates row, on a monitor with no annual
+   return) already reads as a clean break. */
 .map-popup .pop-context {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 4px 10px;
-  margin: 11px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--hairline);
+  margin: 8px 0 0;
   font-size: 11px;
   line-height: 1.35;
 }
+/* `display: grid` above beats the UA stylesheet's own `[hidden] { display: none }`
+   (same specificity, but this rule comes later) — without this, the toggle's
+   `dl.hidden` flips the attribute but the grid stays visually expanded. */
+.map-popup .pop-context[hidden] { display: none; }
 .map-popup .pop-context dt {
   font-family: var(--data);
   font-size: 9px;
@@ -244,6 +264,17 @@ b, strong { font-weight: 600; }
 .map-popup .pop-context dd { margin: 0; }
 .map-popup a { display: inline-flex; align-items: center; gap: 4px; color: var(--silt); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover span { text-decoration: underline; }
+
+/* Same divider treatment as .pop-context above, for a swim spot's plain
+   description rather than a term/value grid — static background on the
+   spot, same footing as .pop-context's own fields. */
+.map-popup .pop-note {
+  margin: 11px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11px;
+  line-height: 1.35;
+}
 
 /* The Environment Agency's own regulator-verified figures — set apart in
    their own bordered box rather than folded into .pop-context's grid, since
@@ -266,9 +297,12 @@ b, strong { font-weight: 600; }
 }
 
 /* "View 90-day status" — the reverse of a card's own "View on map" button
-   (.o-foot button), styled to match it. Always the last thing in the popup,
-   whether or not a .pop-context grid came before it. */
-.pop-foot { margin: 11px 0 0; }
+   (.o-foot button), styled to match it. Always the last thing before any
+   expanded .pop-context. Flex row, space-between: on a monitor with context
+   to show, "+ More"/"− Less" shares this line on the left; with one child
+   (no context, or a swim spot's dashboard link) it just sits at the start,
+   same as before this was a flex row at all. */
+.pop-foot { margin: 11px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pop-action {
   display: inline-flex;
   align-items: center;
@@ -281,6 +315,8 @@ b, strong { font-weight: 600; }
   text-transform: uppercase;
   color: var(--silt);
   cursor: pointer;
+  flex-shrink: 0;   /* .pop-context-toggle is the one that gives way in .pop-foot's row, not this */
+  white-space: nowrap;
 }
 .pop-action:hover span { text-decoration: underline; }
 .pop-action:focus-visible { outline: 2px solid var(--weir); outline-offset: 2px; }
@@ -334,6 +370,7 @@ b, strong { font-weight: 600; }
 .legend--recent      { color: var(--amber); }
 .legend--dry         { color: var(--dry); }
 .legend--offline     { color: var(--silt); }
+.legend--swim        { color: var(--water); }
 
 .legend .mappin {
   position: static;
@@ -343,6 +380,10 @@ b, strong { font-weight: 600; }
   transform: none;
   background: currentColor;
 }
+/* .legend .mappin above resets transform to none for every dot — put the
+   swim pin's diamond rotation back, just for this one. Comes after so it
+   wins the tie (equal specificity, later rule). */
+.legend .swimpin { transform: rotate(45deg); background: var(--sewage); border: 2px solid currentColor; border-radius: 0; }
 
 /* Square, flush to the top-right corner — same 75px footprint as the panel's
    close button, so opening the panel just extends the block leftward. */

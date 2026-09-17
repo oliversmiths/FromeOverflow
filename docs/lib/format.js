@@ -289,6 +289,43 @@ export function fmtAnnualReturn(monitor) {
 }
 
 /**
+ * A swim spot's latest water-quality sampling, for the map popup:
+ *   { date: "11.08.26", status: "…excellent indicative water quality…",
+ *     readings: ["E coli 170/100mL", "Enterococci 66/100mL"] }
+ * `readings` is every determinand sampled on that same date — usually both
+ * E. coli and Intestinal Enterococci, the two the Bathing Water Regulations
+ * require — built from `result`/`determinand` rather than the source's own
+ * `units` string, which bakes the determinand name into ungainly text
+ * ("E. Coli/ 100 mL"). `status` is Wessex's own sentence, shown verbatim
+ * rather than trying to extract just "excellent"/"poor" from it — a plain
+ * word we guessed out of their phrasing could misread a future sentence
+ * shaped differently than today's samples. `null` when the spot has no
+ * water-quality data (not sampled here, or not fetched yet).
+ */
+export function fmtWaterQuality(spot) {
+  const readings = spot.water_quality;
+  if (!readings?.length) return null;
+  const latest = readings[0];   // exported newest first
+  return {
+    date: fmtDate(latest.sampled_at),
+    status: latest.status,
+    readings: readings
+      .filter((r) => r.sampled_at === latest.sampled_at)
+      .map((r) => `${r.determinand} ${r.result}/100mL`),
+  };
+}
+
+/**
+ * A swim spot's latest river-flow reading, for the map popup: "0.52 m³/s
+ * (10.08.26)". `null` when there's no reading yet.
+ */
+export function fmtFlow(spot) {
+  const flow = spot.flow;
+  if (flow?.value == null) return null;
+  return `${flow.value.toFixed(2)} m³/s (${fmtDate(flow.measured_at)})`;
+}
+
+/**
  * Total time a monitor spent offline within the published window, in ms. The
  * counterpart to a monitor's discharge `total`: "no discharge recorded" means
  * much less when the sensor was dark for a stretch, so the card says both.

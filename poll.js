@@ -171,8 +171,43 @@ CREATE TABLE IF NOT EXISTS annual_returns (
   PRIMARY KEY (monitor_id, year)
 );
 
+-- Points of interest that aren't overflow monitors at all -- popular swimming
+-- spots on the Frome/Avon, shown on the map alongside the pins but with their
+-- own marker and popup. The set of spots is hand-curated (like PIN_TO_IDS),
+-- defined and refreshed only by scripts/fetch-swim-spots.js. Not part of the
+-- 15-minute poll -- run that script by hand every so often (weekly-ish is
+-- plenty; water quality sampling itself is roughly weekly in season).
+CREATE TABLE IF NOT EXISTS swim_spots (
+  id               TEXT PRIMARY KEY,
+  name             TEXT NOT NULL,
+  latitude         REAL NOT NULL,
+  longitude        REAL NOT NULL,
+  recognised       INTEGER NOT NULL,   -- 1 = an EA/Wessex-recognised bathing spot, 0 = just popular
+  description      TEXT,
+  dashboard_url    TEXT,
+  flow_value       REAL,               -- latest Tellisford gauge reading, m3/s -- shared context
+  flow_measured_at INTEGER,            -- for every spot on this reach, not just the one nearest the gauge
+  fetched_at       INTEGER NOT NULL
+);
+
+-- One row per water-quality sample, keyed so re-fetching is a plain upsert.
+-- Kept separate from swim_spots (rather than flattened into a couple of
+-- columns) because a single sampling visit reports more than one determinand
+-- (E. coli and Intestinal Enterococci, the two the Bathing Water Regulations
+-- require) and there's no reason to throw either away.
+CREATE TABLE IF NOT EXISTS swim_spot_readings (
+  spot_id     TEXT NOT NULL,
+  determinand TEXT NOT NULL,
+  result      REAL,
+  units       TEXT,
+  status      TEXT,           -- Wessex's own plain-English line for that sampling date
+  sampled_at  INTEGER NOT NULL,
+  PRIMARY KEY (spot_id, determinand, sampled_at)
+);
+
 CREATE INDEX IF NOT EXISTS idx_events_start ON events (start_ms);
 CREATE INDEX IF NOT EXISTS idx_snap_monitor ON snapshots (monitor_id, polled_at);
+CREATE INDEX IF NOT EXISTS idx_swim_readings ON swim_spot_readings (spot_id, sampled_at);
 `;
 
 /**
@@ -519,11 +554,37 @@ async function exportJson(db, rows, polledAt) {
         })),
     }));
 
+  // Points of interest, not overflow monitors — see scripts/fetch-swim-spots.js.
+  const readingsFor = db.prepare(`
+    SELECT determinand, result, units, status, sampled_at FROM swim_spot_readings
+    WHERE spot_id = ? ORDER BY sampled_at DESC LIMIT 4`);
+  const swimSpots = db
+    .prepare('SELECT * FROM swim_spots ORDER BY id')
+    .all()
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      lat: s.latitude,
+      lon: s.longitude,
+      recognised: !!s.recognised,
+      description: s.description,
+      dashboard_url: s.dashboard_url,
+      flow: s.flow_value == null ? null : { value: s.flow_value, measured_at: s.flow_measured_at },
+      water_quality: readingsFor.all(s.id)
+        .map((r) => ({
+          determinand: r.determinand,
+          result: r.result,
+          units: r.units,
+          status: r.status,
+          sampled_at: r.sampled_at,
+        })),
+    }));
+
   await mkdir(dirname(JSON_PATH), { recursive: true });
   await writeFile(
     JSON_PATH,
     JSON.stringify(
-      { polled_at: polledAt, window_days: EXPORT_DAYS, place: 'Frome', monitors },
+      { polled_at: polledAt, window_days: EXPORT_DAYS, place: 'Frome', monitors, swim_spots: swimSpots },
       null, 1) + '\n');
 
   return monitors.length;

@@ -37,6 +37,13 @@ then exports JSON for a static page. See [README.md](README.md) and
   duration, long-term average) from the Environment Agency's EDM Storm
   Overflow Annual Return. Writes to `annual_returns`; run once a year, after
   EA publishes (typically spring). `--dry` shows what would change.
+- `npm run swim-spots` → `node scripts/fetch-swim-spots.js` — refresh the
+  hand-curated swim spots (currently Farleigh Hungerford, Tellisford Weir) and
+  their latest water-quality/river-flow readings from a public FeatureServer
+  behind Wessex's Farleigh Hungerford Dashboard. Writes to `swim_spots` and
+  `swim_spot_readings`. Already runs automatically, roughly daily, as part of
+  `poll.yml` — run it by hand only if you want a reading sooner than that.
+  `--dry` shows what would change.
 
 There is no test suite or linter. `build-basemap.js` is the only build step and its
 output is committed. The page must be served over http — browsers block module
@@ -66,7 +73,10 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
 - **[poll.js](poll.js)** — the whole backend. Pages the entire Wessex feed
   (`fetchAll`, 2000/request), filters to the Frome catchment (`isLocal`), upserts
   into SQLite (`store`), then writes the last 90 days as JSON (`exportJson`).
-  `fetchAll`'s per-page request goes through `fetchPage`, which retries
+  `exportJson` also republishes `swim_spots` (unwindowed — there are only ever
+  a couple of rows) alongside `monitors` every poll, even though only
+  `scripts/fetch-swim-spots.js` ever changes what's in it. `fetchAll`'s
+  per-page request goes through `fetchPage`, which retries
   (`FETCH_RETRIES`, 5s apart) on the failures a flaky connection produces —
   `fetch()` throwing outright (Node reports a dropped connection or DNS blip as
   a bare "fetch failed") and 5xx responses — since a run every 15 minutes hits
@@ -82,18 +92,34 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   adds the "recent" step (a spill that ended within `RECENT_HOURS`, default 48) for
   the traffic light. The map popup is split in two by a rule: **above it is the
   live activity feed** (Id + watercourse, state, last discharge, offline total,
-  coordinates); **below it, `CONTEXT_ROWS`** renders the static
-  `overflow_context` fields as a `.pop-context` term/value grid. A monitor with
-  annual-return data gets a further, separate `.pop-annual` box below that —
-  not folded into the grid, because a regulator's published figure reads as a
-  claim of its own, not just another attribute — built from `fmtAnnualReturn`:
-  a heading, "N spills, total `<duration>` in `<year>`" (spill count and
-  duration in `<strong>`, the headline figures), and "N spills/yr avg since
-  `<year>`" when the long-term figure is there too. These are the Environment
-  Agency's own regulator-verified numbers, deliberately the
-  *other* figure from everything else on the page (ours is a live-tracked
-  floor; theirs is official, counted differently, a year in arrears). Rows
-  and boxes with no value are skipped, so an unfetched monitor just shows the
+  coordinates). **Below it, in order:** a monitor with annual-return data gets
+  its own `.pop-annual` box — not folded into the context grid below, because
+  a regulator's published figure reads as a claim of its own, not just
+  another attribute, and it's ahead of the divider because it's a live-ish
+  fact worth seeing without having to go looking for it — built from
+  `fmtAnnualReturn`: a heading, "N spills, total `<duration>` in `<year>`"
+  (spill count and duration in `<strong>`, the headline figures), and "N
+  spills/yr avg since `<year>`" when the long-term figure is there too. These
+  are the Environment Agency's own regulator-verified numbers, deliberately
+  the *other* figure from everything else on the page (ours is a live-tracked
+  floor; theirs is official, counted differently, a year in arrears). Then
+  `CONTEXT_ROWS` — `overflow_context` fields as a `.pop-context` term/value
+  grid, **`site_name`/`waterbody`/`overflow_type`/`cause` only**; `treatment`
+  is fetched and stored the same as the rest (`scripts/fetch-context.js`,
+  `monitors.treatment`) but deliberately left off this list — it reads like
+  Wessex's own framing of the discharge rather than a neutral fact, and costs
+  more popup space than the others. Still in the database and `data.json` —
+  add it back to `CONTEXT_ROWS` if you ever want it on screen again. The grid
+  sits collapsed behind a native `<details class="pop-context-toggle">`,
+  "+ More"/"− Less" (the word swap is a plain `toggle` listener, not CSS) —
+  no divider above it; the `.pop-annual` box (or the state/coordinates row,
+  on a monitor with no annual return) already reads as a clean break, so a
+  rule line there was redundant. Since toggling it can change the popup's own
+  height after `showPopup` already measured and positioned it — and `pop`
+  sits inside `host`'s own `overflow: hidden` — a second listener on the same
+  `toggle` event re-measures and calls `placePopup()` again, or an expanded
+  box could get silently clipped rather than just repositioned. Rows and
+  boxes with no value are skipped, so an unfetched monitor just shows the
   feed half, and a monitor with no annual-return match just skips the box.
   `dayCells`
   turns a monitor's events *and its offline spells* into one cell per day for the
@@ -160,18 +186,45 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   Mells, barely east. This is a *tighter* box than the basemap. Pan/wheel/pinch
   can't leave it: at `MAX_ZOOM_OUT` (1) the crop *covers* the viewport
   (`VW_OUT = min(CW, CH*a)`) so a wide screen shows the full crop width and pans
-  up/down, a tall screen the full height. `MAX_ZOOM_IN` (40) sets the tightest
-  zoom. `initialZoom` (live page: `0.28`) opens centred on the town, ~6 km
-  across. Pins coloured by `mapStatusOf` (`.mappin--*`: red / amber / bright
-  green / grey), which also drives the legend. A monitor outside the crop (or
-  panned off-screen) is hidden; flip `SHOW_EDGE_MARKERS` to stick it to the edge
-  instead. Web Mercator projection in `drawMap` **must match
-  `scripts/build-basemap.js`**. Labels: `bm.labels.places` carry a `kind`
-  (`town`/`village`/`suburb`/`hamlet`), styled and zoom-gated by `LABEL_ZOOM` —
-  towns/villages always (orientation), roads/suburbs from mid-zoom in, hamlets
-  only close up. A per-frame greedy box-overlap cull thins them; `RANK` sets the
-  priority (town, village, road, suburb, hamlet — a street name locates an
-  outfall better than a district). The host is `#overflow-map`, *not* `id="map"`.
+  up/down, a tall screen the full height — on a wide screen this means a point
+  well north or south of the town (Farleigh Hungerford is ~10 km N) isn't in
+  the default view even fully zoomed out; panning is required, by design, not
+  a bug. `MAX_ZOOM_IN` (40) sets the tightest zoom. `initialZoom` (live page:
+  `0.28`) opens centred on the town, ~6 km across. Monitor pins coloured by
+  `mapStatusOf` (`.mappin--*`: red / amber / bright green / grey), which also
+  drives the legend. A pin outside the crop (or panned off-screen) is hidden;
+  flip `SHOW_EDGE_MARKERS` to stick it to the edge instead. Web Mercator
+  projection in `drawMap` **must match `scripts/build-basemap.js`**.
+
+  **Swim spots** (`swimPins`, built from `data.swim_spots`) are a second,
+  parallel pin set on the same `pinLayer` — `.swimpin`, a rotated square
+  (`.mappin` with `border-radius:0` + a 45° `transform`) filled `--water`,
+  deliberately not another traffic-light colour. Popup state is unified across
+  both: `openItem` holds whichever monitor or swim spot is currently open
+  (both carry `{lon, lat}`, so `placePopup()` doesn't need to know which),
+  `showPopup(content, item, pinEl)` is the shared open/measure/ring/place
+  logic, and `openPopup(m)` / `openSwimPopup(s)` just supply the
+  kind-appropriate content (`popup()` vs `swimPopup()`) and pin element to
+  ring. A swim spot's popup is genuinely different content, not a branch of
+  the monitor one: name, a recognised/not-recognised line (reusing
+  `.pop-state.is-dry`/`.is-offline` for the colour, not their original
+  meaning), the latest water-quality reading in its own `.pop-annual`-styled
+  box (`fmtWaterQuality`) — every determinand sampled on the latest date, not
+  just one, and Wessex's own status sentence shown verbatim rather than a
+  word guessed out of it — the latest river-flow reading (`fmtFlow`), and a
+  link to Wessex's dashboard if there is one (Tellisford Weir has none — not
+  an EA-recognised bathing water, so nothing to link to).
+
+  Labels: `bm.labels.places` carry a `kind` (`town`/`village`/`suburb`/
+  `hamlet`), `bm.labels.roads` are all `road`, `bm.labels.waterways` are all
+  `waterway` (named brooks/streams from `build-basemap.js`'s OS Open Rivers
+  pull — gate this off with **`SHOW_WATERWAY_LABELS`** if it reads as
+  clutter, nothing else depends on it). All styled and zoom-gated by
+  `LABEL_ZOOM` — towns/villages always (orientation), roads/waterways from
+  mid-zoom in, hamlets/suburbs later, hamlets only close up. A per-frame
+  greedy box-overlap cull thins them; `RANK` sets the priority (town, village,
+  road, waterway, suburb, hamlet — a street or brook name locates an outfall
+  better than a district). The host is `#overflow-map`, *not* `id="map"`.
 - **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
   `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
   drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
@@ -201,19 +254,43 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   come from the Adobe kit `hpb4tyd`). `data.json` / `basemap.json` stay at the
   `docs/` root — they're generated, not assets.
 - **[scripts/build-basemap.js](scripts/build-basemap.js)** — one-off, zero-dep.
-  Overpass query for the **`EDGE_KM`** box on `CENTRE` — an asymmetric rectangle
-  (`{n,s,e,w}` km) that must contain map.js's `CROP_KM` with ~1 km margin.
+  Three sources, fetched in parallel, for the **`EDGE_KM`** box on `CENTRE` — an
+  asymmetric rectangle (`{n,s,e,w}` km) that must contain map.js's `CROP_KM` with
+  ~1 km margin: an Overpass query for roads/places/standing water, and two
+  ArcGIS FeatureServer queries (`arcgisQuery`) for the rivers — the EA's
+  **Statutory Main River Map** (`river` bucket, the legally-designated
+  watercourses) and Ordnance Survey's **OS Open Rivers** (`stream` bucket,
+  everything else it names — brooks, gutters, minor tributaries). Waterways used
+  to come from OSM's own `waterway` tag, dropped in favour of these two: that tag
+  is a size guess by whoever mapped it, not the Main River/ordinary-watercourse
+  line the EA actually draws, and its small-watercourse coverage near Frome was
+  thin (a handful of unnamed `ditch` fragments, and `ditch` wasn't even in the
+  old fetch). The swap isn't just a like-for-like fix either — total
+  river+stream line length is ~21% longer than the old OSM-only version, despite
+  fewer raw segments, because Esri's `WatercourseLink` segments run the length of
+  a named reach rather than breaking at every OSM way boundary. Esri hands back
+  `paths` as `[lon, lat]` pairs, not Overpass's `{lat, lon}` objects — `toGeom`
+  adapts them before `addLine`. An OS `form: 'lake'` entry is skipped (it
+  duplicates OSM's own `natural=water` outline); `form: 'canal'` goes to `river`
+  (visually major, same as OSM's canal tag used to), everything else to `stream`.
   Projects to a `GRID = (e+w)*1000` integer grid (~1 unit/m), Douglas–Peucker
   simplifies, writes `docs/basemap.json` (`centre`, `box`, `size`, `layers`,
   `labels`). Roads named at `major`/`mid` class and > `MIN_ROAD_LEN` become road
   labels, nearest-Frome-first then longest (top 110); `place=town|village|hamlet|
   suburb` nodes become place labels tagged with `kind`, also nearest-first and
   capped per kind (`PLACE_CAP`) because the box reaches the Radstock/Mendip
-  fringe. The page
+  fringe. OS Open Rivers' own `name1` (unlike OSM, it names essentially every
+  watercourse) feeds `labels.waterways` the same way — `waterwayRuns` mirrors
+  `roadRuns`, aggregated by name, longest run's midpoint as the anchor,
+  `MIN_WATERWAY_LEN`-filtered, nearest-Frome-first then longest — uncapped,
+  since there are far fewer named watercourses in the box than roads. The page
   trusts `basemap.json`'s own `centre`/`box`/`size`, so a rebuild with different
   bounds just works. Overpass 504s on a box this size when busy — the script
-  tries three instances, twice each. Output is ~410 KB (~170 KB gzipped); bump
-  `SIMPLIFY` if that needs to come down.
+  tries three instances, twice each; the two Esri sources are far more stable, so
+  `arcgisQuery` just retries the one URL. Output is ~420 KB (bump `SIMPLIFY` if
+  that needs to come down); attribution is credited three ways now — see
+  `map.js`'s `.map-attr` and the Sources tab's Map section, both of which need
+  updating if a source here ever changes.
 - **[scripts/audit-ids.js](scripts/audit-ids.js)** — zero-dep. Imports
   `fetchAll` + `matchesRule` from `poll.js` (which only runs `main()` when
   executed directly), fetches the feed, and prints a diff between the fallback
@@ -244,6 +321,34 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `poll.js` tracks — see "Known undercount" below — so it's kept in its own
   table rather than merged into `monitors`. Static data, not part of the poll;
   `--dry` to preview.
+- **[scripts/fetch-swim-spots.js](scripts/fetch-swim-spots.js)** — zero-dep.
+  Run automatically (see `poll.yml`'s "Refresh swim spots" below) as well as
+  by hand. **`SWIM_SPOTS`** is the whole list of points of interest — hand-
+  curated like `PIN_TO_IDS`, edit it by hand to add another. Coordinates are
+  the spot as people actually find it, not necessarily the FeatureServer's own
+  sampling-point coordinates (Farleigh Hungerford's is ~400m off the crossing
+  people swim at). The readings come from a public FeatureServer found by
+  digging into the config behind Wessex's own **Farleigh Hungerford
+  Dashboard** — not linked from the dashboard UI itself, only reachable by
+  fetching the dashboard item's data, following its `itemId` to the web map it
+  embeds, and reading that map's `tables` (not `operationalLayers` — the
+  actual sampling results are dashboard-only tables, invisible on the map
+  layer itself): `FeatureServer/2` (`FH_WATER_QUALITY`, weekly E. coli /
+  Intestinal Enterococci sampling with a plain-English `Latest_Status`
+  sentence) and `FeatureServer/1` (`EA_FLOW_DATA`, a daily river-flow reading
+  from the EA's hydrology API at the Tellisford gauge). The flow reading isn't
+  spot-specific — both spots are the same short reach — so it's written to
+  every spot in `SWIM_SPOTS`, not just whichever is nearest the gauge; a spot
+  with no reading for a layer (Tellisford Weir has no water-quality sampling —
+  it isn't an EA-recognised bathing water) just keeps whatever it already had,
+  via `COALESCE` in the upsert, rather than the read clearing a good value.
+  Water-quality readings go in their own table, `swim_spot_readings` — a
+  sampling visit reports more than one determinand, and there's no reason to
+  keep only one. Diffs against what's already there before writing, same as
+  `fetch-context.js`/`fetch-annual-returns.js` — both tables are keyed upserts
+  regardless, so this doesn't protect the database from growing, only makes
+  the console output honest about whether anything's actually new. `--dry` to
+  preview.
 - **[.github/workflows/poll.yml](.github/workflows/poll.yml)** — GitHub Action.
   **`overflows.db` is NOT on `main`** — it lives on the orphan **`db` branch**,
   restored at the start of each run (`git show FETCH_HEAD:overflows.db`) and
@@ -251,7 +356,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   checkout is never disturbed. That keeps `.git` from growing without bound;
   committing a ~1 MB binary 100×/day was adding hundreds of MB a year. `main`
   gets only `docs/data.json` and, once a week, `archive/YYYY-Www.sql.gz` — a
-  gzipped dump of `monitors` + `events` + `offline` + `annual_returns` (~3 KB) that is the public,
+  gzipped dump of `monitors` + `events` + `offline` + `annual_returns` +
+  `swim_spots` + `swim_spot_readings` (~3 KB) that is the public,
   forkable, permanent record *and* the recovery path if a force-push to `db` ever
   writes something broken. To get the database locally:
   `git fetch origin db && git show origin/db:overflows.db > overflows.db`.
@@ -260,7 +366,13 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   but is only a fallback — GitHub skips most ticks on a low-traffic repo. An
   external cron (cron-job.org) hits the `workflow_dispatch` API every 15 min for
   the real cadence; see [SETUP.md](SETUP.md). `concurrency: poll` absorbs any
-  double-trigger.
+  double-trigger. **"Refresh swim spots"** runs `scripts/fetch-swim-spots.js`
+  on that same 15-min cadence but only *does* anything roughly daily — it's
+  gated on `swim_spots.fetched_at` (already in the restored db, so no separate
+  sentinel file), not a fixed hour, so a missed tick just means the next one
+  catches up rather than a day being silently skipped. A failure here logs a
+  `::warning::` and the job carries on; a swim-spot source outage shouldn't
+  block the actual overflow poll.
 
 ### Layout
 
@@ -271,6 +383,7 @@ scripts/build-basemap.js one-off: OSM streets → docs/basemap.json
 scripts/audit-ids.js    one-off: diff the fallback rule against PIN_TO_IDS
 scripts/fetch-context.js one-off: site names + waterbody etc → monitors table
 scripts/fetch-annual-returns.js one-off: EA annual returns → annual_returns table
+scripts/fetch-swim-spots.js one-off: swim spot readings → swim_spots table
 docs/index.html         the page — full-screen map + slide-in panels
 docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
@@ -280,13 +393,13 @@ docs/lib/map.js         buildMap() — the no-library SVG map
 docs/data.json          generated by poll.js (git-committed; absent in a fresh
                         checkout until the first poll)
 docs/basemap.json       generated by build-basemap.js (git-committed)
-archive/*.sql.gz        weekly dump of monitors+events+offline+annual_returns (git-committed)
+archive/*.sql.gz        weekly dump of monitors+events+offline+annual_returns+swim_spots (git-committed)
 overflows.db            node:sqlite file — on the orphan `db` branch, NOT main
 ```
 
 ## Data model & domain rules
 
-Five tables (schema in [poll.js](poll.js) `SCHEMA`):
+Seven tables (schema in [poll.js](poll.js) `SCHEMA`):
 
 - **`monitors`** — one row per outfall, with three kinds of column:
   - `label` is **human-owned; nothing automated writes it** — not the poller, not
@@ -332,10 +445,23 @@ Five tables (schema in [poll.js](poll.js) `SCHEMA`):
   disagree, and both are worth showing rather than picking one. Only reaches
   back to 2024 — see the script's header comment for why 2021–2023 is skipped
   rather than guessed at.
+- **`swim_spots`** / **`swim_spot_readings`** — not overflow monitors at all;
+  points of interest shown on the map with their own pin and popup. The set of
+  spots is hand-curated (`SWIM_SPOTS` in `scripts/fetch-swim-spots.js`, the
+  same pattern as `PIN_TO_IDS`), and only that script ever writes either
+  table. `swim_spots` holds identity (`name`, `latitude`/`longitude`,
+  `recognised`, `description`, `dashboard_url`) plus the single latest
+  river-flow reading (`flow_value`/`flow_measured_at` — shared across every
+  spot on the reach, not specific to one); `swim_spot_readings` holds every
+  determinand from the latest water-quality sample, keyed on
+  `(spot_id, determinand, sampled_at)` since one sampling visit reports more
+  than one (E. coli and Intestinal Enterococci). A spot with no water-quality
+  sampling (Tellisford Weir isn't an EA-recognised bathing water) simply has
+  no rows here.
 
-**Retention is split by purpose.** `monitors`, `events`, `offline` and
-`annual_returns` are the permanent record and are *never* pruned — together a
-few hundred KB a year.
+**Retention is split by purpose.** `monitors`, `events`, `offline`,
+`annual_returns` and `swim_spots`/`swim_spot_readings` are the permanent
+record and are *never* pruned — together a few hundred KB a year.
 `snapshots` is ~99% of the file (3,876 rows/day at 91 bytes each) and holds
 almost no information, because nearly every row is identical to the one before
 it. Keeping the raw log for a year would be ~123 MB, over GitHub's 100 MB file

@@ -4,12 +4,26 @@
  *
  *   node scripts/build-basemap.js
  *
- * Pulls the EDGE_KM box around Frome from the OpenStreetMap Overpass API,
- * projects it to Web Mercator, simplifies the lines, and writes an integer-grid
- * JSON the page draws as SVG. No dependencies, no API key. Re-run it whenever you
- * want the streets refreshed, or after changing EDGE_KM — nothing else on timing.
+ * Pulls the EDGE_KM box around Frome from three sources, projects everything
+ * to Web Mercator, simplifies the lines, and writes an integer-grid JSON the
+ * page draws as SVG. No dependencies, no API key. Re-run it whenever you want
+ * the streets/waterways refreshed, or after changing EDGE_KM — nothing else
+ * on timing.
  *
- * OSM data © OpenStreetMap contributors, ODbL. That credit must stay on the page.
+ * Roads, place labels and standing water (`natural=water`) come from the
+ * OpenStreetMap Overpass API. Rivers and streams do NOT — they used to, but
+ * OSM's `waterway` tag is a size guess by whoever mapped it, not the legal
+ * "Main River" / "ordinary watercourse" line the Environment Agency actually
+ * draws, and its coverage of small ditches/tributaries near Frome turned out
+ * to be thin (a handful of unnamed fragments). Two ArcGIS sources instead:
+ * the EA's own **Statutory Main River Map** for the legally-designated rivers
+ * (drawn as the `river` bucket), and Ordnance Survey's **OS Open Rivers** for
+ * everything else it names as a watercourse (`stream` bucket) — far denser
+ * and, unlike OSM, fully named. See `arcgisQuery` below.
+ *
+ * OSM data © OpenStreetMap contributors, ODbL. Contains OS data and
+ * Environment Agency data © Crown copyright and database right, under the
+ * Open Government Licence v3. All three credits must stay on the page.
  */
 
 import { writeFile } from 'node:fs/promises';
@@ -39,7 +53,13 @@ const ROAD_CLASS = {
   secondary: 'mid', tertiary: 'mid', secondary_link: 'mid', tertiary_link: 'mid',
   unclassified: 'minor', residential: 'minor', living_street: 'minor',
 };
-const WATERWAY_CLASS = { river: 'river', canal: 'river', stream: 'stream', drain: 'stream' };
+// See the header comment — waterways come from these, not Overpass.
+const MAIN_RIVER_API =
+  'https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/' +
+  'Statutory_Main_River_Map/FeatureServer/0/query';
+const OPEN_RIVERS_API =
+  'https://services.arcgis.com/qHLhLQrcvEnxjtPr/arcgis/rest/services/' +
+  'OS_OpenRivers/FeatureServer/0/query';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'docs', 'basemap.json');
@@ -119,19 +139,16 @@ function simplify(points, tol) {
 // --- Fetch ---------------------------------------------------------------
 
 const roadRe = Object.keys(ROAD_CLASS).join('|');
-const waterRe = Object.keys(WATERWAY_CLASS).join('|');
 const bbox = `${box.S},${box.W},${box.N},${box.E}`;
 const query = `[out:json][timeout:120];
 (
   way["highway"~"^(${roadRe})$"](${bbox});
-  way["waterway"~"^(${waterRe})$"](${bbox});
   way["natural"="water"](${bbox});
   relation["natural"="water"](${bbox});
   node["place"~"^(town|village|hamlet|suburb)$"](${bbox});
 );
 out geom;`;
 
-console.log(`Fetching OSM for a ${EDGE_KM.w + EDGE_KM.e}×${EDGE_KM.n + EDGE_KM.s} km box around Frome…`);
 const body = new URLSearchParams({ data: query });
 
 async function overpass() {
@@ -161,14 +178,61 @@ async function overpass() {
   throw lastErr;
 }
 
-const { elements } = await overpass();
+/**
+ * One bbox query against an Esri FeatureServer, in WGS84 lon/lat. These are
+ * stable Esri-hosted services, not the community Overpass mirrors — nowhere
+ * near as flaky — but a transient failure still shouldn't kill the whole
+ * build, hence the same retry shape as `overpass`. Returns the raw
+ * `features` array (each `{ attributes, geometry: { paths } }`).
+ */
+async function arcgisQuery(url, outFields) {
+  const params = new URLSearchParams({
+    geometry: `${box.W},${box.S},${box.E},${box.N}`,
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    outSR: '4326',
+    outFields,
+    returnGeometry: 'true',
+    f: 'json',
+  });
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(`${url}?${params}`, {
+        signal: AbortSignal.timeout(60_000),
+        headers: { accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error(`${url} → ${res.status}`);
+      const json = await res.json();
+      // ArcGIS reports failures with HTTP 200 and an error object.
+      if (json.error) throw new Error(`${url}: ${json.error.message}`);
+      return json.features ?? [];
+    } catch (e) {
+      lastErr = e;
+      console.log(`  ${lastErr.message}; retrying…`);
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+  throw lastErr;
+}
+
+console.log(`Fetching a ${EDGE_KM.w + EDGE_KM.e}×${EDGE_KM.n + EDGE_KM.s} km box around Frome — ` +
+  'OSM roads/places, EA Main River, OS Open Rivers…');
+const [{ elements }, mainRiverFeatures, openRiverFeatures] = await Promise.all([
+  overpass(),
+  arcgisQuery(MAIN_RIVER_API, 'OBJECTID'),
+  arcgisQuery(OPEN_RIVERS_API, 'form,name1'),
+]);
 
 // --- Transform ---------------------------------------------------------
 
 const layers = { water: [], river: [], stream: [], major: [], mid: [], minor: [] };
-const labels = { places: [], roads: [] };
+const labels = { places: [], roads: [], waterways: [] };
 const roadRuns = new Map();          // road name → [projected polyline, …]
+const waterwayRuns = new Map();      // watercourse name → [projected polyline, …]
 const MIN_ROAD_LEN = 260;            // grid units (~metres) before a road is worth labelling
+const MIN_WATERWAY_LEN = 200;        // grid units — brooks are narrower than roads, so a bit less
 const NEAR_RD2 = (5000) ** 2;        // "central" road = midpoint within 5 km of the town
 
 function addLine(geometry, bucket) {
@@ -193,8 +257,6 @@ for (const el of elements) {
       if (!roadRuns.has(t.name)) roadRuns.set(t.name, []);
       roadRuns.get(t.name).push(el.geometry.map((n) => project(n.lon, n.lat)));
     }
-  } else if (el.type === 'way' && t.waterway) {
-    addLine(el.geometry, WATERWAY_CLASS[t.waterway]);
   } else if (el.type === 'node' && /^(town|village|hamlet|suburb)$/.test(t.place ?? '') && t.name
              && !(t.place === 'hamlet' && /\b(farm|house|cottages?|barn)\b/i.test(t.name))) {
     const [x, y] = project(el.lon, el.lat);
@@ -204,6 +266,36 @@ for (const el of elements) {
       ? (el.members ?? []).filter((m) => m.type === 'way' && (m.role === 'outer' || !m.role)).map((m) => m.geometry)
       : [el.geometry];
     for (const ring of rings) addLine(ring, 'water');
+  }
+}
+
+// Main rivers (thick) and everything else OS names as a watercourse (thin) —
+// see the header comment for why these replace OSM's waterway tags. Esri
+// hands back `paths` as [lon, lat] pairs, not the {lat, lon} objects Overpass
+// uses, hence the small adapter before handing off to the same `addLine`.
+const toGeom = (path) => path.map(([lon, lat]) => ({ lon, lat }));
+
+for (const f of mainRiverFeatures) {
+  for (const path of f.geometry?.paths ?? []) addLine(toGeom(path), 'river');
+}
+
+for (const f of openRiverFeatures) {
+  // 'lake' entries duplicate OSM's own natural=water outlines; 'canal' reads
+  // as visually major, same as OSM's canal tag used to; everything else
+  // (overwhelmingly 'inlandRiver') is the ordinary-watercourse detail this
+  // switch was for.
+  const bucket = f.attributes.form === 'lake' ? null
+    : f.attributes.form === 'canal' ? 'river' : 'stream';
+  if (!bucket) continue;
+  for (const path of f.geometry?.paths ?? []) addLine(toGeom(path), bucket);
+
+  // Named brooks/streams get a label, same treatment as named roads below —
+  // OS names every one of these (unlike OSM), which is the whole reason this
+  // is worth doing now. A blank name comes through as a single space, not "".
+  const name = f.attributes.name1?.trim();
+  if (name) {
+    if (!waterwayRuns.has(name)) waterwayRuns.set(name, []);
+    for (const path of f.geometry?.paths ?? []) waterwayRuns.get(name).push(toGeom(path).map((n) => project(n.lon, n.lat)));
   }
 }
 
@@ -225,6 +317,24 @@ labels.roads = labels.roads
   .slice(0, 110)
   .map(({ d2, ...r }) => r);
 
+for (const [name, runs] of waterwayRuns) {
+  const len = runs.reduce((s, r) => s + polyLen(r), 0);
+  if (len < MIN_WATERWAY_LEN) continue;
+  const longest = runs.reduce((a, b) => (polyLen(a) >= polyLen(b) ? a : b));
+  const [x, y] = longest[Math.floor(longest.length / 2)];
+  labels.waterways.push({ text: name, x, y, len: Math.round(len), d2: (x - cX) ** 2 + (y - cY) ** 2 });
+}
+// Same rule as roads: nearest-Frome first, then longest. Uncapped — there are
+// far fewer named watercourses than roads to begin with (see SHOW_WATERWAY_LABELS
+// in map.js if this turns out to be too much on screen at once).
+labels.waterways = labels.waterways
+  .sort((a, b) => {
+    const na = a.d2 < NEAR_RD2, nb = b.d2 < NEAR_RD2;
+    if (na !== nb) return na ? -1 : 1;
+    return b.len - a.len;
+  })
+  .map(({ d2, ...r }) => r);
+
 // List order is the page's label priority: towns, then villages / suburbs /
 // hamlets each nearest-Frome first. The box reaches into the Radstock/Mendip
 // fringe, so cap the further-out kinds — the nearest are the ones that orient you.
@@ -238,7 +348,7 @@ labels.places = labels.places
 
 const out = {
   generated: new Date().toISOString().slice(0, 10),
-  attribution: '© OpenStreetMap contributors',
+  attribution: '© OpenStreetMap contributors; contains OS data and Environment Agency data © Crown copyright and database right',
   centre: [CENTRE.lon, CENTRE.lat],
   box: [box.W, box.S, box.E, box.N],
   size: [GRID, height],
@@ -250,5 +360,6 @@ await writeFile(OUT, JSON.stringify(out));
 const counts = Object.entries(layers).map(([k, v]) => `${k} ${v.length}`).join(', ');
 const placeCounts = labels.places.reduce((m, p) => ((m[p.kind] = (m[p.kind] || 0) + 1), m), {});
 console.log(`  ${counts}`);
-console.log(`  labels: ${JSON.stringify(placeCounts)} places, ${labels.roads.length} roads`);
+console.log(`  labels: ${JSON.stringify(placeCounts)} places, ${labels.roads.length} roads, ` +
+  `${labels.waterways.length} waterways`);
 console.log(`  wrote docs/basemap.json (${(JSON.stringify(out).length / 1024).toFixed(0)} KB)`);

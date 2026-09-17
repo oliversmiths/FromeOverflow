@@ -14,6 +14,7 @@
     "basemap": "node --no-warnings scripts/build-basemap.js",
     "audit-ids": "node --no-warnings scripts/audit-ids.js",
     "context": "node --no-warnings scripts/fetch-context.js",
-    "annual-returns": "node --no-warnings scripts/fetch-annual-returns.js"
+    "annual-returns": "node --no-warnings scripts/fetch-annual-returns.js",
+    "swim-spots": "node --no-warnings scripts/fetch-swim-spots.js"
   }
 }

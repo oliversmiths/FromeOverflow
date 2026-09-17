@@ -42,11 +42,29 @@ jobs:
       - name: Fetch a reading
         run: node poll.js
 
+      # Not part of the 15-minute cadence the rest of this job runs at — water
+      # quality changes roughly weekly, river flow daily, so there's nothing to
+      # gain from checking every tick. `fetched_at` on the couple of rows in
+      # swim_spots is the gate: self-healing if a run gets skipped (the next
+      # one just sees an older timestamp and catches up), no separate sentinel
+      # file to track, and it reads 0 on a brand-new database so the very first
+      # run always fetches. A source outage here shouldn't fail the whole poll,
+      # so a failure is a warning, not a hard stop.
+      - name: Refresh swim spots (daily)
+        run: |
+          last_s=$(( $(sqlite3 overflows.db "SELECT COALESCE(MAX(fetched_at), 0) FROM swim_spots;") / 1000 ))
+          age_h=$(( ($(date -u +%s) - last_s) / 3600 ))
+          if [ "$age_h" -ge 20 ]; then
+            node scripts/fetch-swim-spots.js || echo "::warning::Swim spot refresh failed, continuing."
+          else
+            echo "Refreshed ${age_h}h ago, skipping."
+          fi
+
       # `snapshots` is pruned to 30 days, so the permanent record is monitors +
-      # events + offline + annual_returns. That dumps to a couple of KB gzipped,
-      # so a weekly copy on main is a cheap, public, forkable archive — and the
-      # recovery path if a force-push to the db branch ever writes something
-      # broken.
+      # events + offline + annual_returns + swim_spots + swim_spot_readings.
+      # That dumps to a couple of KB gzipped, so a weekly copy on main is a
+      # cheap, public, forkable archive — and the recovery path if a
+      # force-push to the db branch ever writes something broken.
       - name: Archive the permanent record (weekly)
         run: |
           mkdir -p archive
@@ -55,7 +73,8 @@ jobs:
             echo "Already archived $week"
           else
             sqlite3 overflows.db ".dump monitors" ".dump events" ".dump offline" \
-              ".dump annual_returns" | gzip -9 > "$week"
+              ".dump annual_returns" ".dump swim_spots" ".dump swim_spot_readings" \
+              | gzip -9 > "$week"
             echo "Wrote $week ($(du -h "$week" | cut -f1))"
           fi
 

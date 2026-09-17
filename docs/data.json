@@ -1,5 +1,5 @@
 {
- "polled_at": 1789645529268,
+ "polled_at": 1789646449862,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -1498,5 +1498,6 @@
     }
    ]
   }
- ]
+ ],
+ "swim_spots": []
 }

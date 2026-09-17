@@ -22,7 +22,7 @@ const PIN =
   '<svg class="pin" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">' +
   '<path fill="currentColor" d="M12 2a7.5 7.5 0 0 0-7.5 7.5c0 5.2 6.3 11.7 6.6 12a1.2 1.2 0 0 0 1.8 0' +
   'c.3-.3 6.6-6.8 6.6-12A7.5 7.5 0 0 0 12 2Zm0 10.2a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Z"/></svg>';
-// Three ascending bars for the popup's "View 90-day status" link — echoes the
+// Three ascending bars for the popup's "View Timeline" link — echoes the
 // timeline's own day strip, the reverse direction of cards.js's LOUPE.
 const BARS =
   '<svg class="ico" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" ' +
@@ -201,7 +201,7 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   }
 
   // Collapsed by default. Not a native <details> — its content would have to
-  // live inside it, sharing .pop-foot's flex row with "View 90-day status"
+  // live inside it, sharing .pop-foot's flex row with "View Timeline"
   // and getting squeezed into whatever width that leaves (a 2-column grid of
   // full sentences doesn't fit in that); a plain toggle button lets the
   // revealed .pop-context render full-width, below the row, once it's open.
@@ -239,7 +239,7 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'pop-action';
-  btn.innerHTML = `${BARS}<span>View 90-day status</span>`;
+  btn.innerHTML = `${BARS}<span>View Timeline</span>`;
   btn.addEventListener('click', () => onSeeInTimeline(monitor));
   foot.append(btn);
   el.append(foot);
@@ -341,8 +341,8 @@ function swimPopup(spot) {
 /**
  * Fetch `basemap.json` and draw the map into `host`. `opts.initialZoom` is the
  * fraction of the full 10 km box to open on (1 = whole box, 0.36 ≈ two clicks in).
- * `opts.onSeeInTimeline(monitor)` is called when a popup's "View 90-day
- * status" link is clicked — the reverse of a card's own "View on map".
+ * `opts.onSeeInTimeline(monitor)` is called when a popup's "View Timeline"
+ * link is clicked — the reverse of a card's own "View on map".
  */
 export function buildMap(host, data, opts = {}) {
   const { initialZoom = 1, onSeeInTimeline = () => {} } = opts;
@@ -649,16 +649,26 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
       });
     }
   }
+  // A monitor's own Id as the URL hash while its popup is open — the write
+  // side of index.html's own read (`#WXW00308` on load flies to and opens
+  // that pin). `replaceState`, not a `location.hash` assignment, so this
+  // never pushes a back-button entry — same convention index.html's own
+  // selectTab/closePanel already use for the tab hash. Swim spots have no
+  // hash route yet, so opening one just clears whatever monitor hash was
+  // there, same as closing any popup does.
   function openPopup(m) {
     showPopup(popup(m, now, windowDays, onSeeInTimeline), m, pins.find((p) => p.m.id === m.id)?.el);
+    history.replaceState(null, '', `#${m.id}`);
   }
   function openSwimPopup(s) {
     showPopup(swimPopup(s), s, swimPins.find((p) => p.s.id === s.id)?.el);
+    history.replaceState(null, '', location.pathname + location.search);
   }
   function closePopup() {
     openItem = null;
     pop.hidden = true;
     for (const p of [...pins, ...swimPins]) p.el.classList.remove('is-selected');
+    history.replaceState(null, '', location.pathname + location.search);
   }
 
   // Sit the popup above the pin, centred; flip below if it would clip the top,

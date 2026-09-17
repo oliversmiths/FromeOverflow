@@ -140,8 +140,7 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   than inline ("3 discharges since watching began …"). It reads
   per-monitor `since`, so a monitor added later (a new Wessex outfall, or an
   extended `PIN_TO_IDS`) gets the same honesty for its first 90 days and
-  switches over by itself. Only
-  `paintCoverage` in index.html is temporary. `fmtDate` is `DD.MM.YY` (numeric,
+  switches over by itself. `fmtDate` is `DD.MM.YY` (numeric,
   zero-padded — "01.09.26"), chosen for brevity on the card's meta line;
   `fmtWhen`'s day branch matches it, "4d ago" not "4 days ago".
 - **`docs/lib/cards.js`** — `renderCards(container, data, onSeeOnMap)`: the
@@ -163,7 +162,7 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   "keeps its own history"). Each bar carries the structured `data-tip-*`
   attributes, not `title`. `onSeeOnMap` backs each card's "View on map"
   button; `map.js`'s popup has the reverse, `onSeeInTimeline` (its "View
-  90-day status" link), which opens the Timeline tab and scrolls straight to
+  Timeline" link), which opens the Timeline tab and scrolls straight to
   the matching card via `[data-monitor-id]` — set here on every card for
   exactly that lookup.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
@@ -234,14 +233,11 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   (just Data + Map — provenance and the CC BY attribution). Opens to Timeline;
   tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
   (`#timeline` / `#about` / `#safety` / `#sources`). The Timeline tab leads with
-  the "N monitors · last checked …" stamp, then `#coverage`, then the `cards.js`
-  list. **`paintCoverage` is temporary by design:** the strips are always 90 days
-  wide but the record only reaches back to the first poll, so while it is
-  shallower than `window_days` the note explains the hatching *and* the
-  discharges that appear before the record starts (Wessex hand over their latest
-  event with the first reading, so one old spill shows with no monitored days
-  around it). It hides itself for good once the history catches up — nothing to
-  remember to remove.
+  the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
+  `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
+  project's own avg annual duration) and a panel-wide 90-Day/History toggle
+  (`setCardsView`, cards.js) that flips every card at once — then the `cards.js`
+  list itself.
   The legend is a bottom-centre pill. On load a full-screen `.splash` shows the
   verdict big (`#splash-verdict`, `setSplashVerdict` sets it word-by-word for the
   hand-set look) over `docs/assets/overflow-img.webp`; then it fades after 5 s

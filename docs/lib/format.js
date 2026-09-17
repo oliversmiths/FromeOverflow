@@ -293,6 +293,53 @@ export function fmtAnnualReturn(monitor) {
 }
 
 /**
+ * Every EA annual-return year on record for a monitor, oldest first — the
+ * card's own History view (`fmtAnnualReturn` above only ever surfaces the
+ * latest):
+ *   [{ year: 2024, spillCount: 98, durationMs: 5189400000 },
+ *    { year: 2025, spillCount: 73, durationMs: 2806372705 }]
+ * `spillCount`/`durationMs` are `null` independently, same as
+ * `fmtAnnualReturn`. Always 2024 on — see scripts/fetch-annual-returns.js's
+ * header for why 2021–2023 can't be matched to a monitor. Empty array, not
+ * null, when there's no annual-return data yet, so callers can check
+ * `.length` without a null guard first.
+ */
+export function annualHistory(monitor) {
+  const returns = monitor.annual_returns;
+  if (!returns?.length) return [];
+  return returns
+    .filter((r) => r.spill_count != null || r.duration_hours != null)
+    .map((r) => ({
+      year: r.year,
+      spillCount: r.spill_count ?? null,
+      durationMs: r.duration_hours != null ? r.duration_hours * HOUR : null,
+    }));
+}
+
+/**
+ * The Environment Agency's own long-term average spill count for a monitor —
+ * the same figure `fmtAnnualReturn`'s `avg` formats into a sentence, as a
+ * plain number for sorting. `null` with no annual-return data yet.
+ */
+export function avgAnnualSpills(monitor) {
+  const returns = monitor.annual_returns;
+  return returns?.length ? returns.at(-1).long_term_avg_spills ?? null : null;
+}
+
+/**
+ * This project's *own* mean annual discharge duration across whatever EA
+ * annual-return years are on record for a monitor (2024 on) — not an EA
+ * figure. Their data has a long-term-average spill *count* (see
+ * `avgAnnualSpills`) but no equivalent for duration, so this is ours: a
+ * plain mean of however many years we actually have, which today is one or
+ * two. `null` if no year on record has a duration.
+ */
+export function avgAnnualDurationMs(monitor) {
+  const durations = annualHistory(monitor).map((h) => h.durationMs).filter((v) => v != null);
+  return durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : null;
+}
+
+/**
  * A swim spot's latest water-quality sampling, for the map popup:
  *   { date: "11.08.26", status: "…excellent indicative water quality…",
  *     readings: ["E coli 170/100mL", "Enterococci 66/100mL"] }
@@ -342,23 +389,63 @@ export function offlineMs(monitor, now) {
 }
 
 /**
- * Monitors sorted by total discharge time within the window, longest first,
- * each given a `total` field (ms). Ties break alphabetically by label. Input
+ * Every monitor given a `total` field (ms) — the 90-day (or whatever window)
+ * discharge total, clipped to the monitor's own record: if a spill was
+ * already running when we first saw the monitor, only the part we actually
+ * watched is counted, so the total never claims time the record doesn't
+ * cover. Shared by all three `rankBy*` functions below, since the card's own
+ * 90-day figure is shown regardless of which one sorted the list. Input
  * monitors are not mutated.
- *
- * A spill is clipped to the monitor's own record: if one was already running
- * when we first saw the monitor, only the part we actually watched is counted,
- * so the total never claims time the record doesn't cover.
+ */
+function withTotal(monitors, now) {
+  return monitors.map((m) => ({
+    ...m,
+    total: m.events.reduce((sum, e) => {
+      const start = m.since == null ? e.start : Math.max(e.start, m.since);
+      const ms = spillMs({ start, end: e.end }, now);
+      return Number.isFinite(ms) ? sum + Math.max(0, ms) : sum;
+    }, 0),
+  }));
+}
+
+// A monitor with no value for the field being sorted always sorts last,
+// regardless of direction — "unknown" isn't the same claim as "zero".
+function byFieldDesc(get) {
+  return (a, b) => {
+    const av = get(a), bv = get(b);
+    if (av == null && bv == null) return String(a.label).localeCompare(String(b.label));
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return bv - av || String(a.label).localeCompare(String(b.label));
+  };
+}
+
+/**
+ * Monitors sorted by total discharge time within the window, longest first,
+ * each given a `total` field (ms). Ties break alphabetically by label.
  */
 export function rankByTotal(monitors, now) {
-  return monitors
-    .map((m) => ({
-      ...m,
-      total: m.events.reduce((sum, e) => {
-        const start = m.since == null ? e.start : Math.max(e.start, m.since);
-        const ms = spillMs({ start, end: e.end }, now);
-        return Number.isFinite(ms) ? sum + Math.max(0, ms) : sum;
-      }, 0),
-    }))
-    .sort((a, b) => b.total - a.total || String(a.label).localeCompare(String(b.label)));
+  return withTotal(monitors, now).sort(byFieldDesc((m) => m.total));
+}
+
+/**
+ * Monitors sorted by the Environment Agency's own long-term average spill
+ * count (the same figure `fmtAnnualReturn`'s `avg` formats, from the latest
+ * annual-return year on record), highest first. A monitor with no
+ * annual-return data yet sorts last, not to zero.
+ */
+export function rankByAvgSpills(monitors, now) {
+  return withTotal(monitors, now).sort(byFieldDesc((m) => avgAnnualSpills(m)));
+}
+
+/**
+ * Monitors sorted by *this project's own* mean annual duration across
+ * whatever EA annual-return years are on record (2024 on — see
+ * scripts/fetch-annual-returns.js's header for why earlier years are
+ * unreachable), highest first. Deliberately not called an "average" in the
+ * EA sense: there's no long-term-average-duration field in their data, only
+ * a spill-count one, so this is ours, not theirs — see `avgAnnualDurationMs`.
+ */
+export function rankByAvgDuration(monitors, now) {
+  return withTotal(monitors, now).sort(byFieldDesc((m) => avgAnnualDurationMs(m)));
 }

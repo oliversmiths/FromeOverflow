@@ -1,16 +1,38 @@
 /**
  * The per-monitor list shown in the timeline panel: one card each, current
- * status plus a GitHub-style 90-day strip (one bar a day, from `dayCells`).
+ * status plus a switchable body — a GitHub-style 90-day strip (one bar a day,
+ * from `dayCells`) or the EA's own multi-year annual-return history.
  *
- *   renderCards(containerEl, data, onSeeOnMap);   // returns the ranked monitors
+ *   renderCards(containerEl, data, onSeeOnMap, { sort, view });   // returns the ranked monitors
+ *   setCardsView(containerEl, view);                              // flips every rendered card at once
  *
  * `onSeeOnMap(monitor)` is called when a card's "View on map" button is clicked.
+ * `sort` is one of `SORTS`' keys (default `'total'`); `view` is `'90day'`
+ * (default) or `'history'` — the view every card, and the global toggle
+ * (built in index.html), starts on.
  */
 
 import {
-  dayCells, fmtDate, fmtDuration, fmtSpillSpan, fmtWhen, offlineMs, rankByTotal,
-  statusOf, windowPhrase,
+  DAY, HOUR, annualHistory, avgAnnualDurationMs, dayCells, fmtAnnualReturn,
+  fmtDate, fmtDuration, fmtSpillSpan, fmtWhen, offlineMs, rankByAvgDuration,
+  rankByAvgSpills, rankByTotal, statusOf, windowPhrase,
 } from './format.js';
+
+const SORTS = {
+  total: rankByTotal,
+  avgSpills: rankByAvgSpills,
+  avgDuration: rankByAvgDuration,
+};
+
+// A year's own severity tier, same three-colour vocabulary as the map
+// popup's .pop-annual box — but a deliberately different threshold: that box
+// tints on a single monitor's *latest* total, where under a minute reads as
+// noise; this is a whole *year's* total, where under an hour is a real (if
+// quiet) year rather than noise, so the floor is an hour, not a minute.
+function yearSeverity(durationMs) {
+  if (durationMs == null) return 'oxide';
+  return durationMs < HOUR ? 'dry' : durationMs < DAY ? 'amber' : 'oxide';
+}
 
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
 const LOUPE =
@@ -51,10 +73,141 @@ function joinRow(bits, itemClass, sepClass) {
   return frag;
 }
 
-export function renderCards(container, data, onSeeOnMap) {
+/**
+ * The card's History body: one row per EA annual-return year on record
+ * (2024 on — see scripts/fetch-annual-returns.js's header for why earlier
+ * years aren't reachable), most recent first, each with its exact spill
+ * count and duration plus a pair of bars. `maxSpills`/`maxDuration` are the
+ * biggest single-year figures across *every* rendered monitor (computed once
+ * by renderCards, not per card) — a shared scale, not each card's own, so a
+ * bar's length means the same thing wherever you see it on the page: a
+ * monitor whose worst year barely registers next to the catchment's worst
+ * offender looks that way, rather than every card's own max always filling
+ * the row. A monitor `fetch-annual-returns.js` hasn't matched yet, or hasn't
+ * been run since the monitor was added, gets a plain empty state rather than
+ * a blank chart.
+ */
+function buildHistoryView(monitor, maxSpills, maxDuration) {
+  const wrap = document.createElement('div');
+  wrap.className = 'o-view-history';
+
+  const hist = annualHistory(monitor);
+  if (!hist.length) {
+    const p = document.createElement('p');
+    p.className = 'o-history-empty';
+    p.textContent = 'No Environment Agency annual return on record for this monitor yet.';
+    wrap.append(p);
+    return wrap;
+  }
+
+  const legend = document.createElement('p');
+  legend.className = 'o-history-legend';
+  legend.innerHTML =
+    '<span class="o-history-swatch o-history-swatch--spills"></span>Spills' +
+    '<span class="o-history-swatch o-history-swatch--duration"></span>Total duration';
+  wrap.append(legend);
+
+  const rows = document.createElement('div');
+  rows.className = 'o-history-rows';
+  // `hist` itself stays oldest-first (annualHistory's own contract, and
+  // `hist[0].year` below needs the oldest year regardless of display order)
+  // — only the rendered rows go most-recent-first, a plain reverse of it.
+  for (const h of [...hist].reverse()) {
+    const row = document.createElement('div');
+    row.className = 'o-history-row';
+
+    const year = document.createElement('span');
+    year.className = 'o-history-year';
+    year.textContent = h.year;
+
+    const figures = document.createElement('p');
+    figures.className = 'o-history-figures';
+    if (h.spillCount != null) {
+      const b = document.createElement('strong');
+      b.textContent = `${h.spillCount} spill${h.spillCount === 1 ? '' : 's'}`;
+      figures.append(b);
+    }
+    if (h.durationMs != null) {
+      figures.append(h.spillCount != null ? ', total ' : 'total ');
+      const b = document.createElement('strong');
+      b.textContent = fmtDuration(h.durationMs);
+      figures.append(b);
+    }
+
+    // Both bars share this year's own severity tier (see yearSeverity above)
+    // — solid for duration, a lighter tint of the same tier for spills — so
+    // the pair reads as one year's story, not two differently-coloured
+    // metrics.
+    const tier = yearSeverity(h.durationMs);
+    const bars = document.createElement('div');
+    bars.className = 'o-history-bars';
+    const spillBar = document.createElement('span');
+    spillBar.className = `o-history-bar o-history-bar--spills is-${tier}`;
+    spillBar.style.width = `${h.spillCount != null ? (h.spillCount / maxSpills) * 100 : 0}%`;
+    const durBar = document.createElement('span');
+    durBar.className = `o-history-bar o-history-bar--duration is-${tier}`;
+    durBar.style.width = `${h.durationMs != null ? (h.durationMs / maxDuration) * 100 : 0}%`;
+    bars.append(spillBar, durBar);
+
+    row.append(year, figures, bars);
+    rows.append(row);
+  }
+  wrap.append(rows);
+
+  // Two different "average" flavours, deliberately labelled apart — spills is
+  // the EA's own long-term figure (same one the map popup shows); duration is
+  // this project's own mean across whatever years are on record, since the EA
+  // publishes no long-term-average-duration figure at all. See
+  // avgAnnualDurationMs's own comment.
+  const avgBits = [];
+  const spillsAvg = fmtAnnualReturn(monitor)?.avg;
+  if (spillsAvg) avgBits.push(spillsAvg);
+  const durationAvgMs = avgAnnualDurationMs(monitor);
+  if (durationAvgMs != null) {
+    avgBits.push(`avg ${fmtDuration(durationAvgMs)}/yr total since ${hist[0].year}`);
+  }
+  if (avgBits.length) {
+    const avg = document.createElement('p');
+    avg.className = 'o-history-avg';
+    avg.textContent = avgBits.join(' · ');
+    wrap.append(avg);
+  }
+
+  return wrap;
+}
+
+// Shared by each card's own toggle and the panel-wide one (index.html) that
+// flips every rendered card at once — same operation either way, just a
+// different caller.
+function applyView(card, view) {
+  card.dataset.view = view;
+  const is90 = view !== 'history';
+  card.querySelector('.o-view-90day').hidden = !is90;
+  card.querySelector('.o-view-history').hidden = is90;
+  const [btn90, btnHistory] = card.querySelectorAll('.o-view-btn');
+  btn90.setAttribute('aria-pressed', String(is90));
+  btnHistory.setAttribute('aria-pressed', String(!is90));
+}
+
+/** Flip every rendered card to `view` ('90day' | 'history') at once — the
+ * panel-wide toggle above the list, built in index.html. */
+export function setCardsView(container, view) {
+  for (const card of container.querySelectorAll('.o-card')) applyView(card, view);
+}
+
+export function renderCards(container, data, onSeeOnMap, opts = {}) {
+  const { sort = 'total', view = '90day' } = opts;
   const now = data.polled_at;
-  const monitors = rankByTotal(data.monitors, now);
+  const rank = SORTS[sort] ?? rankByTotal;
+  const monitors = rank(data.monitors, now);
   container.replaceChildren();
+
+  // One shared scale for every card's History bars, not a per-card one — see
+  // buildHistoryView's own comment on why. 1 floors a page with no
+  // annual-return data anywhere yet, same reason withTotal-style helpers do.
+  const allHistory = monitors.flatMap((m) => annualHistory(m));
+  const maxSpills = Math.max(1, ...allHistory.map((h) => h.spillCount ?? 0));
+  const maxDuration = Math.max(1, ...allHistory.map((h) => h.durationMs ?? 0));
 
   for (const monitor of monitors) {
     const state = statusOf(monitor.status);
@@ -63,7 +216,7 @@ export function renderCards(container, data, onSeeOnMap) {
 
     const card = document.createElement('div');
     card.className = `o-card is-${state.key}`;
-    // Looked up by the map popup's "View 90-day status" link, the reverse of
+    // Looked up by the map popup's "View Timeline" link, the reverse of
     // this card's own "View on map" button.
     card.dataset.monitorId = monitor.id;
 
@@ -75,7 +228,27 @@ export function renderCards(container, data, onSeeOnMap) {
     where.className = 'o-where';
     where.textContent = ` ${monitor.watercourse}`;
     heading.append(document.createTextNode(''), where);
-    head.append(heading);
+
+    // 90-Day / History — same switch as the panel-wide one above the list
+    // (index.html), just scoped to this one card. `applyView` (below) is
+    // what actually flips the two bodies; this only wires the clicks.
+    const viewToggle = document.createElement('div');
+    viewToggle.className = 'o-view-toggle';
+    viewToggle.setAttribute('role', 'group');
+    viewToggle.setAttribute('aria-label', `${monitor.label} view`);
+    const btn90 = document.createElement('button');
+    btn90.type = 'button';
+    btn90.className = 'o-view-btn';
+    btn90.textContent = '90-Day';
+    btn90.addEventListener('click', () => applyView(card, '90day'));
+    const btnHistory = document.createElement('button');
+    btnHistory.type = 'button';
+    btnHistory.className = 'o-view-btn';
+    btnHistory.textContent = 'History';
+    btnHistory.addEventListener('click', () => applyView(card, 'history'));
+    viewToggle.append(btn90, btnHistory);
+
+    head.append(heading, viewToggle);
 
     // Both running totals — time spent discharging, time spent dark — move to
     // the foot row (see below), alongside "View on map", leaving this line to
@@ -139,7 +312,18 @@ export function renderCards(container, data, onSeeOnMap) {
       Object.assign(document.createElement('span'), { textContent: `${data.window_days} days ago` }),
       Object.assign(document.createElement('span'), { textContent: 'Today' }));
 
-    card.append(head, meta, strip, scale);
+    // The two switchable bodies — only one is ever visible; `applyView`
+    // (below) toggles which, keyed off `.o-view-90day`/`.o-view-history`
+    // rather than anything more specific, so it works the same whether it's
+    // this card's own toggle or the panel-wide one driving it.
+    const view90day = document.createElement('div');
+    view90day.className = 'o-view-90day';
+    view90day.append(meta, strip, scale);
+
+    const viewHistory = buildHistoryView(monitor, maxSpills, maxDuration);
+
+    card.append(head, view90day, viewHistory);
+    applyView(card, view);
 
     // The foot row: the two running totals on the left, "View on map" on the
     // right — using the space the button leaves spare rather than crowding

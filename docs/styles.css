@@ -16,11 +16,14 @@
   --ink:      #222;
   --weir:     #0666B5;   /* brand blue — panels, splash, chrome */
   --oxide:    #AB522F;
+  --light-oxide: #bc7559;   /* same ~20% white mix as --amber/--dry's own light- variants below */
   --amber:   rgb(209, 169, 42);
+  --light-amber: #daba55;
   --silt:     #888;
   --hairline: #C3C9BF;
   --sewage:   #D6FF00;
   --dry:      #77A881 ;   /* "not discharging" — pins and the 90-day strip */
+  --light-dry: #92ba9a;
   --day-nodata: #ededed;      /* before this monitor's first reading */
   --day-nodata-line: #cfcfcf; /* hatch stroke over it — "not watched", not "clear" */
   --day-offline: #b4b4b4; /* monitor was reporting no signal that day */
@@ -237,7 +240,7 @@ b, strong { font-weight: 600; }
    default behind the "+ More" / "− Less" button, .pop-context-toggle (a
    plain button, not a native <details>: its content has to render full
    popup width once open, not squeezed into whatever .pop-foot's flex row
-   leaves next to "View 90-day status", which is where a <details>'s own
+   leaves next to "View Timeline", which is where a <details>'s own
    content would be forced to live). No divider of its own: the .pop-annual
    box above it (or the state/coordinates row, on a monitor with no annual
    return) already reads as a clean break. */
@@ -306,7 +309,7 @@ b, strong { font-weight: 600; }
 .pop-annual--dry { background: #f2f7f3; }
 .pop-annual--dry p { color: var(--dry); }
 
-/* "View 90-day status" — the reverse of a card's own "View on map" button
+/* "View Timeline" — the reverse of a card's own "View on map" button
    (.o-foot button), styled to match it. Always the last thing before any
    expanded .pop-context. Flex row, space-between: on a monitor with context
    to show, "+ More"/"− Less" shares this line on the left; with one child
@@ -557,18 +560,6 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .stamp { font-family: var(--data); font-size: 11px; color:  rgba(255, 255, 255, 0.62); margin: 0 0 4px; }
 .standfirst { margin: 8px 0 20px; color: var(--sewage); font-size: 18px; }
 
-/* Shown only while the record is shallower than the 90-day window; paintCoverage
-   hides it for good once the history catches up. */
-.coverage {
-  margin: 10px 0 0;
-  padding: 10px 12px;
-  border-left: 2px solid var(--sewage);
-  font-size: 13px;
-  line-height: 1.35;
-  color: var(--sewage);
-}
-.coverage[hidden] { display: none; }
-
 .prose p { margin: 0 0 12px; }
 .prose ul { margin: 0 0 12px; padding-left: 18px; }
 .prose li { margin: 0 0 8px; }
@@ -625,6 +616,45 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 /* --- Overflow list (the timeline panel) --- */
 
+/* Sits directly on the panel's dark background (like .stamp above it),
+   unlike everything under .o-card — different palette from the per-card
+   view toggle these controls otherwise share markup/classes with. */
+.overflows-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 14px 0 0;
+  font-family: var(--data);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.62);
+}
+.sort-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.sort-label select {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--weir);
+  color: var(--sewage);
+  font: inherit;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.sort-label select:focus-visible { outline: 2px solid var(--sewage); outline-offset: 1px; }
+
+/* The panel-wide "switch every card" toggle — same .o-view-toggle/.o-view-btn
+   structure the per-card one uses (cards.js), just recoloured for the dark
+   panel background instead of a white .o-card. */
+#view-all-toggle { border-color: var(--sewage); }
+#view-all-toggle .o-view-btn {color: var(--sewage); }
+#view-all-toggle .o-view-btn + .o-view-btn { border-left-color: var(--sewage); }
+#view-all-toggle .o-view-btn[aria-pressed="true"] { background: var(--sewage); color: var(--weir); }
+
 .overflows { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
 
 .o-card {
@@ -638,6 +668,13 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-card.is-dry         { border-left-color: var(--dry); }
 .o-card.is-offline     { border-left-color: var(--silt); }
 
+.o-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .o-head h3 {
   margin: 0;
   font-family: var(--data);
@@ -646,9 +683,37 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   text-transform: uppercase;
   line-height: 1.35;
   color: var(--weir);
+  min-width: 0;   /* lets a long label/watercourse wrap before pushing the toggle out */
 }
 
 .o-where {  }
+
+/* The 90-Day/History switch, both per card and the panel-wide one above the
+   list (same markup, index.html builds its own pair of buttons and calls
+   cards.js's setCardsView directly rather than a shared component — there's
+   only the one place it's built twice). Two plain buttons, not native radios
+   — aria-pressed carries the state, same pattern as the map popup's own
+   toggle. */
+.o-view-toggle {
+  display: flex;
+  flex: none;
+  border: 1px solid var(--weir);
+  font-family: var(--data);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.o-view-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 3px 7px;
+  color: var(--weir);
+  cursor: pointer;
+}
+.o-view-btn + .o-view-btn { border-left: 1px solid var(--weir); }
+.o-view-btn[aria-pressed="true"] { background: var(--weir); color: #fff; }
+.o-view-btn:focus-visible { outline: 2px solid var(--weir); outline-offset: 1px; }
 
 .o-meta {
   display: flex;
@@ -714,6 +779,85 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-scale::before { left: 0; }
 .o-scale::after  { right: 0; }
 
+/* The History body (cards.js's buildHistoryView) — one row per EA
+   annual-return year on record, most recent first: exact figures plus a
+   pair of bars scaled to this monitor's own max across its own series, not
+   a site-wide scale. Each year's own colour is the same three-tier severity
+   as the map popup's own .pop-annual box (under an hour / under a day / a
+   day or more — see cards.js's yearSeverity, a deliberately different
+   threshold from the popup's own single-spill one, since an *annual* total
+   under a minute would be exceptional but under an hour is plausible) —
+   solid for the duration bar, a lighter tint of the same colour for the
+   spills bar, so the pair reads as one year's story rather than two
+   unrelated series. */
+.o-history-empty { margin: 11px 0 0; font-size: 12px; color: var(--silt); }
+
+.o-history-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 3px 0 8px;
+  font-family: var(--data);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--silt);
+}
+.o-history-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  margin-left: 6px;
+}
+.o-history-legend .o-history-swatch:first-child { margin-left: 0; }
+/* The legend always shows the oxide tier as its example — the actual bars
+   pick their own tier per year (see .o-history-bar--* below) — just to
+   establish "tint = spills, solid = duration" once. */
+.o-history-swatch--spills   { background: var(--light-oxide); }
+.o-history-swatch--duration { background: var(--oxide); }
+
+.o-history-rows { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
+.o-history-row {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  column-gap: 10px;
+}
+.o-history-year {
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--silt);
+}
+.o-history-figures { grid-column: 2; margin: 0; font-size: 11px; color: var(--weir); }
+.o-history-bars {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 3px;
+}
+/* min-width is a visibility floor, not a data value — on the shared,
+   catchment-wide scale (cards.js's buildHistoryView) a quiet monitor's
+   quietest year can be a fraction of a percent of the worst offender's, and
+   without a floor that's not a short bar, it's nothing. */
+.o-history-bar { display: block; height: 4px; min-width: 3px; border-radius: 1px; }
+.o-history-bar--duration.is-dry   { background: var(--dry); }
+.o-history-bar--duration.is-amber { background: var(--amber); }
+.o-history-bar--duration.is-oxide { background: var(--oxide); }
+.o-history-bar--spills.is-dry   { background: var(--light-dry); }
+.o-history-bar--spills.is-amber { background: var(--light-amber); }
+.o-history-bar--spills.is-oxide { background: var(--light-oxide); }
+
+.o-history-avg {
+  margin: 12px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11px;
+  color: var(--silt);
+}
+
 .o-foot {
   display: flex;
   align-items: center;
@@ -723,6 +867,12 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   font-size: 10px;
 }
 .o-stats { min-width: 0; }   /* lets it wrap/truncate before pushing the button out */
+/* Lives in .o-foot (alongside "View on map", which stays put in both views)
+   rather than inside .o-view-90day itself, so it doesn't jump position when
+   the view switches — but the figures it shows (90-day total/offline) only
+   mean anything for that view, so it hides for History rather than reading
+   as a third, unexplained number next to the per-year ones above it. */
+.o-card[data-view="history"] .o-stats { display: none; }
 .o-stat-sep { opacity: 0.5; }
 /* Colour-coded to match their meaning everywhere else on the page: oxide for
    time spent discharging (the strip's spill bars, the discharging pin/state),

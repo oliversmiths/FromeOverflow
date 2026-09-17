@@ -53,7 +53,20 @@
   <div class="panel-body" id="tabpanel-timeline" role="tabpanel"
     aria-labelledby="tab-timeline" tabindex="0">
     <p class="stamp" id="stamp"></p>
-    <p class="coverage" id="coverage" hidden></p>
+
+    <div class="overflows-controls">
+      <label class="sort-label" for="sort-select">Sort
+        <select id="sort-select">
+          <option value="total">90-day total duration</option>
+          <option value="avgSpills">Historic avg spills/yr</option>
+          <option value="avgDuration">Historic avg duration/yr</option>
+        </select>
+      </label>
+      <div class="o-view-toggle" id="view-all-toggle" role="group" aria-label="Switch every card's view">
+        <button type="button" class="o-view-btn" data-view="90day">90-Day</button>
+        <button type="button" class="o-view-btn" data-view="history">History</button>
+      </div>
+    </div>
 
     <div class="overflows" id="overflows"></div>
   </div>
@@ -76,9 +89,23 @@
             quality and river flow reading where there is one.</p>
 
           <h3>Reading the timeline</h3>
-          <p>Each overflow monitor is represented by a card, ranked by total discharge time. The 90-day status strip shows one bar
-            a day: red where it discharged, amber for the 48 hours after, green when it was clear,
-            dark grey where the monitor was offline, striped before watching began.</p>
+          <p>Each overflow monitor is a card. By default they're ranked by total discharge time in
+            the last 90 days; the sort menu above the list can rank them instead by the
+            Environment Agency's own long-term average spill count, or by this project's own
+            average annual duration. The 90-day status strip shows one bar a day: red where it
+            discharged, amber for the 48 hours after, green when it was clear, dark grey where the
+            monitor was offline, striped before watching began.</p>
+          <p>Switch a card – or every card at once, with the toggle above the list – to History to
+            see the Environment Agency's own regulator-verified annual return instead, year by
+            year since 2024 (the earliest year that can be matched to this monitor's identifier –
+            see Sources). Each year shows its exact spill count and total duration, plus a pair of
+            bars: a solid one for duration and a lighter tint for spill count, both coloured by
+            that year's own severity – green under an hour, amber under a day, rust a day or more.
+            The two averages below are deliberately different figures: the Environment Agency's
+            own long-term spill average (its published baseline, often running back further than
+            2024), and this project's own average duration across whatever years are on record –
+            there's no equivalent long-term-average-duration figure published, so that one is
+            ours, not theirs.</p>
         </div>
       </details>
 
@@ -202,9 +229,9 @@
 <div class="scrim" id="scrim"></div>
 
 <script type="module">
-import { DAY, fmtWhen, mapStatusOf } from './lib/format.js';
+import { fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
-import { renderCards } from './lib/cards.js';
+import { renderCards, setCardsView } from './lib/cards.js';
 import { initTooltips } from './lib/tooltip.js';
 
 // Fraction of the fully-zoomed-out view to open on. Opens on the town and its
@@ -243,8 +270,19 @@ function dismissSplash() {
   hideTimer = setTimeout(() => { splash.hidden = true; }, 3200);
 }
 
-holdTimer = setTimeout(dismissSplash, 5000);
-revealTimer = setTimeout(() => { pauseDone = true; revealVerdict(); }, 500);
+// Arriving via a hash — a monitor Id, a tab, a How-to-use section — means
+// something specific was promised (a link someone was sent, a bookmark);
+// making that sit through 5s of intro first, just to land where it already
+// said it would, defeats the point of a direct link. Skipped outright, not
+// just shortened: no fade-out either, since `splash` starts on top of
+// everything and even the fade would delay the map/popup/panel underneath
+// being interactive.
+if (location.hash.length > 1) {
+  splash.hidden = true;
+} else {
+  holdTimer = setTimeout(dismissSplash, 5000);
+  revealTimer = setTimeout(() => { pauseDone = true; revealVerdict(); }, 500);
+}
 splash.addEventListener('click', dismissSplash);
 $('replay-splash').addEventListener('click', showSplash);
 addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
@@ -298,52 +336,6 @@ function paintStatus(data) {
   setVerdict(text);
   $('stamp').textContent =
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
-  paintCoverage(data, now);
-}
-
-// TEMPORARY — the one piece here that really does retire. It reads the *site's*
-// earliest record, so once the oldest monitor passes window_days (~28 Nov 2026)
-// this note never shows again and the function can be deleted. Until then most
-// of every strip is "we weren't watching yet", which is worth saying once at the
-// top rather than on all 38 cards.
-//
-// The per-monitor equivalents — windowPhrase, dayCells' hatching, exportJson's
-// event filter — are NOT temporary: they key off each monitor's own `since`, so
-// a monitor added years from now gets the same treatment for its first 90 days.
-function paintCoverage(data, now) {
-  const note = $('coverage');
-  const starts = data.monitors.map((m) => m.since).filter((s) => s != null);
-  if (!starts.length) { note.hidden = true; return; }
-
-  // Calendar days, not elapsed 24-hour periods. The first reading landed at
-  // 17:35, so a floor of (now - started) said "4 days" on the 5th calendar day —
-  // the bars count local days, and the reader counts them off a calendar, so this
-  // has to as well.
-  //
-  // Round, not floor. The day the clocks go forward is 23 hours, so once the
-  // window spans a spring change the division lands on 46.9583 rather than 47 and
-  // a floor would report one day fewer for as long as the note is shown. (The
-  // autumn 25-hour day errs the other way, 57.0417, which a floor survives.)
-  // Both directions round correctly.
-  const started = Math.min(...starts);
-  const depth = Math.round((midnightOn(now) - midnightOn(started)) / DAY);
-  if (depth >= data.window_days) { note.hidden = true; return; }
-
-  const began = depth === 0
-    ? 'today'
-    : `${depth} day${depth === 1 ? '' : 's'} ago (or fewer)`;
-
-  note.textContent =
-    `Each card below shows one overflow monitor in the Frome catchment. The status strip shows a rolling ${data.window_days} days, one bar per day. ` +
-    `Watching began ${began} – days before that are shown with diagonal stripes.`;
-  note.hidden = false;
-}
-
-/** Local midnight starting the day that contains `ms`. Honours BST/GMT. */
-function midnightOn(ms) {
-  const d = new Date(ms);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
 }
 
 // --- panel (one drawer, tabs: timeline / about) ---
@@ -444,10 +436,44 @@ try {
         ?.scrollIntoView({ block: 'start' });
     },
   });
-  renderCards($('overflows'), data, (monitor) => {
+  // Sort and view both live outside renderCards() itself so the view toggle
+  // can re-render without resetting the sort, and vice versa — except a sort
+  // change also drives the view (see below), since a card's visible content
+  // should match the reason it's in that position.
+  let currentView = '90day';
+  const sortSelect = $('sort-select');
+  const viewAllToggle = $('view-all-toggle');
+
+  const renderList = () => renderCards($('overflows'), data, (monitor) => {
     closePanel();
     map.focus(monitor);
+  }, { sort: sortSelect.value, view: currentView });
+
+  const setViewAllPressed = () => {
+    for (const btn of viewAllToggle.querySelectorAll('.o-view-btn')) {
+      btn.setAttribute('aria-pressed', String(btn.dataset.view === currentView));
+    }
+  };
+
+  sortSelect.addEventListener('change', () => {
+    // A historic sort ranks by a figure the 90-Day view never shows — left
+    // alone, the #1 card's position would look arbitrary. Both directions:
+    // switching back to the 90-day sort switches the view back too, same
+    // reasoning in reverse.
+    currentView = sortSelect.value === 'total' ? '90day' : 'history';
+    setViewAllPressed();
+    renderList();
   });
+  viewAllToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('.o-view-btn');
+    if (!btn) return;
+    currentView = btn.dataset.view;
+    setViewAllPressed();
+    setCardsView($('overflows'), currentView);
+  });
+
+  setViewAllPressed();
+  renderList();
 
   const h = location.hash.slice(1);
   if (ACC_SECTIONS.includes(h)) {
@@ -456,6 +482,13 @@ try {
     if (details) { details.open = true; details.scrollIntoView({ block: 'start' }); }
   } else if (TABS.includes(h)) {
     openPanel(h);
+  } else if (h) {
+    // A monitor's own Id as the hash (e.g. #WXW00308) — a direct link to its
+    // pin, the same fly-and-open map.focus() already does for a card's "View
+    // on map". Checked last, after the fixed tab/section names above, so
+    // there's no ambiguity between the two hash vocabularies.
+    const monitor = data.monitors.find((m) => m.id === h);
+    if (monitor) map.focus(monitor);
   }
 } catch {
   setVerdict('No data yet');

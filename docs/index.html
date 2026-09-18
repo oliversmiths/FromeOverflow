@@ -24,7 +24,10 @@
 
 <main id="overflow-map" aria-label="Map of storm overflows around Frome"></main>
 
-<ul class="legend" id="legend" aria-label="What the pin colours mean"></ul>
+<details class="legend-wrap" id="legend-wrap">
+  <summary class="legend-toggle"><span>+ Legend</span></summary>
+  <ul class="legend" id="legend" aria-label="What the pin colours mean"></ul>
+</details>
 
 <button class="fl-mark" id="replay-splash" type="button" aria-label="Replay the intro">
   <svg width="100" height="123" viewBox="0 0 100 123" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,7 +36,7 @@
 </button>
 
 <button class="fab fab--menu" id="open-panel" aria-controls="panel"
-  aria-expanded="false" aria-label="Timeline and about">
+  aria-expanded="false" aria-label="Timeline and info">
   <svg viewBox="0 0 21 48" aria-hidden="true">
     <path fill="currentColor" d="M13.248 7.04V0H20.288V7.04H13.248ZM6.4 44.16L7.104 44.8C8.256 44.032 12.224 40.448 14.464 37.888H17.024C14.336 40.96 9.408 46.016 6.528 48H2.688C0.96 46.848 0.832 44.16 2.176 40.576L9.728 20.352L9.024 19.712C8.512 20.16 6.72 21.888 2.56 26.88H0C4.224 21.248 7.872 17.536 10.24 16H14.08C14.848 16.32 15.744 17.152 15.744 18.56C15.744 19.712 15.488 20.864 14.72 22.784L6.4 44.16Z"/>
   </svg>
@@ -44,10 +47,15 @@
     <div class="tabs" role="tablist" aria-label="Panel sections">
       <button class="tab" type="button" role="tab" id="tab-timeline"
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
-      <button class="tab" type="button" role="tab" id="tab-about" tabindex="-1"
-        aria-controls="tabpanel-about" aria-selected="false">About</button>
+      <button class="tab" type="button" role="tab" id="tab-info" tabindex="-1"
+        aria-controls="tabpanel-info" aria-selected="false">Info</button>
     </div>
-    <button class="panel-close" type="button" aria-label="Close">&times;</button>
+    <div class="panel-head-fill" aria-hidden="true"></div>
+    <button class="panel-close" type="button" aria-label="Close">
+      <svg viewBox="0 0 186 167" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <path fill="currentColor" d="M81.5149 104.851C71.2856 126.908 45.7123 164.628 19.18 165.587L2.877 166.227L0 163.03L7.35233 137.457H29.729C47.3106 137.457 60.7366 125.309 79.5969 91.4246L55.622 26.852H52.4253C51.1466 29.0897 47.95 37.7207 42.196 57.54H30.688C39.9583 28.77 46.991 10.2293 53.0646 3.19669H72.2446C75.4413 5.43434 78.9576 11.508 81.5149 17.9013L99.4163 65.8513H101.654C113.482 42.196 137.457 1.91801 166.227 0.639343L182.53 0L185.407 3.19669L178.054 28.77H155.678C140.653 28.77 126.588 39.9583 103.892 77.679L128.506 143.85H131.703C133.301 141.293 138.735 130.744 145.129 111.883H157.276C147.686 137.457 139.055 155.038 132.342 163.03H113.162C104.851 158.555 102.933 154.079 96.5393 136.498L84.7116 104.851H81.5149Z"/>
+      </svg>
+    </button>
   </div>
 
   <div class="panel-body" id="tabpanel-timeline" role="tabpanel"
@@ -55,7 +63,12 @@
     <p class="stamp" id="stamp"></p>
 
     <div class="overflows-controls">
-      <label class="sort-label" for="sort-select">Sort
+      <label class="sort-label" for="sort-select" aria-label="Sort">
+        <svg class="ico" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"
+          fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 4v16"/><path d="M4 7l3-3 3 3"/>
+          <path d="M17 20V4"/><path d="M20 17l-3 3-3-3"/>
+        </svg>
         <select id="sort-select">
           <option value="total">90-day total duration</option>
           <option value="avgSpills">Historic avg spills/yr</option>
@@ -71,11 +84,11 @@
     <div class="overflows" id="overflows"></div>
   </div>
 
-  <div class="panel-body prose" id="tabpanel-about" role="tabpanel"
-    aria-labelledby="tab-about" tabindex="0" hidden>
+  <div class="panel-body prose" id="tabpanel-info" role="tabpanel"
+    aria-labelledby="tab-info" tabindex="0" hidden>
     <p>Overflow Watch is a single-town monitor of storm overflows on the River Frome and its tributaries around
       Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
-      every 15 minutes and keeps its own history.</p>
+      every 15 minutes and keeps its own history. It also displays Environment Agency Annual Return data.</p>
     
 
     <div class="acc">
@@ -83,27 +96,21 @@
         <summary class="acc-summary">How to use</summary>
         <div class="acc-body">
           <h3>Reading the map</h3>
-          <p>Each round pin is an overflow, coloured by its state at the last check: red discharging
+          <p>Each pin is an overflow, coloured by its state at the last check: red discharging
             now, amber discharged within the last 48 hours, green not discharging,
-            grey no signal. Blue diamonds mark popular swimming spots, with the latest water
+            grey no signal. Purple pins mark popular swimming spots, with the latest water
             quality and river flow reading where there is one.</p>
 
           <h3>Reading the timeline</h3>
-          <p>Each overflow monitor is a card. By default they're ranked by total discharge time in
-            the last 90 days; the sort menu above the list can rank them instead by the
-            Environment Agency's own long-term average spill count, or by this project's own
-            average annual duration. The 90-day status strip shows one bar a day: red where it
+          <p>Each overflow monitor is a card. The 90-day status strip shows one bar a day: red where it
             discharged, amber for the 48 hours after, green when it was clear, dark grey where the
             monitor was offline, striped before watching began.</p>
-          <p>Switch a card – or every card at once, with the toggle above the list – to History to
-            see the Environment Agency's own regulator-verified annual return instead, year by
+          <p>Switch card views from 90-day to History to
+            see the Environment Agency's own regulator-verified annual return, year by
             year since 2024 (the earliest year that can be matched to this monitor's identifier –
-            see Sources). Each year shows its exact spill count and total duration, plus a pair of
-            bars: a solid one for duration and a lighter tint for spill count, both coloured by
-            that year's own severity – green under an hour, amber under a day, rust a day or more.
-            The two averages below are deliberately different figures: the Environment Agency's
+            see Sources). The two averages below are deliberately different figures: the Environment Agency's
             own long-term spill average (its published baseline, often running back further than
-            2024), and this project's own average duration across whatever years are on record –
+            2024), and our calculated average duration across years on record –
             there's no equivalent long-term-average-duration figure published, so that one is
             ours, not theirs.</p>
         </div>
@@ -112,10 +119,10 @@
       <details class="acc-item" id="acc-safety">
         <summary class="acc-summary">Safety</summary>
         <div class="acc-body">
-          <p>This site records <i>when</i> storm overflows discharge. For most of the river it
+          <p>This site records <i>when</i> storm overflows discharge and displays Environment Agency Annual Returns. For most of the river it
             does not measure water quality, and it cannot tell you whether a stretch is safe to
-            enter. Two spots – Farleigh Hungerford and Tellisford Weir – show the latest water
-            quality sample and river flow reading in their map popups, but sampling there is
+            enter. Two spots – <a href="#farleigh-hungerford">Farleigh Hungerford</a> and <a href="#tellisford-weir">Tellisford Weir</a> – show the latest water
+            quality sample and river flow reading, but sampling there is
             roughly weekly in season, so even that is a recent snapshot, not a live guarantee.</p>
           <p>A stretch showing no recent discharge is not therefore clean. Rivers carry bacteria
             from farmland, wildlife and road runoff at all times, and hazards like cold or fast
@@ -145,12 +152,8 @@
         <summary class="acc-summary">Sources</summary>
         <div class="acc-body">
           <h3>Data</h3>
-          <p>Overflow activity comes from Wessex Water’s near real-time event duration monitoring
-            (EDM) feed, an ArcGIS service. It reports only each monitor’s current status, not
-            history – this site polls it every 15 minutes and keeps its own day-by-day record.</p>
-
           <ul>
-            <li><strong>Storm overflow activity</strong> – fetched from the
+            <li><strong>Storm overflow activity</strong> – polled every 15 minutes from the
               <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Storm_Overflow_Activity/FeatureServer"
               target="_blank" rel="noopener">live ArcGIS feed</a>; browsable as
               <a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
@@ -176,34 +179,29 @@
               the
               <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
               target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
-            <li><strong>Swim spot water quality and river flow</strong> (shown in the Farleigh
-              Hungerford and Tellisford Weir map popups) – fetched from a public ArcGIS
-              FeatureServer behind Wessex Water’s
+            <li><strong>Swim spot water quality and river flow</strong> – water quality is
+              sampled roughly weekly in season; fetched from a public ArcGIS FeatureServer behind
+              Wessex Water’s
               <a href="https://www.arcgis.com/apps/dashboards/a058553168f44f02905dd0b9dd667875"
               target="_blank" rel="noopener">Farleigh Hungerford Dashboard</a>. Water quality
               sampling © Wessex Water; the river flow reading originates with the Environment
               Agency’s hydrology API.</li>
           </ul>
 
-          <p>Waterbody names are Wessex’s own field, sourced from the Environment Agency’s
-            <a href="https://environment.data.gov.uk/catchment-planning/" target="_blank"
-            rel="noopener">Water Framework Directive catchment scheme</a>.</p>
-
           <h3>Map</h3>
-          <p>Streets and place names © <a href="https://www.openstreetmap.org/copyright"
-            target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL. Rivers and streams
-            come from two Ordnance Survey/Environment Agency sources instead – OSM’s own waterway
-            tagging turned out to be thin for anything smaller than a named river near Frome.
-            Contains OS data and Environment Agency data © Crown copyright and database right,
-            licensed under the
-            <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-            target="_blank" rel="noopener">Open Government Licence v3</a>: the
-            <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/Statutory_Main_River_Map/FeatureServer"
-            target="_blank" rel="noopener">EA Statutory Main River Map</a> for designated main
-            rivers, and
-            <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers" target="_blank"
-            rel="noopener">OS Open Rivers</a> for the smaller named streams and brooks.
-            Drawn as plain SVG – no tile service, no map library.</p>
+          <ul>
+            <li><strong>Streets and place names</strong> – ©
+              <a href="https://www.openstreetmap.org/copyright" target="_blank"
+              rel="noopener">OpenStreetMap</a> contributors, ODbL.</li>
+            <li><strong>Rivers and streams</strong> – the
+              <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/Statutory_Main_River_Map/FeatureServer"
+              target="_blank" rel="noopener">EA Statutory Main River Map</a> for main rivers, and
+              <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers" target="_blank"
+              rel="noopener">OS Open Rivers</a> for smaller streams and brooks. Contains OS and
+              Environment Agency data © Crown copyright and database right, licensed under the
+              <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+              target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
+          </ul>
         </div>
       </details>
 
@@ -338,13 +336,13 @@ function paintStatus(data) {
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }
 
-// --- panel (one drawer, tabs: timeline / about) ---
+// --- panel (one drawer, tabs: timeline / info) ---
 //
-// About holds Safety and Sources too, as <details> accordions rather than
+// Info holds Safety and Sources too, as <details> accordions rather than
 // tabs of their own — see docs/lib's sibling comment in styles.css (.acc) for
 // why. `acc-*` ids let a link jump straight to one, expanded (see the hash
 // routing at the bottom of this script).
-const TABS = ['timeline', 'about'];
+const TABS = ['timeline', 'info'];
 const ACC_SECTIONS = ['how-to-use', 'safety', 'sources', 'river-frome'];
 const panel = $('panel');
 const openBtn = $('open-panel');
@@ -406,15 +404,56 @@ tablist.addEventListener('keydown', (e) => {
   $(`tab-${next}`).focus();
 });
 
-// Only one About section open at a time. `toggle` doesn't bubble, so each
+// Only one Info section open at a time. `toggle` doesn't bubble, so each
 // <details> needs its own listener rather than one delegated on `.acc`.
-const accItems = [...$('tabpanel-about').querySelectorAll('.acc-item')];
+// Closing the others first, then scrolling — opening one lower down the list
+// shortens everything above it as its neighbours collapse, so scrolling
+// before that settles would land short of where the summary actually ends
+// up. Same scrollIntoView the hash-routing below uses for a direct link, so
+// opening one by hand or arriving via #safety etc. land the same way.
+const accItems = [...$('tabpanel-info').querySelectorAll('.acc-item')];
 for (const item of accItems) {
   item.addEventListener('toggle', () => {
     if (!item.open) return;
     for (const other of accItems) if (other !== item) other.open = false;
+    item.scrollIntoView({ block: 'start' });
   });
 }
+
+// Briefly rings a card (see .o-card.is-focused in styles.css) after
+// onSeeInTimeline scrolls to it — a scroll alone can land among several
+// similar-looking cards with no clear "here it is". Remove-then-reflow-then
+// -add so it retriggers even if the same card was just flashed (the map
+// popup's own "View Timeline" can be clicked again before the first flash
+// finishes) — same trick the splash screen uses to restart its own
+// transition, see showSplash() above.
+function flashCard(card) {
+  card.classList.remove('is-focused');
+  void card.offsetWidth;
+  card.classList.add('is-focused');
+}
+
+// The legend (#legend-wrap, a <details>) stays permanently open on desktop
+// and starts closed on mobile — styles.css hides its own "Legend" summary
+// above this same 720px breakpoint, so the two need to agree. Synced via
+// the `open` attribute itself, not a CSS override forcing the closed
+// content to display: a closed <details>'s content doesn't contribute to
+// layout sizing in any engine even when its `display` is overridden by
+// author CSS, so only the real attribute gets a box that sizes correctly.
+const legendWrap = $('legend-wrap');
+
+// "+ Legend" / "− Legend" — the `toggle` event fires for every way `open`
+// can change (a tap, the keyboard, or syncLegendOpen's own assignment
+// below), so the label never drifts out of sync with the real state.
+// Registered before that first assignment happens, so it also catches it.
+legendWrap.addEventListener('toggle', () => {
+  legendWrap.querySelector('.legend-toggle span').textContent = legendWrap.open ? '− Legend' : '+ Legend';
+});
+
+const legendDesktop = matchMedia('(min-width: 721px)');
+const syncLegendOpen = () => { legendWrap.open = legendDesktop.matches; };
+syncLegendOpen();
+legendDesktop.addEventListener('change', syncLegendOpen);
 
 // --- load ---
 try {
@@ -432,8 +471,9 @@ try {
     onSeeInTimeline: (monitor) => {
       map.closePopup();
       openPanel('timeline');
-      $('overflows').querySelector(`[data-monitor-id="${CSS.escape(monitor.id)}"]`)
-        ?.scrollIntoView({ block: 'start' });
+      const card = $('overflows').querySelector(`[data-monitor-id="${CSS.escape(monitor.id)}"]`);
+      card?.scrollIntoView({ block: 'start' });
+      if (card) flashCard(card);
     },
   });
   // Sort and view both live outside renderCards() itself so the view toggle
@@ -475,21 +515,39 @@ try {
   setViewAllPressed();
   renderList();
 
-  const h = location.hash.slice(1);
-  if (ACC_SECTIONS.includes(h)) {
-    openPanel('about');
-    const details = $(`acc-${h}`);
-    if (details) { details.open = true; details.scrollIntoView({ block: 'start' }); }
-  } else if (TABS.includes(h)) {
-    openPanel(h);
-  } else if (h) {
-    // A monitor's own Id as the hash (e.g. #WXW00308) — a direct link to its
-    // pin, the same fly-and-open map.focus() already does for a card's "View
-    // on map". Checked last, after the fixed tab/section names above, so
-    // there's no ambiguity between the two hash vocabularies.
-    const monitor = data.monitors.find((m) => m.id === h);
-    if (monitor) map.focus(monitor);
+  function routeHash() {
+    const h = location.hash.slice(1);
+    if (ACC_SECTIONS.includes(h)) {
+      openPanel('info');
+      const details = $(`acc-${h}`);
+      if (details) { details.open = true; details.scrollIntoView({ block: 'start' }); }
+    } else if (TABS.includes(h)) {
+      openPanel(h);
+    } else if (h) {
+      // A monitor or swim spot's own Id as the hash (e.g. #WXW00308 or
+      // #farleigh-hungerford) — a direct link to its pin, the same
+      // close-panel-then-fly-and-open a card's own "View on map" button does
+      // (renderList, above). Checked last, after the fixed tab/section names
+      // above, so there's no ambiguity between the hash vocabularies.
+      const item = data.monitors.find((m) => m.id === h)
+        ?? data.swim_spots.find((s) => s.id === h);
+      if (item) {
+        // Only if it's actually open — closePanel() also moves focus to the
+        // FAB, which a fresh page load landing straight on a monitor hash
+        // (the panel was never open) has no reason to do.
+        if (active) closePanel();
+        map.focus(item);
+      }
+    }
   }
+  routeHash();
+  // Re-runs the same routing for any later hash change, not just the one the
+  // page loaded on — a Sources-tab link to #farleigh-hungerford (say) needs
+  // this to do anything when clicked from an already-open page. An in-page
+  // <a href="#…"> click fires `hashchange`; our own history.replaceState
+  // calls elsewhere (closing a popup, switching tabs) don't, so this can't
+  // loop back on itself.
+  addEventListener('hashchange', routeHash);
 } catch {
   setVerdict('No data yet');
   renderLegend($('legend'));

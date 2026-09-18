@@ -109,18 +109,25 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `monitors.treatment`) but deliberately left off this list — it reads like
   Wessex's own framing of the discharge rather than a neutral fact, and costs
   more popup space than the others. Still in the database and `data.json` —
-  add it back to `CONTEXT_ROWS` if you ever want it on screen again. The grid
-  sits collapsed behind a native `<details class="pop-context-toggle">`,
-  "+ More"/"− Less" (the word swap is a plain `toggle` listener, not CSS) —
-  no divider above it; the `.pop-annual` box (or the state/coordinates row,
-  on a monitor with no annual return) already reads as a clean break, so a
-  rule line there was redundant. Since toggling it can change the popup's own
-  height after `showPopup` already measured and positioned it — and `pop`
-  sits inside `host`'s own `overflow: hidden` — a second listener on the same
-  `toggle` event re-measures and calls `placePopup()` again, or an expanded
-  box could get silently clipped rather than just repositioned. Rows and
-  boxes with no value are skipped, so an unfetched monitor just shows the
-  feed half, and a monitor with no annual-return match just skips the box.
+  add it back to `CONTEXT_ROWS` if you ever want it on screen again. The grid,
+  plus a **Share** button (`buildShareButton` — copies `location.href` to the
+  clipboard, which by then already carries this item's own `#id` from
+  `openPopup`/`openSwimPopup` below), sit together inside `.pop-more`,
+  collapsed behind `.pop-more-toggle`, "+ More"/"− Less" — a plain button and
+  click listener, **not** a native `<details>` (its content has to render
+  full popup width, not squeezed into `.pop-foot`'s row). The toggle itself
+  always exists, even with no `CONTEXT_ROWS` to show, since Share needs
+  somewhere to live regardless. `swimPopup` has no equivalent — a swim spot
+  has no context-row data to hide behind a toggle, so a "+ More" there would
+  exist purely to reveal Share and nothing else; Share sits straight in its
+  `.pop-foot` instead, always visible, no toggle at all. Since toggling
+  popup()'s own version can change the popup's own height after `showPopup`
+  already measured and positioned it — and `pop` sits inside `host`'s own
+  `overflow: hidden` — a second listener on the same toggle re-measures and
+  calls `placePopup()` again, or an expanded box could get silently clipped
+  rather than just repositioned. Rows and boxes with no value are skipped, so
+  an unfetched monitor just shows the feed half plus Share, and a monitor
+  with no annual-return match just skips the box.
   `dayCells`
   turns a monitor's events *and its offline spells* into one cell per day for the
   last 90 — `nodata`/`spill`/`recent`/`offline`/`dry`, **checked in that order**:
@@ -148,7 +155,17 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `statusOf` badge, a summary line, and a GitHub-status-style 90-day strip — one
   bar per day from `dayCells` (`.o-day--spill` red / `--recent` amber /
   `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
-  450px wide, shrinking below that. When `offlineMs` is non-zero the summary line
+  450px wide, shrinking below that. The card's own left border follows
+  whichever view is on screen, not always the live status: `.is-discharging`/
+  `.is-dry`/`.is-offline` (from `statusOf`) in 90-Day view, or `.is-dry`/
+  `.is-amber`/`.is-oxide` (from `monitorSeverity` — this monitor's *most
+  recent* annual-return year's tier, same threshold as `yearSeverity` below)
+  in History — `applyView` swaps the class using `card.dataset.liveState`/
+  `histState`, set once at render time; a monitor with no annual-return data
+  just keeps its live colour in both views. The History legend's swatches
+  (`.o-history-swatch--spills`/`--duration`) are tinted the same way, so a
+  card's border, legend and top (most recent) row's own bars all agree. When
+  `offlineMs` is non-zero the summary line
   appends "offline for …" — "no discharge recorded" means less when part of the
   record is missing. The "watching since" wording lives entirely in
   `windowPhrase` (see above) — the summary line just interpolates it, whether
@@ -210,9 +227,12 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   meaning), the latest water-quality reading in its own `.pop-annual`-styled
   box (`fmtWaterQuality`) — every determinand sampled on the latest date, not
   just one, and Wessex's own status sentence shown verbatim rather than a
-  word guessed out of it — the latest river-flow reading (`fmtFlow`), and a
-  link to Wessex's dashboard if there is one (Tellisford Weir has none — not
-  an EA-recognised bathing water, so nothing to link to).
+  word guessed out of it — the latest river-flow reading (`fmtFlow`), a plain
+  `.pop-note` description with no divider above it (see `popup()`'s own
+  comment on why), and a `.pop-foot` row with Share always visible (no
+  "+ More" toggle — see the `.pop-more` paragraph above) plus a link to
+  Wessex's dashboard if there is one (Tellisford Weir has none — not an
+  EA-recognised bathing water, so nothing to link to).
 
   Labels: `bm.labels.places` carry a `kind` (`town`/`village`/`suburb`/
   `hamlet`), `bm.labels.roads` are all `road`, `bm.labels.waterways` are all
@@ -227,12 +247,12 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
 - **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
   `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
   drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
-  with a tab strip — **Timeline** (the `cards.js` list), **About** (what this is,
+  with a tab strip — **Timeline** (the `cards.js` list), **Info** (what this is,
   how to read the map and strip, Friends of the River Frome), **Safety** (leads
   with the water-quality disclaimer, then the interpretation caveats), **Sources**
   (just Data + Map — provenance and the CC BY attribution). Opens to Timeline;
   tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
-  (`#timeline` / `#about` / `#safety` / `#sources`). The Timeline tab leads with
+  (`#timeline` / `#info` / `#safety` / `#sources`). The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
   project's own avg annual duration) and a panel-wide 90-Day/History toggle

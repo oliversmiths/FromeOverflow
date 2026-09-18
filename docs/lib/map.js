@@ -28,6 +28,13 @@ const BARS =
   '<svg class="ico" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" ' +
   'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">' +
   '<path d="M4 20V13"/><path d="M12 20V7"/><path d="M20 20V16"/></svg>';
+// Two overlapping squares — "copy", for the Share button's own action
+// (copying the popup's URL), not a generic share-arrow glyph.
+const COPY =
+  '<svg class="ico" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" ' +
+  'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">' +
+  '<rect x="8" y="8" width="12" height="12" rx="1.5"/>' +
+  '<path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
 const MAX_ZOOM_IN = 40;    // smallest viewBox = zoomed-out width / this
 // How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
@@ -95,6 +102,40 @@ const CONTEXT_ROWS = [
   ['Type', 'overflow_type'],
   ['Cause', 'cause'],
 ];
+
+/**
+ * Copies the popup's own URL to the clipboard — by the time this can be
+ * clicked, openPopup()/openSwimPopup() has already set `location.hash` to
+ * this item's own Id, so `location.href` is already the exact link. In
+ * popup() it lives inside the collapsed "+ More" section (.pop-more) so the
+ * popup's default view stays as uncluttered as it was before sharing
+ * existed; swimPopup() has no other reason for a "+ More" toggle to exist
+ * (no CONTEXT_ROWS-style data to hide), so there it sits straight in
+ * .pop-foot instead. The label swaps to a brief "Copied!"/"Copy failed"
+ * acknowledgement rather than opening any toast/tooltip machinery of its own.
+ */
+function buildShareButton() {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'pop-action pop-share';
+  const label = document.createElement('span');
+  label.textContent = 'Share';
+  btn.innerHTML = COPY;
+  btn.append(label);
+  let resetTimer = 0;
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(location.href);
+      label.textContent = 'Copied!';
+    } catch {
+      label.textContent = 'Copy failed';
+    }
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { label.textContent = 'Share'; }, 1600);
+  });
+  return btn;
+}
 
 function popup(monitor, now, windowDays, onSeeInTimeline) {
   const state = mapStatusOf(monitor, now);
@@ -204,19 +245,23 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   // live inside it, sharing .pop-foot's flex row with "View Timeline"
   // and getting squeezed into whatever width that leaves (a 2-column grid of
   // full sentences doesn't fit in that); a plain toggle button lets the
-  // revealed .pop-context render full-width, below the row, once it's open.
+  // revealed .pop-more render full-width, below the row, once it's open.
+  // Always built, even with no CONTEXT_ROWS to show — Share (see
+  // buildShareButton) lives in here too, and needs a home regardless of
+  // whether this monitor's context has been fetched yet.
   const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
-  let toggle, dl;
-  if (rows.length) {
-    toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.className = 'pop-action pop-context-toggle';
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.innerHTML = '<span>+ More</span>';
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'pop-action pop-more-toggle';
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.innerHTML = '<span>+ More</span>';
 
-    dl = document.createElement('dl');
+  const more = document.createElement('div');
+  more.className = 'pop-more';
+  more.hidden = true;
+  if (rows.length) {
+    const dl = document.createElement('dl');
     dl.className = 'pop-context';
-    dl.hidden = true;
     for (const [term, key] of rows) {
       const dt = document.createElement('dt');
       dt.textContent = term;
@@ -224,26 +269,27 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
       dd.textContent = monitor[key];
       dl.append(dt, dd);
     }
-
-    toggle.addEventListener('click', () => {
-      dl.hidden = !dl.hidden;
-      toggle.setAttribute('aria-expanded', String(!dl.hidden));
-      toggle.querySelector('span').textContent = dl.hidden ? '+ More' : '− Less';
-    });
+    more.append(dl);
   }
+  more.append(buildShareButton());
+
+  toggle.addEventListener('click', () => {
+    more.hidden = !more.hidden;
+    toggle.setAttribute('aria-expanded', String(!more.hidden));
+    toggle.querySelector('span').textContent = more.hidden ? '+ More' : '− Less';
+  });
 
   // The reverse of the timeline card's own "View on map" button.
   const foot = document.createElement('div');
   foot.className = 'pop-foot';
-  if (toggle) foot.append(toggle);
+  foot.append(toggle);
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'pop-action';
   btn.innerHTML = `${BARS}<span>View Timeline</span>`;
   btn.addEventListener('click', () => onSeeInTimeline(monitor));
   foot.append(btn);
-  el.append(foot);
-  if (dl) el.append(dl);
+  el.append(foot, more);
 
   return el;
 }
@@ -322,9 +368,15 @@ function swimPopup(spot) {
     el.append(d);
   }
 
+  // No "+ More" here, unlike popup() — a swim spot has no CONTEXT_ROWS-style
+  // data to hide behind one, so an expand/collapse toggle would exist purely
+  // to reveal Share (see buildShareButton) and nothing else, which is just
+  // an extra click for no reason. Straight in .pop-foot instead, always
+  // visible.
+  const foot = document.createElement('div');
+  foot.className = 'pop-foot';
+  foot.append(buildShareButton());
   if (spot.dashboard_url) {
-    const foot = document.createElement('div');
-    foot.className = 'pop-foot';
     const a = document.createElement('a');
     a.href = spot.dashboard_url;
     a.target = '_blank';
@@ -332,8 +384,8 @@ function swimPopup(spot) {
     a.className = 'pop-action';
     a.innerHTML = '<span>Water quality history ↗</span>';
     foot.append(a);
-    el.append(foot);
   }
+  el.append(foot);
 
   return el;
 }
@@ -362,10 +414,10 @@ export function buildMap(host, data, opts = {}) {
       host.textContent = 'The map backdrop failed to load.';
     });
 
-  // Fly the camera to one monitor's pin and open its popup — the panel's
-  // "See on map" links call this.
+  // Fly the camera to one monitor or swim spot's pin and open its popup — a
+  // card's "View on map" and index.html's own hash routing both call this.
   return {
-    focus(monitor) { api ? api.focus(monitor) : pending.push(monitor); },
+    focus(item) { api ? api.focus(item) : pending.push(item); },
     closePopup() { api?.closePopup(); },
   };
 }
@@ -630,18 +682,20 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
     // rather than just wherever the popup happens to be pointing.
     for (const p of [...pins, ...swimPins]) p.el.classList.toggle('is-selected', p.el === pinEl);
 
-    // The "+ More" context toggle changes the popup's own height after the
-    // fact — popW/popH were measured before that, and `pop` sits inside
-    // `host`'s own overflow:hidden, so a stale position could clip the
-    // expanded content rather than just look slightly off. Re-measure and
-    // reposition whenever it opens or closes. A plain button + click, not a
-    // native <details>'s `toggle` event — see popup()'s own comment on why.
-    // Registered after popup()'s own click listener on the same element
-    // (which is what actually flips dl.hidden), so the geometry this reads
-    // is always the post-toggle one.
-    const contextToggle = pop.querySelector('.pop-context-toggle');
-    if (contextToggle) {
-      contextToggle.addEventListener('click', () => {
+    // popup()'s own "+ More" toggle (CONTEXT_ROWS + Share — swimPopup() has
+    // no equivalent, Share sits straight in its .pop-foot instead) changes
+    // the popup's own height after the fact — popW/popH were measured before
+    // that, and `pop` sits inside `host`'s own overflow:hidden, so a stale
+    // position could clip the expanded content rather than just look
+    // slightly off. Re-measure and reposition whenever it opens or closes. A
+    // plain button + click, not a native <details>'s `toggle` event — see
+    // popup()'s own comment on why. Registered after popup()'s own click
+    // listener on the same element (which is what actually flips
+    // .pop-more's `hidden`), so the geometry this reads is always the
+    // post-toggle one.
+    const moreToggle = pop.querySelector('.pop-more-toggle');
+    if (moreToggle) {
+      moreToggle.addEventListener('click', () => {
         const r2 = pop.getBoundingClientRect();
         popW = r2.width;
         popH = r2.height;
@@ -649,20 +703,21 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
       });
     }
   }
-  // A monitor's own Id as the URL hash while its popup is open — the write
-  // side of index.html's own read (`#WXW00308` on load flies to and opens
-  // that pin). `replaceState`, not a `location.hash` assignment, so this
-  // never pushes a back-button entry — same convention index.html's own
-  // selectTab/closePanel already use for the tab hash. Swim spots have no
-  // hash route yet, so opening one just clears whatever monitor hash was
-  // there, same as closing any popup does.
+  // A monitor or swim spot's own Id as the URL hash while its popup is open —
+  // the write side of index.html's own read (`#WXW00308` or
+  // `#farleigh-hungerford` on load flies to and opens that pin). Both id
+  // spaces are hand-curated and disjoint (`WXW…` from Wessex, plain slugs
+  // from SWIM_SPOTS in scripts/fetch-swim-spots.js), so there's no risk of
+  // one shadowing the other. `replaceState`, not a `location.hash`
+  // assignment, so this never pushes a back-button entry — same convention
+  // index.html's own selectTab/closePanel already use for the tab hash.
   function openPopup(m) {
     showPopup(popup(m, now, windowDays, onSeeInTimeline), m, pins.find((p) => p.m.id === m.id)?.el);
     history.replaceState(null, '', `#${m.id}`);
   }
   function openSwimPopup(s) {
     showPopup(swimPopup(s), s, swimPins.find((p) => p.s.id === s.id)?.el);
-    history.replaceState(null, '', location.pathname + location.search);
+    history.replaceState(null, '', `#${s.id}`);
   }
   function closePopup() {
     openItem = null;
@@ -774,11 +829,14 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
   zin.addEventListener('click', () => zoomAt(0.6, 0.5, 0.5));
   zout.addEventListener('click', () => zoomAt(1 / 0.6, 0.5, 0.5));
 
-  // --- focus one monitor: ease the camera onto its pin, then open the popup ---
+  // --- focus one monitor or swim spot: ease the camera onto its pin, then
+  // open the popup --- `item` only needs an `.id`; which array it's found in
+  // decides which popup opens, so a card's "View on map" and index.html's own
+  // hash routing can pass either a monitor or a swim spot interchangeably.
   let flyRAF = 0;
-  function focus(monitor) {
-    const p = pins.find((x) => x.m.id === monitor.id);
-    if (!p) return;                       // unknown id, or a monitor with no coords
+  function focus(item) {
+    const p = pins.find((x) => x.m.id === item.id) ?? swimPins.find((x) => x.s.id === item.id);
+    if (!p) return;                       // unknown id, or an item with no coords
     const [pw, ph] = size();
     const a = pw / ph;
     const start = { vx, vy, vw };
@@ -804,7 +862,7 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
       clamp(a);
       apply();
       if (k < 1) flyRAF = requestAnimationFrame(step);
-      else openPopup(p.m);
+      else if (p.m) openPopup(p.m); else openSwimPopup(p.s);
     })(t0);
   }
 

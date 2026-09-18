@@ -15,15 +15,22 @@
   --chalk:    #fff;
   --ink:      #222;
   --weir:     #0666B5;   /* brand blue — panels, splash, chrome */
-  --oxide:    #AB522F;
-  --light-oxide: #bc7559;   /* same ~20% white mix as --amber/--dry's own light- variants below */
-  --amber:   rgb(209, 169, 42);
-  --light-amber: #daba55;
-  --silt:     #888;
-  --hairline: #C3C9BF;
   --sewage:   #D6FF00;
-  --dry:      #77A881 ;   /* "not discharging" — pins and the 90-day strip */
-  --light-dry: #92ba9a;
+
+  --oxide:    #B94A1D;   /* "discharging" — pins and the 90-day strip */
+  --amber:   #E5B314;
+  --dry:      #49AE5D ;   /* "not discharging" — pins and the 90-day strip */
+  --swim: #C468AA;   /* swim spots, pins and the 90-day strip */
+  /* Computed, not hand-picked, so tweaking --oxide/--amber/--dry above moves
+     its own tint with it — a 20% white mix, same ratio all three. */
+  --light-oxide: color-mix(in srgb, var(--oxide) 80%, white);
+  --light-amber: color-mix(in srgb, var(--amber) 80%, white);
+  --light-dry:   color-mix(in srgb, var(--dry) 80%, white);
+
+  --silt:     #888;
+  --hairline: #ddd;
+
+  
   --day-nodata: #ededed;      /* before this monitor's first reading */
   --day-nodata-line: #cfcfcf; /* hatch stroke over it — "not watched", not "clear" */
   --day-offline: #b4b4b4; /* monitor was reporting no signal that day */
@@ -32,6 +39,8 @@
   --display: "Happy Times NG", Georgia, "Times New Roman", serif;
   --body:  system-ui, sans-serif;
   --data:  ui-monospace, monospace;
+
+  --fab-icon-height: 34px;   /* the "i" mark's own height — see .fab svg */
 
   /* --display is self-hosted (see @font-face above). --body/--data come from one
      Adobe Fonts kit (hpb4tyd): monotype-grotesque 300 + 400, ibm-plex-mono.
@@ -58,7 +67,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-b, strong { font-weight: 600; }
+b, strong { font-weight: 500; }
 
 /* --- The map fills the viewport --- */
 
@@ -129,14 +138,15 @@ b, strong { font-weight: 600; }
 
 .mappin {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   padding: 0;
-  border: 2px solid var(--chalk);
-  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--chalk);
+  border:none;
   transform: translate(-50%, -50%);
   pointer-events: auto;
   cursor: pointer;
+
 }
 
 .pin-layer .mappin { display: none; }
@@ -148,9 +158,9 @@ b, strong { font-weight: 600; }
    the traffic-light circles, so it never reads as another status colour.
    Its own ring colour too: the fill is already --water, so the shared
    .mappin.is-selected ring above would all but disappear on top of it. */
-.swimpin { background: var(--water); border: 2px solid var(--chalk); border-radius: 0; transform: translate(-50%, -50%) rotate(45deg); }
+.swimpin { background: var(--swim); border-radius: 0;  }
 .swimpin:focus-visible,
-.swimpin.is-selected { outline-color: var(--water);border-color: var(--chalk); }
+.swimpin.is-selected { outline-color: var(--weir);border-color: var(--chalk); }
 
 .mappin--discharging { background: var(--oxide); }
 .mappin--recent      { background: var(--amber); }
@@ -216,7 +226,7 @@ b, strong { font-weight: 600; }
   /* left / top are set in px by placePopup() so it stays on screen near edges */
 }
 
-.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 13px; }
+.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 13px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .map-popup p { margin: 0 0 6px; }
 .map-popup .pop-label { color: var(--weir); text-transform: uppercase;}
 .map-popup .pop-watercourse { color: var(--weir); font-size: 13px;  }
@@ -236,26 +246,23 @@ b, strong { font-weight: 600; }
 .map-popup .pop-last { font-size: 11px; }
 .map-popup .pop-offline { font-size: 11px; color: var(--silt); }
 
-/* Static context from overflow_context, as term/value pairs — collapsed by
-   default behind the "+ More" / "− Less" button, .pop-context-toggle (a
-   plain button, not a native <details>: its content has to render full
-   popup width once open, not squeezed into whatever .pop-foot's flex row
-   leaves next to "View Timeline", which is where a <details>'s own
-   content would be forced to live). No divider of its own: the .pop-annual
-   box above it (or the state/coordinates row, on a monitor with no annual
-   return) already reads as a clean break. */
+/* Collapsed by default behind the "+ More" / "− Less" button,
+   .pop-more-toggle (a plain button, not a native <details>: its content has
+   to render full popup width once open, not squeezed into whatever
+   .pop-foot's flex row leaves next to "View Timeline", which is where a
+   <details>'s own content would be forced to live). No divider of its own:
+   the .pop-annual box above it (or the state/coordinates row, on a monitor
+   with no annual return) already reads as a clean break. Holds
+   popup()'s CONTEXT_ROWS grid when there is one, and/or the Share button
+   (buildShareButton, map.js) — always at least the latter, both popup kinds. */
+.map-popup .pop-more { margin: 8px 0 0; }
 .map-popup .pop-context {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 4px 10px;
-  margin: 8px 0 0;
   font-size: 11px;
   line-height: 1.35;
 }
-/* `display: grid` above beats the UA stylesheet's own `[hidden] { display: none }`
-   (same specificity, but this rule comes later) — without this, the toggle's
-   `dl.hidden` flips the attribute but the grid stays visually expanded. */
-.map-popup .pop-context[hidden] { display: none; }
 .map-popup .pop-context dt {
   font-family: var(--data);
   font-size: 9px;
@@ -265,16 +272,20 @@ b, strong { font-weight: 600; }
   padding-top: 1px;
 }
 .map-popup .pop-context dd { margin: 0; }
+/* Only when Share follows a context grid — sitting alone (a swim popup, or a
+   monitor with no context fetched yet) it needs no extra gap above it,
+   .pop-more's own margin already provides one. */
+.map-popup .pop-context + .pop-share { margin-top: 8px; }
 .map-popup a { display: inline-flex; align-items: center; gap: 4px; color: var(--silt); font-family: var(--data); text-decoration: none; font-size: 10px; }
 .map-popup a:hover span { text-decoration: underline; }
 
-/* Same divider treatment as .pop-context above, for a swim spot's plain
-   description rather than a term/value grid — static background on the
-   spot, same footing as .pop-context's own fields. */
+/* A swim spot's plain description — static background on the spot, same
+   footing as .pop-context's own fields, but with no divider of its own: the
+   .pop-annual box above it (or the state/coordinates row, on a spot with no
+   water-quality data) already reads as a clean break, same reasoning as
+   .pop-context's own comment above. */
 .map-popup .pop-note {
   margin: 11px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--hairline);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -309,12 +320,15 @@ b, strong { font-weight: 600; }
 .pop-annual--dry { background: #f2f7f3; }
 .pop-annual--dry p { color: var(--dry); }
 
-/* "View Timeline" — the reverse of a card's own "View on map" button
-   (.o-foot button), styled to match it. Always the last thing before any
-   expanded .pop-context. Flex row, space-between: on a monitor with context
-   to show, "+ More"/"− Less" shares this line on the left; with one child
-   (no context, or a swim spot's dashboard link) it just sits at the start,
-   same as before this was a flex row at all. */
+/* "View Timeline" (popup()) / the dashboard link (swimPopup()) — the reverse
+   of a card's own "View on map" button (.o-foot button), styled to match it.
+   In popup(), always the last thing before any expanded .pop-more, and
+   "+ More"/"− Less" (.pop-more-toggle, always present — see .pop-more's own
+   comment) sits on the left of this same row. swimPopup() has no .pop-more —
+   Share (buildShareButton) sits straight in this row instead, since it was
+   the toggle's only reason to exist there. Flex row, space-between: with
+   only one child (a swim spot with no dashboard_url) it just sits at the
+   start, same as before this was a flex row at all. */
 .pop-foot { margin: 11px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pop-action {
   display: inline-flex;
@@ -328,7 +342,7 @@ b, strong { font-weight: 600; }
   text-transform: uppercase;
   color: var(--silt);
   cursor: pointer;
-  flex-shrink: 0;   /* .pop-context-toggle is the one that gives way in .pop-foot's row, not this */
+  flex-shrink: 0;   /* .pop-more-toggle is the one that gives way in .pop-foot's row, not this */
   white-space: nowrap;
 }
 .pop-action:hover span { text-decoration: underline; }
@@ -356,12 +370,43 @@ b, strong { font-weight: 600; }
 
 /* --- Floating furniture over the map --- */
 
-.legend {
+/* The white box itself — positioning, sizing and the box's own chrome sit
+   here on the <details>, not on .legend below, so the same box holds either
+   the full row (desktop, always open — index.html syncs the `open`
+   attribute to the same 720px breakpoint on load/resize, since a closed
+   <details>'s content doesn't contribute to layout sizing even when its own
+   `display` is overridden by author CSS — only forcing `open` natively
+   gets a reliable box, in every engine, not just a paint override) or just
+   the "Legend" summary (mobile, collapsed by default). */
+.legend-wrap {
   position: fixed;
   right: 16px;
   bottom: 16px;
-  font-family: var(--data);
   z-index: 15;
+  max-width: calc(100vw - 140px);
+  background: #fff;
+  border: 1px solid #e6f0f8;
+  font-family: var(--data);
+  font-size: 10px;
+}
+
+/* Hidden by default (desktop) — nothing to collapse when the full row
+   already fits, so no toggle affordance either; the max-width:720px block
+   below turns it back on for mobile. Text swap, not an icon — the same
+   "+ More"/"− Less" treatment as the map popup's own .pop-more-toggle (its
+   label swap is a plain `toggle` listener too; see index.html). */
+.legend-toggle {
+  padding: 7px 13px;
+  display: none;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+  text-transform: uppercase;
+  color: var(--weir);
+}
+.legend-toggle::-webkit-details-marker { display: none; }
+
+.legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -369,10 +414,6 @@ b, strong { font-weight: 600; }
   margin: 0;
   padding: 7px 13px;
   list-style: none;
-  max-width: calc(100vw - 140px);
-  background: #fff;
-  border: 1px solid #e6f0f8;
-  font-size: 10px;
   text-transform: uppercase;
 }
 
@@ -383,20 +424,23 @@ b, strong { font-weight: 600; }
 .legend--recent      { color: var(--amber); }
 .legend--dry         { color: var(--dry); }
 .legend--offline     { color: var(--silt); }
-.legend--swim        { color: var(--water); }
+.legend--swim        { color: var(--swim); }
 
+/* transform: none overrides .mappin's own translate(-50%, -50%) — without
+   it every dot here sits 4px up-left of where the flex row's align-items:
+   center actually puts it, out of line with its own label. All pins
+   (swimpin included) are plain squares now, same shape as each other, so
+   there's nothing left to differentiate here beyond colour — that's
+   .legend--swim's job (background: currentColor picks it up). */
 .legend .mappin {
   position: static;
-  width: 13px;
-  height: 13px;
-  flex: none;
   transform: none;
+  width:8px;
+  height:8px;
+  flex: none;
+  box-shadow: none;
   background: currentColor;
 }
-/* .legend .mappin above resets transform to none for every dot — put the
-   swim pin's diamond rotation back, just for this one. Comes after so it
-   wins the tie (equal specificity, later rule). */
-.legend .swimpin { transform: rotate(45deg); background: var(--water); border-radius: 0; }
 
 /* Square, flush to the top-right corner — same 75px footprint as the panel's
    close button, so opening the panel just extends the block leftward. */
@@ -419,7 +463,12 @@ b, strong { font-weight: 600; }
 
 .fab:hover { background: var(--sewage); color: var(--weir); }
 .fab:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
-.fab svg { display: block; height: 34px; width: auto; }
+/* --fab-icon-height anchors the "i"'s own size — .panel-close svg (below)
+   derives its own height from this rather than a second hand-picked number,
+   at the two marks' actual relative proportion in the typeface they're cut
+   from (the "fl" sits at 69.33% of the "i"'s height there), so the pair
+   keeps reading as one alphabet if this ever changes. */
+.fab svg { display: block; height: var(--fab-icon-height, 34px); width: auto; }
 
 /* Brand mark, top-left corner — the ligatured "fl" from "flow". Transparent;
    clicking it replays the intro splash. */
@@ -484,28 +533,46 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   flex: none;
   display: flex;
   align-items: stretch;   /* let the close button fill the height */
-  justify-content: space-between;
   height: 75px;           /* = the FAB, so the close lands where it was */
-  padding-left: 14px;
-  border-bottom: 1px solid  rgba(255, 255, 255, 0.1);
+  /* No border-bottom here — .panel-head-fill and .panel-close carry it
+     instead (below), so the hairline shows on the actual empty/close-button
+     area but not directly under the tab buttons, which already carry their
+     own active-tab underline. (An earlier attempt tried to paint over the
+     border with .tabs' own background via a negative margin instead of
+     avoiding it in the first place — that didn't actually render correctly,
+     so it's gone.) */
 }
 
 .tabs {
   display: flex;
-  align-items: center;
-  gap: 2px;
+  align-items: stretch;       /* tabs fill the full height of .panel-head, not just centred within it */
+  height: 100%;
+  gap: 0px;
   min-width: 0;               /* let it share the head with .panel-close */
   overflow-x: auto;           /* last-resort scroll rather than a broken layout */
   scrollbar-width: none;
 }
 .tabs::-webkit-scrollbar { display: none; }
 
+/* The rest of the head, between the tabs and the close button — carries the
+   hairline that used to sit on .panel-head itself (see its own comment).
+   flex: 1 replaces the old justify-content: space-between on .panel-head:
+   this is what actually fills that space now, rather than it being empty
+   room left over between two flex items. */
+.panel-head-fill { flex: 1; min-width: 0; align-self: flex-end; height: 1px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+
 .tab {
   appearance: none;
   border: 0;
+  /* Reserved on every tab, not just the selected one, so gaining it on
+     selection doesn't shift the label up by 3px. Sits flush with
+     .panel-head's own bottom edge, since .tab now stretches full height. */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: none;
-  padding: 8px 9px;
-  font-size: 20px;
+  display: flex;
+  align-items: center;        /* keeps the label centred now that height comes from stretch, not padding */
+  padding: 0 20px;
+  font-size: 25px;
   line-height: 1;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.62);
@@ -515,22 +582,30 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 }
 
 .tab:hover { color: var(--sewage); }
-.tab[aria-selected="true"] { color: var(--sewage); }
+.tab[aria-selected="true"] { color: var(--sewage); border-bottom: 1px solid var(--sewage); }
 .tab:focus-visible { outline: none; }
 
 .panel-close {
   flex: none;
   width: 75px;            /* square, flush to the corner — matches the FAB */
   border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);   /* .panel-head-fill's own comment explains why it's here, not on .panel-head */
   background: none;
-  font-size: 26px;
-  line-height: 1;
   color: var(--sewage);
   cursor: pointer;
   display: grid;
   place-items: center;
 }
 
+/* The "fl" mark, not a plain × — commensurate with the FAB's own "i" that
+   opens the panel (.fab svg), rather than a generic close glyph. Same
+   artwork as .fl-mark (top-left corner, replays the splash), re-exported at
+   its own viewBox here. Sized to 69.33% of --fab-icon-height — matching
+   "commensurate" literally: that's the "fl" mark's actual height relative
+   to the "i" in the typeface both are cut from, not a height that just
+   looks matched at a glance (a flat equal-height match had made the "fl"
+   read heavier than the "i" intends). */
+.panel-close svg { display: block; height: calc(var(--fab-icon-height, 34px) * 0.6933); width: auto; }
 .panel-close:hover { background: var(--sewage); color: var(--weir); }
 .panel-close:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
 
@@ -543,11 +618,11 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 
 .panel-body[hidden] { display: none; }
 
-/* About tab: column layout so .credit can be pushed to the foot with margin-top:
+/* Info tab: column layout so .credit can be pushed to the foot with margin-top:
    auto — it sits at the bottom when the content is short, and just follows the
    text when it's long enough to scroll. `:not([hidden])` so this does not
    outrank `.panel-body[hidden] { display: none }` when the tab is inactive. */
-#tabpanel-about:not([hidden]) { display: flex; flex-direction: column; }
+#tabpanel-info:not([hidden]) { display: flex; flex-direction: column; }
 
 .credit {
   margin-top: auto;
@@ -560,20 +635,20 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .stamp { font-family: var(--data); font-size: 11px; color:  rgba(255, 255, 255, 0.62); margin: 0 0 4px; }
 .standfirst { margin: 8px 0 20px; color: var(--sewage); font-size: 18px; }
 
-.prose p { margin: 0 0 12px; }
+.prose p { margin: 0 0 12px; font-size: 15px; }
 .prose ul { margin: 0 0 12px; padding-left: 18px; }
-.prose li { margin: 0 0 8px; }
+.prose li { margin: 0 0 8px;list-style-type:square; }
 .prose li:last-child { margin-bottom: 0; }
 .prose h3 {
-  font-weight: 400;
-  font-size: 17px;
+  font-weight: 500;
+  font-size: 12px;
   margin: 22px 0 6px;
 }
 .prose h3:first-child { margin-top: 0; }
 .prose a { color: var(--sewage); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .prose a:hover { opacity: 0.8; }
 
-/* About's reference sections (How to use / Safety / Sources / River Frome)
+/* Info's reference sections (How to use / Safety / Sources / River Frome)
    as <details> accordions below the intro, rather than tabs of their own — a
    tab strip that grew with every reference section added up fast (see
    index.html's ACC_SECTIONS for the hash-routing that lets a link jump
@@ -582,7 +657,11 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
    Native <details>/<summary> rather than a JS-driven widget: expand/collapse,
    keyboard toggling and the closed-state semantics all come for free. */
 .acc { margin-top: 8px; }
-.acc-item { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+/* Negative so index.html's own scrollIntoView({block:'start'}) (the toggle
+   listener, and the hash-routing for a direct #safety-style link) lands 2px
+   past a flush top — enough to tuck this border out of view instead of
+   scrolling to a position that puts it right at the visible edge. */
+.acc-item { border-top: 1px solid rgba(255, 255, 255, 0.1); scroll-margin-top: -2px; }
 .acc-item:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 .acc-summary {
   display: flex;
@@ -592,7 +671,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   padding: 14px 2px;
   font-family: var(--display);
   font-weight: 400;
-   font-size: 20px;
+   font-size: 21px;
   cursor: pointer;
   list-style: none;
   color: var(--sewage);
@@ -636,6 +715,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   gap: 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+
 }
 .sort-label select {
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -662,11 +742,62 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   background: #fff;
   color: var(--ink);
   border-left: 3px solid var(--hairline);
+  /* Read by scrollIntoView() (onSeeInTimeline, index.html) — without this a
+     card scrolled to via the map popup lands flush against the panel's own
+     top edge, which reads as clipped rather than deliberately placed. */
+  scroll-margin-top: 10px;
 }
 
+/* Live 90-day status (statusOf) — the border shown whenever a card is in its
+   90-Day view. */
 .o-card.is-discharging { border-left-color: var(--oxide); }
 .o-card.is-dry         { border-left-color: var(--dry); }
 .o-card.is-offline     { border-left-color: var(--silt); }
+/* History view swaps to this monitor's own representative historic severity
+   instead (cards.js's monitorSeverity/applyView) — .is-dry above already
+   covers that tier's colour (same green either way), .is-amber has no live
+   equivalent (statusOf never returns it — only mapStatusOf's richer 4-state
+   version does), and .is-oxide is kept apart from .is-discharging even
+   though the colour matches, since one means "discharging right now" and
+   the other "a severe year on record" — not the same claim. */
+.o-card.is-amber { border-left-color: var(--amber); }
+.o-card.is-oxide { border-left-color: var(--oxide); }
+
+/* A brief highlight when a card is scrolled to via the map popup's own
+   "View Timeline" link (index.html's onSeeInTimeline, flashCard) — a scroll
+   alone can land among several similar-looking cards with nothing to say
+   "this one". Outline in --weir, echoing how the map itself rings a pin
+   while its popup is open (.mappin.is-selected) — the same "this one"
+   visual vocabulary on both ends of that link. Animates itself back to
+   nothing rather than sitting there needing a dismiss; `animation-fill-mode`
+   is left at its default (`none`), so once it finishes the card is back to
+   its plain .o-card styling, not stuck on the keyframe's end state.
+   Both background stops are fully opaque — animating toward `transparent`
+   would fade through the card's own white background to whatever's behind
+   it (the panel's dark blue), taking the blue heading text down with it
+   into illegibility along the way. */
+@keyframes card-focus-flash {
+  0%   { outline-color: var(--weir); background-color: color-mix(in srgb, var(--weir) 12%, white); }
+  100% { outline-color: transparent; background-color: #fff; }
+}
+.o-card.is-focused {
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  animation: card-focus-flash 1.8s ease-out;
+}
+/* The jiggle is real movement, not just a colour fade — gated the same way
+   pinpulse is above, so a reduced-motion reader still gets the flash (a
+   fade carries the same "here it is" information) without the shake. */
+@media (prefers-reduced-motion: no-preference) {
+  .o-card.is-focused { animation: card-focus-flash 1.8s ease-out, card-jiggle 1s ease-in-out; }
+  @keyframes card-jiggle {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(5px); }
+    60%      { transform: translateX(-3px); }
+    80%      { transform: translateX(2px); }
+  }
+}
 
 .o-head {
   display: flex;
@@ -811,11 +942,19 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   margin-left: 6px;
 }
 .o-history-legend .o-history-swatch:first-child { margin-left: 0; }
-/* The legend always shows the oxide tier as its example — the actual bars
-   pick their own tier per year (see .o-history-bar--* below) — just to
-   establish "tint = spills, solid = duration" once. */
-.o-history-swatch--spills   { background: var(--light-oxide); }
-.o-history-swatch--duration { background: var(--oxide); }
+/* Coloured by this card's own representative tier (cards.js's
+   monitorSeverity, passed into buildHistoryView as `severity`) — the same
+   tier the card's own left border shows in History view, and the same tier
+   the most recent (top) row's own bars use, so all three agree. Not
+   necessarily every row's own tier (an older year can differ) — the legend
+   is establishing "tint = spills, solid = duration" using this card's
+   current colour, not claiming every bar below matches it exactly. */
+.o-history-swatch--spills.is-dry     { background: var(--light-dry); }
+.o-history-swatch--spills.is-amber   { background: var(--light-amber); }
+.o-history-swatch--spills.is-oxide   { background: var(--light-oxide); }
+.o-history-swatch--duration.is-dry   { background: var(--dry); }
+.o-history-swatch--duration.is-amber { background: var(--amber); }
+.o-history-swatch--duration.is-oxide { background: var(--oxide); }
 
 .o-history-rows { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
 .o-history-row {
@@ -949,11 +1088,26 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }
   /* .map-ctrl { display: none; } */
-  .legend { max-width: calc(100vw - 50vw); bottom: 46px; right: 14px; flex-direction: column; }
+  /* Collapsed to just "Legend" by default (closed <details>, no `open`
+     attribute in the markup) — five rows stacked in a column eat real
+     screen height on a phone for something you glance at once. Tap to open;
+     .legend-toggle's own display:flex above turns the summary back on. */
+  .legend-wrap { max-width: calc(100vw - 50vw); bottom: 46px; right: 14px; }
+  .legend-toggle { display: flex; }
+  .legend { flex-direction: column; }
+  /* .legend's own display:flex above is an author rule, which beats the
+     UA stylesheet's native "hide a closed <details>'s content" rule
+     regardless of specificity (author always beats user-agent origin) — so
+     without this, the list would stay visible even while collapsed. Higher
+     specificity than the bare .legend rule, so it wins while closed;
+     opening (`[open]` present) just stops this matching and falls back to
+     the base flex. */
+  .legend-wrap:not([open]) .legend { display: none; }
   .map-attr { bottom: 14px; }
-  /* Four tabs plus the 75px close button — tighten so they fit a phone. */
-  .panel-head { padding-left: 10px; }
-  .tab { padding: 8px 7px; font-size: 19px; }
+  /* Two tabs plus the 75px close button — tighten so they fit a phone.
+     Vertical padding stays out of it (see .tab's base rule — height now
+     comes from stretching the full panel-head, not padding). */
+  .tab { padding: 0 24px; font-size: 24px; }
 }
 
 /* --- Intro splash: shown on load, fades after 5s --- */

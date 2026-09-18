@@ -34,6 +34,17 @@ function yearSeverity(durationMs) {
   return durationMs < HOUR ? 'dry' : durationMs < DAY ? 'amber' : 'oxide';
 }
 
+// A card's own single representative tier — its *most recent* annual-return
+// year's severity — used wherever a card needs one colour to stand for its
+// whole History body: the left border (renderCards' applyView) and the
+// legend swatches (buildHistoryView), so both agree with whatever the top
+// (most recent) row's own bars are already showing. `null` with no
+// annual-return data at all, not a guessed tier.
+function monitorSeverity(monitor) {
+  const hist = annualHistory(monitor);
+  return hist.length ? yearSeverity(hist.at(-1).durationMs) : null;
+}
+
 // Magnifying-glass glyph for the "View on map" button — inherits colour and size.
 const LOUPE =
   '<svg class="ico" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" ' +
@@ -85,9 +96,12 @@ function joinRow(bits, itemClass, sepClass) {
  * offender looks that way, rather than every card's own max always filling
  * the row. A monitor `fetch-annual-returns.js` hasn't matched yet, or hasn't
  * been run since the monitor was added, gets a plain empty state rather than
- * a blank chart.
+ * a blank chart. `severity` is this monitor's own representative tier
+ * (`monitorSeverity`, its most recent year) — colours the legend swatches to
+ * match whatever the top row's own bars are already showing, since the
+ * legend is illustrating this card's actual colours now, not a fixed example.
  */
-function buildHistoryView(monitor, maxSpills, maxDuration) {
+function buildHistoryView(monitor, maxSpills, maxDuration, severity) {
   const wrap = document.createElement('div');
   wrap.className = 'o-view-history';
 
@@ -103,8 +117,8 @@ function buildHistoryView(monitor, maxSpills, maxDuration) {
   const legend = document.createElement('p');
   legend.className = 'o-history-legend';
   legend.innerHTML =
-    '<span class="o-history-swatch o-history-swatch--spills"></span>Spills' +
-    '<span class="o-history-swatch o-history-swatch--duration"></span>Total duration';
+    `<span class="o-history-swatch o-history-swatch--spills is-${severity}"></span>Spills` +
+    `<span class="o-history-swatch o-history-swatch--duration is-${severity}"></span>Total duration`;
   wrap.append(legend);
 
   const rows = document.createElement('div');
@@ -187,6 +201,16 @@ function applyView(card, view) {
   const [btn90, btnHistory] = card.querySelectorAll('.o-view-btn');
   btn90.setAttribute('aria-pressed', String(is90));
   btnHistory.setAttribute('aria-pressed', String(!is90));
+
+  // The left border follows whichever record is actually on screen — live
+  // 90-day status normally (card.dataset.liveState, from statusOf), this
+  // monitor's own representative historic severity in History view
+  // (card.dataset.histState, from monitorSeverity — same tiers the bars and
+  // legend already use). A monitor with no annual-return data at all has no
+  // histState to show, so it just keeps its live colour even in History —
+  // better than inventing a tier with nothing behind it.
+  const key = is90 ? card.dataset.liveState : (card.dataset.histState || card.dataset.liveState);
+  card.className = `o-card is-${key}`;
 }
 
 /** Flip every rendered card to `view` ('90day' | 'history') at once — the
@@ -211,11 +235,18 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
 
   for (const monitor of monitors) {
     const state = statusOf(monitor.status);
+    const histSeverity = monitorSeverity(monitor);
     const last = monitor.events.at(-1);
     const runs = monitor.events.length;
 
     const card = document.createElement('div');
-    card.className = `o-card is-${state.key}`;
+    card.className = 'o-card';
+    // Read by applyView (below) to colour the left border for whichever
+    // view is actually showing — live status normally, this monitor's own
+    // representative historic severity in History (empty string with no
+    // annual-return data at all, so applyView's own fallback kicks in).
+    card.dataset.liveState = state.key;
+    card.dataset.histState = histSeverity ?? '';
     // Looked up by the map popup's "View Timeline" link, the reverse of
     // this card's own "View on map" button.
     card.dataset.monitorId = monitor.id;
@@ -320,7 +351,7 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
     view90day.className = 'o-view-90day';
     view90day.append(meta, strip, scale);
 
-    const viewHistory = buildHistoryView(monitor, maxSpills, maxDuration);
+    const viewHistory = buildHistoryView(monitor, maxSpills, maxDuration, histSeverity);
 
     card.append(head, view90day, viewHistory);
     applyView(card, view);

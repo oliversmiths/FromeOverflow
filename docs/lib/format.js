@@ -34,9 +34,17 @@ export function fmtDuration(ms) {
   return `${m}m`;
 }
 
-/** Google Maps "drop a pin here" link (the documented Maps URLs API form). */
+/**
+ * Google Maps "drop a pin here" link, opened on satellite view — the exact
+ * ground an outfall or swim spot sits on is worth seeing, not just a road
+ * map. Not the documented Maps URLs API (that only has a pin-less "centre
+ * the map here" action, `map_action=map`); this is the format Maps' own
+ * "Share location" link uses — `!3m1!1e3` is the satellite-layer flag.
+ * Undocumented, but it's what Maps generates for itself, so it's held
+ * stable for years.
+ */
 export const mapsUrl = (lat, lon) =>
-  `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+  `https://www.google.com/maps/@${lat},${lon},18z/data=!3m1!1e3`;
 
 /**
  * Absolute calendar date: "01.09.26" (DD.MM.YY, local calendar day). Numeric and

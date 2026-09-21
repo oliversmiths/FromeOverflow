@@ -1,5 +1,5 @@
 {
- "polled_at": 1789976726591,
+ "polled_at": 1789977649519,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -1317,10 +1317,6 @@
     {
      "start": 1789640132183,
      "end": 1789641043389
-    },
-    {
-     "start": 1789641043389,
-     "end": 1782201000000
     }
    ],
    "annual_returns": [

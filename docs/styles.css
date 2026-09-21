@@ -37,7 +37,7 @@
   /*--water:    #9bc2e1;   /* map waterways */
 --water:    #0666B5;   /* map waterways */
   --display: "Happy Times NG", Georgia, "Times New Roman", serif;
-  --body:  system-ui, sans-serif;
+  --body:  Arial,system-ui, sans-serif;
   --data:  ui-monospace, monospace;
 
   --fab-icon-height: 34px;   /* the "i" mark's own height — see .fab svg */
@@ -67,7 +67,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-b, strong { font-weight: 500; }
+b, strong { font-weight: 600; }
 
 /* --- The map fills the viewport --- */
 
@@ -640,9 +640,10 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .prose li { margin: 0 0 8px;list-style-type:square; }
 .prose li:last-child { margin-bottom: 0; }
 .prose h3 {
-  font-weight: 500;
+  font-weight: 400;
   font-size: 13px;
   margin: 22px 0 6px;
+  text-transform: uppercase;
 }
 .prose h3:first-child { margin-top: 0; }
 .prose a { color: var(--sewage); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
@@ -1196,12 +1197,14 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   z-index: 2;
   font-family: var(--body);
   font-weight: 300;
-  font-size: clamp(20px, 2.5vw, 24px);
+  font-size: clamp(16px, 1.5vw, 19px);
   white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .splash-brand span {
- 
+ display: block;
+opacity: 0.5;
 }
 
 @media (max-width: 640px) {
@@ -1231,6 +1234,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
     right: auto;
     bottom: 30px;
     transform: translateX(-50%);
+    text-align: center;   /* the block-level span would otherwise sit left of the centred line above */
   }
 }
 

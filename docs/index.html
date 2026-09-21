@@ -242,7 +242,7 @@ const $ = (id) => document.getElementById(id);
 // --- intro splash: hold ~5s then fade; tap to skip, the fl mark replays it ---
 // Sequenced in two beats: background + image show immediately, then (once the
 // verdict is known *and* that first beat has had a moment to register) the
-// words stagger-fade in. Splitting it like this is also what keeps a fragment
+// letters switch on one by one. Splitting it like this is also what keeps a fragment
 // of placeholder text from ever flashing up before the real verdict is ready —
 // there's no placeholder any more, the words simply don't exist until reveal.
 const splash = $('splash');
@@ -286,16 +286,24 @@ $('replay-splash').addEventListener('click', showSplash);
 addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
 
 // Splash verdict: set the text as one <span> per word, each on its own line —
-// the stylesheet ranges them at different indents for a hand-set look, and
-// staggers their fade-in by the `--i` custom property set here.
+// the stylesheet ranges them at different indents for a hand-set look — and
+// each word as one <span> per letter. Letters are numbered across the whole
+// verdict (`--n`), not per word, so the stylesheet can switch them on one at a
+// time, typed-out style, in a single unbroken run.
 function setSplashVerdict(text) {
   const el = $('splash-verdict');
   el.replaceChildren();
-  text.split(/\s+/).forEach((word, i) => {
+  let n = 0;
+  text.split(/\s+/).forEach((word) => {
     const w = document.createElement('span');
     w.className = 'sv-word';
-    w.style.setProperty('--i', i);
-    w.textContent = word;
+    for (const ch of word) {
+      const c = document.createElement('span');
+      c.className = 'sv-char';
+      c.style.setProperty('--n', n++);
+      c.textContent = ch;
+      w.append(c);
+    }
     el.append(w);
   });
 }
@@ -311,7 +319,7 @@ function revealVerdict() {
   if (verdictText == null || !pauseDone) return;
   const el = $('splash-verdict');
   setSplashVerdict(verdictText);
-  void el.offsetWidth;                     // restart the stagger on replay
+  void el.offsetWidth;                     // restart the typing on replay
   el.classList.add('is-ready');
 }
 

@@ -470,7 +470,8 @@ b, strong { font-weight: 600; }
    keeps reading as one alphabet if this ever changes. */
 .fab svg { display: block; height: var(--fab-icon-height, 34px); width: auto; }
 
-/* Brand mark, top-left corner — the ligatured "fl" from "flow". Transparent;
+/* Brand mark, top-left corner — "OW"/"F" (Overflow Watch, Frome) set in
+   opposite quadrants of a crosshair, echoing the map underneath. Transparent;
    clicking it replays the intro splash. */
 .fl-mark {
   position: fixed;
@@ -488,7 +489,7 @@ b, strong { font-weight: 600; }
   transition: opacity 0.2s, background 0.15s, color 0.15s;
 }
 
-.fl-mark svg { display: block; height: 45px; width: auto; }
+.fl-mark svg { display: block; height: 65px; width: 65px; }
 .fl-mark:hover { background: var(--sewage); color: var(--weir); }
 .fl-mark:focus-visible { outline: 2px solid var(--weir); outline-offset: -3px; }
 

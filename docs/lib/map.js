@@ -35,6 +35,24 @@ const COPY =
   'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">' +
   '<rect x="8" y="8" width="12" height="12" rx="1.5"/>' +
   '<path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>';
+// Four arrows converging on the centre — the map-ctrl reset button. An SVG
+// rather than the unicode "⟲" it started as: a dingbat's ink isn't centred
+// in its own em-box (varies by glyph, let alone across `--body`'s
+// system-ui, which resolves to a different actual font per OS), so it can't
+// be centred reliably with CSS alone the way an SVG can (`.map-reset` below
+// just grid-centres the box). Font Awesome Pro (commercial licence) —
+// confirm redistribution rights before this ships in a commit; swap for a
+// Free-tier or hand-drawn equivalent otherwise.
+const RESET =
+  '<svg class="ico" viewBox="0 0 640 640" width="24" height="24" aria-hidden="true">' +
+  '<path fill="currentColor" d="M336 80L336 64L304 64L304 201.4C262 159.4 240.6 138 240 137.4L217.4 160L228.7 171.3' +
+  'L308.7 251.3L320 262.6L331.3 251.3L411.3 171.3L422.6 160L400 137.4L388.7 148.7L336 201.4L336 80zM352 320' +
+  'C352 302.3 337.7 288 320 288C302.3 288 288 302.3 288 320C288 337.7 302.3 352 320 352C337.7 352 352 337.7 352 320z' +
+  'M422.6 480L411.3 468.7L331.3 388.7L320 377.4L308.7 388.7L228.7 468.7L217.4 480L240 502.6L251.3 491.3L304 438.6' +
+  'L304 576L336 576L336 438.6L388.7 491.3L400 502.6L422.6 480zM160 217.4L137.4 240C138 240.6 159.4 262 201.4 304' +
+  'L64 304L64 336L201.4 336C159.4 378 138 399.4 137.4 400L160 422.6L171.3 411.3L251.3 331.3L262.6 320L251.3 308.7' +
+  'L171.3 228.7L160 217.4zM480 217.4L468.7 228.7L388.7 308.7L377.4 320L388.7 331.3L468.7 411.3L480 422.6L502.6 400' +
+  'L491.3 388.7L438.6 336L576 336L576 304L438.6 304L491.3 251.3L502.6 240L480 217.4z"/></svg>';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
 const MAX_ZOOM_IN = 40;    // smallest viewBox = zoomed-out width / this
 // How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
@@ -496,9 +514,12 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
   ctrl.className = 'map-ctrl';
   const zin = Object.assign(document.createElement('button'), { type: 'button', textContent: '+' });
   const zout = Object.assign(document.createElement('button'), { type: 'button', textContent: '−' });
+  const zreset = Object.assign(document.createElement('button'), { type: 'button', innerHTML: RESET });
   zin.setAttribute('aria-label', 'Zoom in');
   zout.setAttribute('aria-label', 'Zoom out');
-  ctrl.append(zin, zout);
+  zreset.className = 'map-reset';
+  zreset.setAttribute('aria-label', 'Reset map view');
+  ctrl.append(zin, zout, zreset);
   host.append(ctrl);
 
   const attr = document.createElement('div');
@@ -828,23 +849,21 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
 
   zin.addEventListener('click', () => zoomAt(0.6, 0.5, 0.5));
   zout.addEventListener('click', () => zoomAt(1 / 0.6, 0.5, 0.5));
+  zreset.addEventListener('click', () => resetView());
 
-  // --- focus one monitor or swim spot: ease the camera onto its pin, then
-  // open the popup --- `item` only needs an `.id`; which array it's found in
-  // decides which popup opens, so a card's "View on map" and index.html's own
-  // hash routing can pass either a monitor or a swim spot interchangeably.
+  // --- fly the camera to a target viewBox, easing from wherever it is now.
+  // Shared by focus() (onto a pin) and resetView() (back to the opening
+  // view) so there's one easing curve/duration for both.
   let flyRAF = 0;
-  function focus(item) {
-    const p = pins.find((x) => x.m.id === item.id) ?? swimPins.find((x) => x.s.id === item.id);
-    if (!p) return;                       // unknown id, or an item with no coords
+  function flyTo(targetVW, targetVX, targetVY, onDone) {
     const [pw, ph] = size();
     const a = pw / ph;
     const start = { vx, vy, vw };
 
-    vw = Math.max(VW_IN, VW_OUT * 0.14);  // lean in on the pin
+    vw = targetVW;
     vh = vw / a;
-    vx = p.gx - vw / 2;
-    vy = p.gy - vh / 2;
+    vx = targetVX;
+    vy = targetVY;
     clamp(a);
     const end = { vx, vy, vw };
 
@@ -862,8 +881,33 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
       clamp(a);
       apply();
       if (k < 1) flyRAF = requestAnimationFrame(step);
-      else if (p.m) openPopup(p.m); else openSwimPopup(p.s);
+      else onDone?.();
     })(t0);
+  }
+
+  // Focus one monitor or swim spot: ease the camera onto its pin, then open
+  // the popup — `item` only needs an `.id`; which array it's found in decides
+  // which popup opens, so a card's "View on map" and index.html's own hash
+  // routing can pass either a monitor or a swim spot interchangeably.
+  function focus(item) {
+    const p = pins.find((x) => x.m.id === item.id) ?? swimPins.find((x) => x.s.id === item.id);
+    if (!p) return;                       // unknown id, or an item with no coords
+    const [pw, ph] = size();
+    const vw2 = Math.max(VW_IN, VW_OUT * 0.14);  // lean in on the pin
+    const vh2 = vw2 / (pw / ph);
+    flyTo(vw2, p.gx - vw2 / 2, p.gy - vh2 / 2, () => {
+      if (p.m) openPopup(p.m); else openSwimPopup(p.s);
+    });
+  }
+
+  // Reset button (map-ctrl): back to the view the map opened on — same town
+  // centring and initialZoom fraction recalc() used on first load, just
+  // eased there instead of cut straight to it.
+  function resetView() {
+    const [pw, ph] = size();
+    const vw2 = VW_OUT * initialZoom;
+    const vh2 = vw2 / (pw / ph);
+    flyTo(vw2, townX - vw2 / 2, townY - vh2 / 2);
   }
 
   new ResizeObserver(recalc).observe(host);

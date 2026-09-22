@@ -26,6 +26,7 @@
   --light-oxide: color-mix(in srgb, var(--oxide) 80%, white);
   --light-amber: color-mix(in srgb, var(--amber) 80%, white);
   --light-dry:   color-mix(in srgb, var(--dry) 80%, white);
+  --light-weir:   color-mix(in srgb, var(--weir) 90%, white);
 
   --silt:     #888;
   --hairline: #ddd;
@@ -187,6 +188,7 @@ b, strong { font-weight: 500; }
 .map-ctrl button {
   width: 32px;
   height: 32px;
+  padding: 0;
   border: 0px;
   background: var(--weir);
   color: var(--sewage);
@@ -197,6 +199,27 @@ b, strong { font-weight: 500; }
 
 .map-ctrl button:first-child { border-bottom: 0; }
 .map-ctrl button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; z-index: 1; }
+
+/* Reset view — grouped with zoom but set apart with a divider, since it's a
+   different kind of action (jumps the camera, doesn't step it). An SVG
+   (map.js's RESET), grid-centred rather than sized/centred as text — see
+   RESET's own comment. The divider is a box-shadow, not a border-top: a
+   real border eats into the box on one side only, leaving place-items:
+   center to centre the icon in a lopsided remainder (32px outer, 31px
+   content) — half a pixel off. An inset box-shadow paints the same line
+   without taking up any layout space, so the content box stays a true,
+   symmetric 32px square. */
+.map-ctrl .map-reset {
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 1px 0 var(--light-weir);
+}
+/* #overflow-map is prefixed here too — otherwise #overflow-map svg's own
+   width:100%/height:100% (for the basemap itself) outranks this on
+   specificity (an ID beats any number of classes) and stretches the icon to
+   fill the button regardless of its own width/height attributes — the same
+   reason .map-popup .ico needs its own override above. */
+#overflow-map .map-ctrl .map-reset svg { display: block; width: 24px; height: 24px; }
 
 .map-attr {
   position: absolute;

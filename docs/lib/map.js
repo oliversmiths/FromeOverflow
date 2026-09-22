@@ -35,20 +35,19 @@ const COPY =
   'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">' +
   '<rect x="8" y="8" width="12" height="12" rx="1.5"/>' +
   '<path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>';
-// Four arrows converging on the centre — the map-ctrl reset button. An SVG
-// rather than the unicode "⟲" it started as: a dingbat's ink isn't centred
-// in its own em-box (varies by glyph, let alone across `--body`'s
-// system-ui, which resolves to a different actual font per OS), so it can't
-// be centred reliably with CSS alone the way an SVG can (`.map-reset` below
-// just grid-centres the box). Font Awesome Pro (commercial licence) —
-// confirm redistribution rights before this ships in a commit; swap for a
-// Free-tier or hand-drawn equivalent otherwise.
+// Four corner brackets — the map-ctrl reset button, read as "back to fit"
+// rather than a directional arrow. An SVG rather than a unicode dingbat: a
+// dingbat's ink isn't centred in its own em-box (varies by glyph, let alone
+// across `--body`'s system-ui, which resolves to a different actual font per
+// OS), so it can't be centred reliably with CSS alone the way an SVG can
+// (`.map-reset` below just grid-centres the box). Font Awesome Pro
+// (commercial licence) — confirm redistribution rights before this ships in
+// a commit; swap for a Free-tier or hand-drawn equivalent otherwise.
 const RESET =
   '<svg class="ico" viewBox="0 0 640 640" width="18" height="18" aria-hidden="true">' +
-  '<path fill="currentColor" d="M543.4 304L432 304L432 336L543.4 336C535.6 447 447 535.6 336 543.4L336 432L304 432' +
-  'L304 543.4C193 535.6 104.4 447 96.6 336L208 336L208 304L96.6 304C104.4 193 193 104.4 304 96.6L304 208L336 208' +
-  'L336 96.6C447 104.4 535.6 193 543.4 304zM320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64' +
-  'C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576z"/></svg>';
+  '<path fill="currentColor" d="M240 96L256 96L256 128L128 128L128 256L96 256L96 96L240 96zM96 400L96 384L128 384' +
+  'L128 512L256 512L256 544L96 544L96 400zM528 96L544 96L544 256L512 256L512 128L384 128L384 96L528 96zM512 400' +
+  'L512 384L544 384L544 544L384 544L384 512L512 512L512 400z"/></svg>';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
 const MAX_ZOOM_IN = 40;   // smallest viewBox = zoomed-out width / this
 // How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
@@ -515,7 +514,7 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
   zout.setAttribute('aria-label', 'Zoom out');
   zreset.className = 'map-reset';
   zreset.setAttribute('aria-label', 'Reset map view');
-  ctrl.append(zin, zout, zreset);
+  ctrl.append(zreset, zin, zout);
   host.append(ctrl);
 
   const attr = document.createElement('div');
@@ -545,11 +544,29 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
     vy = vh >= CH ? CY0 + (CH - vh) / 2 : Math.min(Math.max(vy, CY0), CY0 + CH - vh);
   }
 
+  // True once the camera is back at the view the map opened on (same town
+  // centring and initialZoom fraction recalc()/resetView() use) — drives
+  // .map-reset's is-inactive class below. EPS is grid units (~1/m), well
+  // under float drift but comfortably past it, since flyTo's last animation
+  // frame lands on the exact target rather than something merely close.
+  function atOpeningView() {
+    const [pw, ph] = size();
+    const vw2 = VW_OUT * initialZoom;
+    const vh2 = vw2 / (pw / ph);
+    const EPS = 0.01;
+    return Math.abs(vw - vw2) < EPS
+      && Math.abs(vx - (townX - vw2 / 2)) < EPS
+      && Math.abs(vy - (townY - vh2 / 2)) < EPS;
+  }
+
   function apply() {
     svg.setAttribute('viewBox', `${vx} ${vy} ${vw} ${vh}`);
     placeLabels();
     placePins();
     placePopup();
+    const atRest = atOpeningView();
+    zreset.classList.toggle('is-inactive', atRest);
+    zreset.disabled = atRest;
   }
 
   function recalc() {

@@ -200,19 +200,24 @@ b, strong { font-weight: 500; }
 .map-ctrl button:first-child { border-bottom: 0; }
 .map-ctrl button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; z-index: 1; }
 
-/* Reset view — grouped with zoom but set apart with a divider, since it's a
-   different kind of action (jumps the camera, doesn't step it). An SVG
-   (map.js's RESET), grid-centred rather than sized/centred as text — see
-   RESET's own comment. The divider is a box-shadow, not a border-top: a
-   real border eats into the box on one side only, leaving place-items:
-   center to centre the icon in a lopsided remainder (32px outer, 31px
-   content) — half a pixel off. An inset box-shadow paints the same line
-   without taking up any layout space, so the content box stays a true,
-   symmetric 32px square. */
+/* Reset view — grouped with zoom but set apart with a margin, since it's a
+   different kind of action (jumps the camera, doesn't step it) and sits
+   above +/- rather than stepping from them. An SVG (map.js's RESET),
+   grid-centred rather than sized/centred as text — see RESET's own comment. */
 .map-ctrl .map-reset {
   display: grid;
   place-items: center;
-  box-shadow: inset 0 1px 0 var(--light-weir);
+  margin-bottom: 6px;
+}
+/* Inactive until the camera has actually moved from the view the map opened
+   on (map.js's atOpeningView, toggled every apply()) — a reset that would
+   land exactly where it already is has nothing to do. disabled (set
+   alongside the class in map.js) drops it from the tab order and blocks the
+   click; the class carries the dimmed look since :disabled's UA default
+   varies too much across browsers to rely on alone. */
+.map-ctrl .map-reset.is-inactive {
+  opacity: 0.6;
+  cursor: default;
 }
 /* #overflow-map is prefixed here too — otherwise #overflow-map svg's own
    width:100%/height:100% (for the basemap itself) outranks this on

@@ -44,17 +44,13 @@ const COPY =
 // confirm redistribution rights before this ships in a commit; swap for a
 // Free-tier or hand-drawn equivalent otherwise.
 const RESET =
-  '<svg class="ico" viewBox="0 0 640 640" width="24" height="24" aria-hidden="true">' +
-  '<path fill="currentColor" d="M336 80L336 64L304 64L304 201.4C262 159.4 240.6 138 240 137.4L217.4 160L228.7 171.3' +
-  'L308.7 251.3L320 262.6L331.3 251.3L411.3 171.3L422.6 160L400 137.4L388.7 148.7L336 201.4L336 80zM352 320' +
-  'C352 302.3 337.7 288 320 288C302.3 288 288 302.3 288 320C288 337.7 302.3 352 320 352C337.7 352 352 337.7 352 320z' +
-  'M422.6 480L411.3 468.7L331.3 388.7L320 377.4L308.7 388.7L228.7 468.7L217.4 480L240 502.6L251.3 491.3L304 438.6' +
-  'L304 576L336 576L336 438.6L388.7 491.3L400 502.6L422.6 480zM160 217.4L137.4 240C138 240.6 159.4 262 201.4 304' +
-  'L64 304L64 336L201.4 336C159.4 378 138 399.4 137.4 400L160 422.6L171.3 411.3L251.3 331.3L262.6 320L251.3 308.7' +
-  'L171.3 228.7L160 217.4zM480 217.4L468.7 228.7L388.7 308.7L377.4 320L388.7 331.3L468.7 411.3L480 422.6L502.6 400' +
-  'L491.3 388.7L438.6 336L576 336L576 304L438.6 304L491.3 251.3L502.6 240L480 217.4z"/></svg>';
+  '<svg class="ico" viewBox="0 0 640 640" width="18" height="18" aria-hidden="true">' +
+  '<path fill="currentColor" d="M543.4 304L432 304L432 336L543.4 336C535.6 447 447 535.6 336 543.4L336 432L304 432' +
+  'L304 543.4C193 535.6 104.4 447 96.6 336L208 336L208 304L96.6 304C104.4 193 193 104.4 304 96.6L304 208L336 208' +
+  'L336 96.6C447 104.4 535.6 193 543.4 304zM320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64' +
+  'C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576z"/></svg>';
 const DRAW_ORDER = ['water', 'stream', 'river', 'minor', 'mid', 'major'];
-const MAX_ZOOM_IN = 40;    // smallest viewBox = zoomed-out width / this
+const MAX_ZOOM_IN = 40;   // smallest viewBox = zoomed-out width / this
 // How far out you can pull back. At 1 the crop (CROP_KM below) exactly covers
 // the viewport — never a gap past its edges: a wide screen shows the full crop
 // width and pans up/down, a tall screen the full height and pans left/right.

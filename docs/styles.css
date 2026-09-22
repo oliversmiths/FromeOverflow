@@ -219,7 +219,7 @@ b, strong { font-weight: 500; }
    specificity (an ID beats any number of classes) and stretches the icon to
    fill the button regardless of its own width/height attributes — the same
    reason .map-popup .ico needs its own override above. */
-#overflow-map .map-ctrl .map-reset svg { display: block; width: 24px; height: 24px; }
+#overflow-map .map-ctrl .map-reset svg { display: block; width: 18px; height: 18px; }
 
 .map-attr {
   position: absolute;

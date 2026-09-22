@@ -37,7 +37,8 @@
   /*--water:    #9bc2e1;   /* map waterways */
 --water:    #0666B5;   /* map waterways */
   --display: "Happy Times NG", Georgia, "Times New Roman", serif;
-  --body:  Arial,system-ui, sans-serif;
+  --brand:  Arial,system-ui, sans-serif;
+  --body:  system-ui, sans-serif;
   --data:  ui-monospace, monospace;
 
   --fab-icon-height: 34px;   /* the "i" mark's own height — see .fab svg */
@@ -67,7 +68,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-b, strong { font-weight: 600; }
+b, strong { font-weight: 500; }
 
 /* --- The map fills the viewport --- */
 
@@ -1196,7 +1197,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   bottom: clamp(18px, 2vh, 60px);
   margin: 0;
   z-index: 2;
-  font-family: var(--body);
+  font-family: var(--brand);
   font-weight: 300;
   font-size: clamp(16px, 1.5vw, 19px);
   white-space: nowrap;

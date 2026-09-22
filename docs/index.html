@@ -289,24 +289,35 @@ $('replay-splash').addEventListener('click', showSplash);
 addEventListener('keydown', (e) => { if (e.key === 'Escape') dismissSplash(); });
 
 // Splash verdict: set the text as one <span> per word, each on its own line —
-// the stylesheet ranges them at different indents for a hand-set look — and
-// each word as one <span> per letter. Letters are numbered across the whole
-// verdict (`--n`), not per word, so the stylesheet can switch them on one at a
-// time, typed-out style, in a single unbroken run.
+// the stylesheet ranges them at different indents for a hand-set look. Each
+// word's text is one plain text node (a nested .sv-word-inner), typed out by
+// animating clip-path — never split letter-by-letter: putting each letter in
+// its own element stops the font from shaping runs like "fl" into a ligature
+// (shaping only happens within one text node) and was clipping descenders
+// (the italic display face's glyphs lean and overhang their own advance
+// width — fine inside one shared box, cut off at each letter's own box edge).
+// clip-path only ever moves the left/right edges (top/bottom stay at 0), so
+// nothing above or below the glyphs — a "g"'s descender included — is ever
+// touched. Letters are timed by counting through the whole verdict (`n`) so
+// the typing runs on continuously from one word into the next, but the
+// reveal itself steps through each word as a block, not per glyph.
 function setSplashVerdict(text) {
   const el = $('splash-verdict');
   el.replaceChildren();
+  const CHAR_MS = 45;
   let n = 0;
   text.split(/\s+/).forEach((word) => {
     const w = document.createElement('span');
     w.className = 'sv-word';
-    for (const ch of word) {
-      const c = document.createElement('span');
-      c.className = 'sv-char';
-      c.style.setProperty('--n', n++);
-      c.textContent = ch;
-      w.append(c);
-    }
+    const inner = document.createElement('span');
+    inner.className = 'sv-word-inner';
+    inner.textContent = word;
+    const len = [...word].length;
+    inner.style.animationDuration = `${len * CHAR_MS}ms`;
+    inner.style.animationDelay = `${n * CHAR_MS}ms`;
+    inner.style.animationTimingFunction = `steps(${len}, end)`;
+    n += len + 1;   // +1: the space, so the next word picks up where this one left off
+    w.append(inner);
     el.append(w);
   });
 }

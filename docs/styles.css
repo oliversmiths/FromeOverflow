@@ -1165,18 +1165,34 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .sv-word:nth-child(5) { margin-left: 0.6em; }
 .sv-word:nth-child(6) { margin-left: 3em; }
 
-/* Letters stay hidden (background + image alone first) until JS adds
-   .is-ready, once the verdict is known and that first beat has had its
-   moment — then each switches on by its `--n` index, set in the JS. Hard
-   on/off, no fade: `visibility` (not opacity/display) so every letter keeps
-   its space from the start and nothing reflows as the text fills in. */
-.sv-char { visibility: hidden; }
-.splash-verdict.is-ready .sv-char {
-  animation: sv-char-in 0s forwards;
-  animation-delay: calc(var(--n, 0) * 0.045s);
+/* Each word's text is a single, un-split text node (setSplashVerdict, JS) so
+   the font shapes it normally — ligatures and all. Typed out by animating a
+   clip away from left to right; duration/delay/step-count are per-word, set
+   inline by the JS (each word's own letter count), so the reveal paces
+   itself the same as a true per-letter one without ever touching an
+   individual glyph's box.
+
+   The top/bottom insets are -0.4em, not 0: `clip-path`'s reference box is
+   this element's border box, which `line-height: 0.98` on `.splash-verdict`
+   makes shorter than the italic display face's actual ascent+descent — this
+   font's descenders (the tail on a "g", say) already painted past that box
+   before clip-path ever entered the picture, which was always fine under
+   plain `overflow: visible` text. `clip-path` doesn't consult `overflow`,
+   though — it clips to the reference box regardless, no matter the inset —
+   so at a literal `inset(0 0 0 0)` it silently started cutting off exactly
+   that overflow. The -0.4em pushes the clip region back out past it, on
+   both edges, so nothing above or below a glyph is ever touched; only left
+   and right (100% → 0%) actually move, and that's what does the typing. */
+.sv-word-inner {
+  display: inline-block;
+  clip-path: inset(-0.4em 100% -0.4em 0);   /* fully clipped: nothing shown yet */
 }
-@keyframes sv-char-in {
-  to { visibility: visible; }
+.splash-verdict.is-ready .sv-word-inner {
+  animation-name: sv-word-in;
+  animation-fill-mode: forwards;
+}
+@keyframes sv-word-in {
+  to { clip-path: inset(-0.4em 0 -0.4em 0); }
 }
 
 .splash-img {
@@ -1244,5 +1260,5 @@ opacity: 0.5;
   .splash { transition-duration: 0.3s; }
   /* Still sequenced (image, then verdict), just the whole verdict at once
      rather than typed out letter by letter. */
-  .splash-verdict.is-ready .sv-char { animation: none; visibility: visible; }
+  .splash-verdict.is-ready .sv-word-inner { animation: none; clip-path: inset(-0.4em 0 -0.4em 0); }
 }

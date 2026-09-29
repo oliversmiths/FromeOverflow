@@ -1,5 +1,5 @@
 {
- "polled_at": 1790670642342,
+ "polled_at": 1790671528831,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -20,6 +20,10 @@
    "offline": [
     {
      "start": 1790670642342,
+     "end": 1790671528831
+    },
+    {
+     "start": 1790671528831,
      "end": null
     }
    ],

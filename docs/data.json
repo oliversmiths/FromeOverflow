@@ -1,5 +1,5 @@
 {
- "polled_at": 1790794853946,
+ "polled_at": 1790795731580,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -596,6 +596,10 @@
     },
     {
      "start": 1790794853946,
+     "end": 1790795731580
+    },
+    {
+     "start": 1790795731580,
      "end": null
     }
    ],
@@ -952,7 +956,12 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
    "status": 0,
-   "events": [],
+   "events": [
+    {
+     "start": 1790794260000,
+     "end": 1790794500000
+    }
+   ],
    "offline": [],
    "annual_returns": [
     {

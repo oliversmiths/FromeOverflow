@@ -157,7 +157,10 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
   450px wide, shrinking below that. The card's own left border follows
   whichever view is on screen, not always the live status: `.is-discharging`/
-  `.is-dry`/`.is-offline` (from `statusOf`) in 90-Day view, or `.is-dry`/
+  `.is-recent`/`.is-dry`/`.is-offline` (from `mapStatusOf` — the same 4-state
+  read the map pins and `dayCells`' own `recent` cells use, so a monitor that
+  spilled within the last 48h shows amber on its card border too, not just
+  its pin and strip) in 90-Day view, or `.is-dry`/
   `.is-amber`/`.is-oxide` (from `monitorSeverity` — this monitor's *most
   recent* annual-return year's tier, same threshold as `yearSeverity` below)
   in History — `applyView` swaps the class using `card.dataset.liveState`/

@@ -14,8 +14,8 @@
 
 import {
   DAY, HOUR, annualHistory, avgAnnualDurationMs, dayCells, fmtAnnualReturn,
-  fmtDate, fmtDuration, fmtSpillSpan, fmtWhen, offlineMs, rankByAvgDuration,
-  rankByAvgSpills, rankByTotal, statusOf, windowPhrase,
+  fmtDate, fmtDuration, fmtSpillSpan, fmtWhen, mapStatusOf, offlineMs,
+  rankByAvgDuration, rankByAvgSpills, rankByTotal, windowPhrase,
 } from './format.js';
 
 const SORTS = {
@@ -203,7 +203,10 @@ function applyView(card, view) {
   btnHistory.setAttribute('aria-pressed', String(!is90));
 
   // The left border follows whichever record is actually on screen — live
-  // 90-day status normally (card.dataset.liveState, from statusOf), this
+  // 90-day status normally (card.dataset.liveState, from mapStatusOf — the
+  // same 4-state read the map pins and the day-strip's own `recent` cells
+  // use, so a monitor that spilled within the last 48h shows amber
+  // everywhere at once, not green on the card and amber on the pin), this
   // monitor's own representative historic severity in History view
   // (card.dataset.histState, from monitorSeverity — same tiers the bars and
   // legend already use). A monitor with no annual-return data at all has no
@@ -234,7 +237,7 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
   const maxDuration = Math.max(1, ...allHistory.map((h) => h.durationMs ?? 0));
 
   for (const monitor of monitors) {
-    const state = statusOf(monitor.status);
+    const state = mapStatusOf(monitor, now);
     const histSeverity = monitorSeverity(monitor);
     const last = monitor.events.at(-1);
     const runs = monitor.events.length;

@@ -316,6 +316,18 @@ function setSplashVerdict(text) {
     inner.style.animationDuration = `${len * CHAR_MS}ms`;
     inner.style.animationDelay = `${n * CHAR_MS}ms`;
     inner.style.animationTimingFunction = `steps(${len}, end)`;
+    // Belt and braces: steps(len, end) is landing one tick short of the final
+    // "to" keyframe in practice — the last word's last letter (a "d", say)
+    // was staying clipped at rest, not just mid-animation, so this isn't a
+    // fill-mode: forwards timing quirk that resolves itself. On animationend
+    // (the browser's own "this is genuinely over" signal, independent of
+    // whatever step it last painted), drop the animation and set the fully-
+    // revealed clip-path directly — the word is guaranteed complete however
+    // the steps() timing rounded on the way there.
+    inner.addEventListener('animationend', () => {
+      inner.style.animation = 'none';
+      inner.style.clipPath = 'inset(-0.4em -0.15em -0.4em 0)';
+    }, { once: true });
     n += len + 1;   // +1: the space, so the next word picks up where this one left off
     w.append(inner);
     el.append(w);

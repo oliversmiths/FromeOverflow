@@ -779,18 +779,20 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   scroll-margin-top: 10px;
 }
 
-/* Live 90-day status (statusOf) — the border shown whenever a card is in its
-   90-Day view. */
+/* Live 90-day status (mapStatusOf — the same 4-state read as the map pins
+   and the day-strip's own `recent` cells) — the border shown whenever a card
+   is in its 90-Day view. */
 .o-card.is-discharging { border-left-color: var(--oxide); }
+.o-card.is-recent      { border-left-color: var(--amber); }
 .o-card.is-dry         { border-left-color: var(--dry); }
 .o-card.is-offline     { border-left-color: var(--silt); }
 /* History view swaps to this monitor's own representative historic severity
    instead (cards.js's monitorSeverity/applyView) — .is-dry above already
-   covers that tier's colour (same green either way), .is-amber has no live
-   equivalent (statusOf never returns it — only mapStatusOf's richer 4-state
-   version does), and .is-oxide is kept apart from .is-discharging even
-   though the colour matches, since one means "discharging right now" and
-   the other "a severe year on record" — not the same claim. */
+   covers that tier's colour (same green either way), .is-amber reuses the
+   same colour as live .is-recent but is a separate class because the claims
+   differ ("discharged within 48h" vs "a severe year on record"), and
+   .is-oxide is kept apart from .is-discharging for the same reason — one
+   means "discharging right now", the other "a severe year on record". */
 .o-card.is-amber { border-left-color: var(--amber); }
 .o-card.is-oxide { border-left-color: var(--oxide); }
 

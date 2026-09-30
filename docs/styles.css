@@ -1209,8 +1209,15 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
    though — it clips to the reference box regardless, no matter the inset —
    so at a literal `inset(0 0 0 0)` it silently started cutting off exactly
    that overflow. The -0.4em pushes the clip region back out past it, on
-   both edges, so nothing above or below a glyph is ever touched; only left
-   and right (100% → 0%) actually move, and that's what does the typing. */
+   both edges. The right inset needs the same treatment, just smaller: this
+   italic face's letterforms slant into their own right sidebearing, so a
+   word's last glyph routinely paints past its own advance width (measured
+   in the font, "f" worst at 14% of its em, "d"/"r"/"g" all a few percent) —
+   at a literal 0% the fully-revealed state clipped that sliver off, which
+   read as the final letter being truncated or missing. -0.15em covers the
+   worst case with room to spare, small enough at any font-size on this page
+   not to visibly delay the typing. Only left and right (100% → -0.15em)
+   actually move, and that's what does the typing. */
 .sv-word-inner {
   display: inline-block;
   clip-path: inset(-0.4em 100% -0.4em 0);   /* fully clipped: nothing shown yet */
@@ -1220,7 +1227,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   animation-fill-mode: forwards;
 }
 @keyframes sv-word-in {
-  to { clip-path: inset(-0.4em 0 -0.4em 0); }
+  to { clip-path: inset(-0.4em -0.15em -0.4em 0); }
 }
 
 .splash-img {

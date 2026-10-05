@@ -105,66 +105,67 @@
 
   <div class="panel-body prose" id="tabpanel-info" role="tabpanel"
     aria-labelledby="tab-info" tabindex="0" hidden>
-    <p>Overflow Watch is a monitor of combined sewer overflows (CSOs) on the River Frome and its tributaries around
-      Frome, Somerset. It checks Wessex Water’s near real-time event duration monitor feed
-      every 15 minutes and keeps its own history. It also displays Environment Agency Annual Return data.</p>
-    <p>This project is not affiliated with Wessex Water. It covers the Frome
-      catchment only and does not try to replace the national trackers. The intention is to give a hyperlocal window onto current and historical sewage overflow data.</p>
+    <p>Overflow Watch tracks storm overflows (CSOs) on the River Frome and its tributaries
+      around Frome, Somerset. Every 15 minutes it checks Wessex Water’s live overflow data and
+      keeps its own history. It also shows the Environment Agency’s official yearly spill
+      figures.</p>
+    <p>It’s an independent project, not affiliated with Wessex Water. It covers the Frome
+      catchment only, as a local view alongside national maps like Surfers Against
+      Sewage’s.</p>
 
     <div class="acc">
       <details class="acc-item" id="acc-how-to-use">
         <summary class="acc-summary">How to use</summary>
         <div class="acc-body">
           <h3>Reading the map</h3>
-          <p>Each pin represents a CSO, coloured by its state at the last check: red discharging
-            now, amber discharged within the last 48 hours, green not discharging,
-            grey no signal. Purple pins mark popular swimming spots, with the latest water
-            quality and river flow reading where there is one.</p>
+          <p>Each pin marks an overflow point, a place where sewage can be released into the
+            river. <strong>Red</strong>: discharging now. <strong>Amber</strong>: discharged in
+            the last 48 hours. <strong>Green</strong>: no recent discharge.
+            <strong>Grey</strong>: monitor offline.</p>
+          <p>Purple diamonds are swimming spots, with the latest water quality and river flow
+            readings where available.</p>
 
           <h3>Reading the timeline</h3>
-          <p>Each card shows the history of a CSO. The 90-day status strip shows one bar a day: red where it
-            discharged, amber for the 48 hours after, green when it was clear, dark grey where the
-            monitor was offline, striped before watching began.</p>
-          <p>Switch card views from 90-day to History to
-            see the Environment Agency's own regulator-verified annual return, year by
-            year since 2024 (the earliest year that can be matched to this monitor's identifier –
-            see Sources). The two averages below are deliberately different figures: the Environment Agency's
-            own long-term spill average (its published baseline, often running back further than
-            2024), and our calculated average duration across years on record –
-            there's no equivalent long-term-average-duration figure published, so that one is
-            ours, not theirs.</p>
+          <p>The Timeline lists every overflow point. Each has a strip showing the last 90 days,
+            one bar per day: red for a discharge, amber for the 48 hours after, green for none,
+            grey when the monitor was offline, and striped before we started watching.</p>
+          <p>Switch to <strong>History</strong> for the Environment Agency’s official yearly
+            figures, from 2024 onwards. (Earlier years use an older ID system that can’t be
+            reliably matched to each overflow point.)</p>
+          <p>Underneath are two averages. The first is the Environment Agency’s long-term
+            average number of spills a year. The second is our own average total discharge time
+            a year, since the EA doesn’t publish one.</p>
         </div>
       </details>
 
       <details class="acc-item" id="acc-safety">
         <summary class="acc-summary">Safety</summary>
         <div class="acc-body">
-          <p>This site records <i>when</i> CSOs discharge and displays Environment Agency Annual Returns. For most of the river it
-            does not measure water quality, and it cannot tell you whether a stretch is safe to
-            enter. Two spots – <a href="#farleigh-hungerford">Farleigh Hungerford</a> and <a href="#tellisford-weir">Tellisford Weir</a> – show the latest water
-            quality sample and river flow reading, but sampling there is
-            roughly weekly in season, so even that is a recent snapshot, not a live guarantee.</p>
-          <p>A stretch showing no recent discharge is not therefore clean. Rivers carry bacteria
-            from farmland, wildlife and road runoff at all times, and hazards like cold or fast
-            water remain regardless of what the overflows are doing.</p>
-          <p>If you swim, paddle or let a dog in the Frome, judge each spot on its own merits. For
-            a bathing water’s official classification see the Environment Agency’s
-            <a href="https://environment.data.gov.uk/bwq/" target="_blank" rel="noopener">Swimfo</a>;
-            for live pollution alerts and overflows beyond this one town, see Surfers Against
-            Sewage’s <a href="https://www.sas.org.uk/sewage-map/" target="_blank" rel="noopener">Sewage
+          <p>This site shows when overflows discharge. It doesn’t measure water quality, and it
+            can’t tell you whether the river is safe to enter.</p>
+          <p><a href="#farleigh-hungerford">Farleigh Hungerford</a> shows Wessex Water’s latest
+            water quality sample, taken about weekly in the swimming season, so it’s a recent
+            snapshot, not a live reading. <a href="#tellisford-weir">Tellisford Weir</a> shows
+            river flow only.</p>
+          <p>No recent discharge doesn’t mean clean water. Rivers carry bacteria from farmland,
+            wildlife and roads all the time, and cold or fast water is a risk whatever the
+            overflows are doing. If you swim, paddle or let a dog in, judge each spot for
+            yourself.</p>
+          <p>For official bathing water ratings, see the Environment Agency’s
+            <a href="https://environment.data.gov.uk/bwq/" target="_blank" rel="noopener">Swimfo</a>.
+            For overflows and pollution alerts beyond the Frome, see Surfers Against Sewage’s
+            <a href="https://www.sas.org.uk/sewage-map/" target="_blank" rel="noopener">Sewage
             Map</a>.</p>
 
           <h3>What it can’t tell you</h3>
-          <p>A monitor records the start and end of an overflow – not how much was released, and
-            not what was in it. A monitor can also trigger on debris or vegetation, so an
-            activation <i>indicates</i> a discharge rather than confirming one.</p>
+          <p>Monitors record when an overflow starts and stops, not how much is released or
+            what’s in it. Debris can also set them off, so an alert suggests a discharge rather
+            than proving one.</p>
 
-          <h3>An incomplete picture</h3>
-          <p>If a monitor spills twice between two checks, only the second is recorded, so the
-            totals here are a floor, not an exact figure. They won’t match the Environment
-            Agency’s regulator-verified annual return, shown for comparison in each monitor’s
-            map popup – that figure is counted differently (and published roughly a year in
-            arrears), not more up to date.</p>
+          <h3>Why our numbers differ</h3>
+          <p>If an overflow point discharges twice between our checks, we only see the second,
+            so our totals are a minimum. They won’t match the Environment Agency’s yearly
+            figures, which are counted differently and published about a year later.</p>
         </div>
       </details>
 
@@ -173,52 +174,42 @@
         <div class="acc-body">
           <h3>Data</h3>
           <ul>
-            <li><strong>Storm overflow activity</strong> – polled every 15 minutes from the
+            <li><strong>Overflow activity</strong>: Wessex Water’s
               <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Storm_Overflow_Activity/FeatureServer"
-              target="_blank" rel="noopener">live ArcGIS feed</a>; browsable as
+              target="_blank" rel="noopener">live data</a>, checked every 15 minutes and filtered
+              to the Frome catchment. Also on Water UK’s
               <a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
-              target="_blank" rel="noopener">Wessex Water Storm Overflow Activity</a> on Water UK’s
-              <a href="https://www.streamwaterdata.co.uk/pages/the-national-storm-overflow-hub"
               target="_blank" rel="noopener">National Storm Overflow Hub</a>. © Wessex Water,
-              licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
-              rel="noopener">CC BY 4.0</a>. Filtered here to the Frome catchment and rebuilt into a
-              day-by-day record.</li>
-            <li><strong>Site metadata</strong> (site name, waterbody, overflow type, treatment,
-              cause) – fetched from a second, separately licensed Wessex layer,
+              <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+              rel="noopener">CC BY 4.0</a>.</li>
+            <li><strong>Overflow details</strong> (name, river, type, cause): Wessex Water’s
               <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/overflow_context/FeatureServer"
-              target="_blank" rel="noopener">overflow context</a>.</li>
-            <li><strong>Annual spill totals</strong> (the regulator-verified spill count and
-              duration shown in each monitor’s map popup) – fetched from the Environment
-              Agency’s
+              target="_blank" rel="noopener">overflow context</a> data. © Wessex Water.</li>
+            <li><strong>Yearly spill figures</strong>: the Environment Agency’s
               <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/edm_annual_returns_all_years_public/FeatureServer"
-              target="_blank" rel="noopener">EDM Storm Overflow Annual Return</a>, browsable
-              via their
+              target="_blank" rel="noopener">EDM Storm Overflow Annual Return</a>, also on their
               <a href="https://experience.arcgis.com/experience/c9b8f3ba094c429aa30e0e2b6eaf43ac"
               target="_blank" rel="noopener">Storm Overflow Explorer</a>. Contains Environment
-              Agency data © Environment Agency copyright and/or database right, licensed under
-              the
+              Agency data © Environment Agency copyright and/or database right,
               <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
               target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
-            <li><strong>Swim spot water quality and river flow</strong> – water quality is
-              sampled roughly weekly in season; fetched from a public ArcGIS FeatureServer behind
-              Wessex Water’s
+            <li><strong>Swim spot readings</strong>: from Wessex Water’s
               <a href="https://www.arcgis.com/apps/dashboards/a058553168f44f02905dd0b9dd667875"
               target="_blank" rel="noopener">Farleigh Hungerford Dashboard</a>. Water quality
-              sampling © Wessex Water; the river flow reading originates with the Environment
-              Agency’s hydrology API.</li>
+              © Wessex Water; river flow from the Environment Agency.</li>
           </ul>
 
           <h3>Map</h3>
           <ul>
-            <li><strong>Streets and place names</strong> – ©
+            <li><strong>Streets and place names</strong>: ©
               <a href="https://www.openstreetmap.org/copyright" target="_blank"
               rel="noopener">OpenStreetMap</a> contributors, ODbL.</li>
-            <li><strong>Rivers and streams</strong> – the
+            <li><strong>Rivers and streams</strong>: the
               <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/Statutory_Main_River_Map/FeatureServer"
-              target="_blank" rel="noopener">EA Statutory Main River Map</a> for main rivers, and
+              target="_blank" rel="noopener">EA Statutory Main River Map</a> and
               <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers" target="_blank"
-              rel="noopener">OS Open Rivers</a> for smaller streams and brooks. Contains OS and
-              Environment Agency data © Crown copyright and database right, licensed under the
+              rel="noopener">OS Open Rivers</a>. Contains OS and Environment Agency data © Crown
+              copyright and database right,
               <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
               target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
           </ul>
@@ -228,12 +219,12 @@
       <details class="acc-item" id="acc-river-frome">
         <summary class="acc-summary">River Frome</summary>
         <div class="acc-body">
-          
-
-          <p>Monitoring storm overflows is only one aspect of managing the health of the river Frome.
-            For more information and to get involved please visit
+          <p>Overflows are only one part of the River Frome’s health. To find out more and get
+            involved, visit
             <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
-            of the River Frome</a> and <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank" rel="noopener">Frome Families for the Future</a>.</p>
+            of the River Frome</a> and
+            <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank"
+            rel="noopener">Frome Families for the Future</a>.</p>
         </div>
       </details>
     </div>

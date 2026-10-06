@@ -508,6 +508,9 @@ function store(db, rows, polledAt) {
 // The one gauge rainfall is judged against; see scripts/fetch-rainfall.js.
 const RAIN_STATION = { id: '531108', name: 'Frome', lat: 51.2375, lon: -2.3258 };
 
+// How long the gauge can go without a reading before "the last 24h" stops being true.
+const RAIN_STALE_MS = 3 * HOUR;
+
 const round2 = (x) => (x == null ? null : Math.round(x * 100) / 100);
 
 const londonDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' });
@@ -571,6 +574,15 @@ async function exportJson(db, rows, polledAt) {
     dry_mm: DRY_RAIN_MM,
     window_hours: DRY_WINDOW_HOURS,
     latest: rainReadings.length ? rainReadings.at(-1) : null,
+    // The 24 hours up to the gauge's latest reading, for the splash. null when
+    // the readings are patchy (rainBefore's coverage floor) or the gauge has
+    // gone quiet for over RAIN_STALE_MS, so the page says nothing rather than
+    // quoting a stale figure as "the last 24h".
+    last_24h_mm: (() => {
+      const latest = rainReadings.at(-1);
+      if (!latest || polledAt - latest.ts > RAIN_STALE_MS) return null;
+      return round2(rainBefore(rainReadings, latest.ts)?.mm ?? null);
+    })(),
     days: dailyRain(rainReadings.filter((r) => r.ts > cutoff)),
   };
 

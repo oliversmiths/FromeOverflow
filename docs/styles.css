@@ -1316,6 +1316,36 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   text-transform: uppercase;
 }
 
+.splash-rain {
+  position: absolute;
+  right: clamp(16px, 2vw, 88px);
+  bottom: clamp(18px, 2vh, 60px);
+  margin: 0;
+  z-index: 2;
+  font-family: var(--brand);
+  font-weight: 300;
+  font-size: clamp(14px, 1.3vw, 17px);
+  white-space: nowrap;
+  /* Not uppercased like the brand: "MM" would read as megametres. */
+  opacity: 0;
+  transition: opacity 0.8s ease 0.4s;   /* arrives just after the verdict starts typing */
+}
+.splash-rain.is-ready { opacity: 1; }
+.splash-rain[hidden] { display: none; }
+.splash-rain .drop {
+  display: inline-block;
+  /* Whole pixels, not em: the line's font-size is fluid, and a fractional box
+     renders the curve differently at every viewport width. 9:12 sits close to
+     the --drop shape's own 11:15, so `contain` barely letterboxes it. */
+  width: 9px;
+  height: 12px;
+  margin-right: 7px;
+  vertical-align: -1px;
+  background: currentColor;
+  -webkit-mask: var(--drop) center / contain no-repeat;
+  mask: var(--drop) center / contain no-repeat;
+}
+
 .splash-brand span {
  display: block;
 opacity: 0.5;
@@ -1342,6 +1372,13 @@ opacity: 0.5;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 80vw;
+  }
+  /* Phones: centred, above the brand line rather than beside it. */
+  .splash-rain {
+    left: 50%;
+    right: auto;
+    bottom: 84px;
+    transform: translateX(-50%);
   }
   .splash-brand {
     left: 50%;

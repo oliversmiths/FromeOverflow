@@ -212,6 +212,11 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   cross-hatched `.o-day--dryspill` bar + "N began after no rain" in a card's
   summary (only when N > 0 — never "0 dry spills"). The explainer is the Info
   tab's "How dry spills are judged" and a Safety paragraph.
+  The splash also carries a bottom-right "💧 X mm rain in the last 24h" line
+  (`.splash-rain`) from `rainfall.last_24h_mm`, which `exportJson` sets to null —
+  hiding the line — when the gauge has been silent over 3h (`RAIN_STALE_MS`) or
+  the 24h window is under 90% covered. Sentence case on purpose: the brand
+  line is uppercased, and "MM" would read as megametres.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
   anything with a `data-tip*` attribute, delegated from `document`. Two forms:
   `data-tip="…"` is one plain line; `data-tip-date` / `data-tip-status`

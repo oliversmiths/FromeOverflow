@@ -35,6 +35,7 @@
 <div class="splash" id="splash">
   <p class="splash-verdict" id="splash-verdict"></p>
   <img class="splash-img" id="splash-img" src="assets/overflow-img.webp" alt="">
+  <p class="splash-rain" id="splash-rain" hidden></p>
   <p class="splash-brand">Overflow&nbsp;Watch <span>Frome</span></p>
 </div>
 
@@ -272,7 +273,7 @@
 <div class="scrim" id="scrim"></div>
 
 <script type="module">
-import { fmtWhen, mapStatusOf } from './lib/format.js';
+import { fmtRain, fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
 import { renderCards, renderRainStrip, setCardsView } from './lib/cards.js';
 import { initTooltips } from './lib/tooltip.js';
@@ -303,6 +304,7 @@ function showSplash() {
   void splash.offsetWidth;                 // restart the transition
   splash.classList.remove('is-gone');
   $('splash-verdict').classList.remove('is-ready');
+  $('splash-rain').classList.remove('is-ready');
   pauseDone = false;
   revealTimer = setTimeout(() => { pauseDone = true; revealVerdict(); }, 500);
   holdTimer = setTimeout(dismissSplash, 5000);
@@ -389,6 +391,7 @@ function revealVerdict() {
   setSplashVerdict(verdictText);
   void el.offsetWidth;                     // restart the typing on replay
   el.classList.add('is-ready');
+  $('splash-rain').classList.add('is-ready');
 }
 
 function paintStatus(data) {
@@ -408,6 +411,18 @@ function paintStatus(data) {
   }
 
   setVerdict(text);
+
+  // Rain at the Frome gauge over the last 24h — absent when the gauge's data
+  // is stale or patchy (poll.js decides), in which case the line just isn't
+  // there. A drop, then "12.4 mm rain in the last 24h" / "No rain in…".
+  const mm = data.rainfall?.last_24h_mm;
+  const rain = $('splash-rain');
+  if (mm != null) {
+    rain.replaceChildren(
+      Object.assign(document.createElement('span'), { className: 'drop', ariaHidden: 'true' }),
+      mm === 0 ? 'No rain in the last 24h' : `${fmtRain(mm)} rain in the last 24h`);
+    rain.hidden = false;
+  }
   $('stamp').textContent =
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }

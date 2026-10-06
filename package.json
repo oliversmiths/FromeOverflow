@@ -15,6 +15,7 @@
     "audit-ids": "node --no-warnings scripts/audit-ids.js",
     "context": "node --no-warnings scripts/fetch-context.js",
     "annual-returns": "node --no-warnings scripts/fetch-annual-returns.js",
-    "swim-spots": "node --no-warnings scripts/fetch-swim-spots.js"
+    "swim-spots": "node --no-warnings scripts/fetch-swim-spots.js",
+    "rainfall": "node --no-warnings scripts/fetch-rainfall.js"
   }
 }

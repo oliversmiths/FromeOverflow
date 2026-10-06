@@ -13,7 +13,10 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { DAY, MINUTE, fmtDuration, spillMs } from './docs/lib/format.js';
+import {
+  DAY, MINUTE, HOUR, DRY_RAIN_MM, DRY_WINDOW_HOURS, RAIN_METHOD,
+  fmtDuration, rainBefore, spillMs,
+} from './docs/lib/format.js';
 
 // --- Configuration ---------------------------------------------------------
 
@@ -203,6 +206,21 @@ CREATE TABLE IF NOT EXISTS swim_spot_readings (
   status      TEXT,           -- Wessex's own plain-English line for that sampling date
   sampled_at  INTEGER NOT NULL,
   PRIMARY KEY (spot_id, determinand, sampled_at)
+);
+
+-- Rain at the one EA gauge used to judge whether a spill began in dry weather.
+-- One row per 15-minute reading, kept at full resolution so the day-bucketing
+-- and the dry-spill window can change later without a refetch. ts_ms is the
+-- END of the 15-minute period, exactly as the EA stamp it (UTC). Written only
+-- by scripts/fetch-rainfall.js. 'live' (flood-monitoring API, 0.01 mm) beats
+-- 'hydrology' (Hydrology API, rounded to 0.1 mm) -- the backfill fills gaps
+-- the live API's ~28-day window can't reach, and never overwrites a live row.
+CREATE TABLE IF NOT EXISTS rainfall (
+  station_id TEXT NOT NULL,
+  ts_ms      INTEGER NOT NULL,
+  mm         REAL NOT NULL,
+  source     TEXT NOT NULL,      -- 'live' | 'hydrology'
+  PRIMARY KEY (station_id, ts_ms)
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_start ON events (start_ms);
@@ -487,6 +505,32 @@ function store(db, rows, polledAt) {
 
 // --- Exporting -------------------------------------------------------------
 
+// The one gauge rainfall is judged against; see scripts/fetch-rainfall.js.
+const RAIN_STATION = { id: '531108', name: 'Frome', lat: 51.2375, lon: -2.3258 };
+
+const round2 = (x) => (x == null ? null : Math.round(x * 100) / 100);
+
+const londonDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' });
+
+/**
+ * Readings → one total per UK calendar day: `[{ date: 'YYYY-MM-DD', mm, n }]`.
+ * Calendar days, not the EA's 09:00–09:00 rain day, so they line up with the
+ * 90-day strip; `n` (readings counted, 96 = a full day) lets the page flag a
+ * partial day. A reading's stamp is the END of its period, so one stamped
+ * exactly midnight belongs to the day just finished.
+ */
+function dailyRain(readings) {
+  const days = new Map();
+  for (const r of readings) {
+    const date = londonDay.format(r.ts - 1);
+    const d = days.get(date) ?? { date, mm: 0, n: 0 };
+    d.mm += r.mm;
+    d.n += 1;
+    days.set(date, d);
+  }
+  return [...days.values()].map((d) => ({ ...d, mm: round2(d.mm) }));
+}
+
 async function exportJson(db, rows, polledAt) {
   const liveStatus = new Map(rows.map((r) => [String(r.Id), r.Status]));
   const cutoff = polledAt - EXPORT_DAYS * DAY;
@@ -516,6 +560,20 @@ async function exportJson(db, rows, polledAt) {
     SELECT year, spill_count, duration_hours, long_term_avg_spills, data_start_year
     FROM annual_returns WHERE monitor_id = ? ORDER BY year`);
 
+  // Rain, for the dry-spill test and as daily context. Read once, with a day's
+  // lead before the window so the earliest published event has its 24h behind it.
+  const rainReadings = db
+    .prepare('SELECT ts_ms AS ts, mm FROM rainfall WHERE station_id = ? AND ts_ms >= ? ORDER BY ts_ms')
+    .all(RAIN_STATION.id, cutoff - DRY_WINDOW_HOURS * HOUR);
+  const rainfall = {
+    ...RAIN_STATION,
+    method: RAIN_METHOD,
+    dry_mm: DRY_RAIN_MM,
+    window_hours: DRY_WINDOW_HOURS,
+    latest: rainReadings.length ? rainReadings.at(-1) : null,
+    days: dailyRain(rainReadings.filter((r) => r.ts > cutoff)),
+  };
+
   // Only publish monitors the filter has matched recently. A monitor that drops
   // out — because you narrowed the catchment, or Wessex stopped listing it —
   // ages off the page after a week but keeps its history in the database.
@@ -541,7 +599,13 @@ async function exportJson(db, rows, polledAt) {
       since: m.first_seen,
       status: liveStatus.get(m.id) ?? null,
       events: eventsFor.all(m.id, cutoff, m.first_seen ?? 0)
-        .map((e) => ({ start: e.start_ms, end: e.end_ms })),
+        .map((e) => ({
+          start: e.start_ms,
+          end: e.end_ms,
+          // Rain at the gauge in the 24h before this began — see
+          // format.js `spillWeather`. null = no usable rain data for it.
+          rain_mm: round2(rainBefore(rainReadings, e.start_ms)?.mm ?? null),
+        })),
       offline: offlineFor.all(m.id, cutoff)
         .map((o) => ({ start: o.start_ms, end: o.end_ms })),
       annual_returns: annualReturnsFor.all(m.id)
@@ -584,7 +648,7 @@ async function exportJson(db, rows, polledAt) {
   await writeFile(
     JSON_PATH,
     JSON.stringify(
-      { polled_at: polledAt, window_days: EXPORT_DAYS, place: 'Frome', monitors, swim_spots: swimSpots },
+      { polled_at: polledAt, window_days: EXPORT_DAYS, place: 'Frome', monitors, swim_spots: swimSpots, rainfall },
       null, 1) + '\n');
 
   return monitors.length;

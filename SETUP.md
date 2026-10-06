@@ -69,6 +69,20 @@ Scroll back and read the poll output.
 `fetch` and module imports on `file://` URLs, so you'll get an empty page. It
 has to be served.
 
+### Rainfall
+
+Spills are checked against rain at the Environment Agency's Frome gauge. The
+poller tops this up itself on every run in GitHub, but locally the first time:
+
+```bash
+npm run rainfall
+```
+
+On an empty table this backfills from just before your earliest monitor was first
+seen (a few thousand 15-minute readings, a couple of requests). Run it again any
+time to catch up; it only adds what's new. `npm run rainfall -- --dry` shows what
+would change without writing.
+
 ### Look at your data
 
 ```bash

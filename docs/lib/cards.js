@@ -13,9 +13,9 @@
  */
 
 import {
-  DAY, HOUR, annualHistory, avgAnnualDurationMs, dayCells, fmtAnnualReturn,
-  fmtDate, fmtDuration, fmtSpillSpan, fmtWhen, mapStatusOf, offlineMs,
-  rankByAvgDuration, rankByAvgSpills, rankByTotal, windowPhrase,
+  DAY, HOUR, annualHistory, avgAnnualDurationMs, dayCells, dayKey, fmtAnnualReturn,
+  fmtDate, fmtDuration, fmtRain, fmtSpillSpan, fmtWhen, mapStatusOf, offlineMs,
+  rankByAvgDuration, rankByAvgSpills, rankByTotal, spillWeather, windowPhrase,
 } from './format.js';
 
 const SORTS = {
@@ -222,6 +222,82 @@ export function setCardsView(container, view) {
   for (const card of container.querySelectorAll('.o-card')) applyView(card, view);
 }
 
+/**
+ * One shared 90-day rainfall strip, card-styled so its columns line up with the
+ * strips in the cards below. Daily totals from the one EA gauge (see
+ * `data.rainfall`), not per monitor: there is only one gauge, so repeating the
+ * same row on every card would be noise. Bar height is the day's total against
+ * a scale that never drops below `MIN_SCALE_MM`, so a drizzly week doesn't look
+ * like a storm. Days without gauge data stay empty — absence, not zero.
+ */
+const MIN_SCALE_MM = 10;
+
+export function renderRainStrip(container, data) {
+  container.replaceChildren();
+  const rain = data.rainfall;
+  if (!rain?.days?.length) return;
+
+  const byDay = new Map(rain.days.map((d) => [d.date, d]));
+  const cells = dayCells({ since: null, events: [], offline: [] }, data.polled_at, data.window_days);
+  const scale = Math.max(MIN_SCALE_MM, ...rain.days.map((d) => d.mm));
+
+  const card = document.createElement('div');
+  card.className = 'o-card o-rain';
+
+  const head = document.createElement('div');
+  head.className = 'o-head';
+  const title = document.createElement('h3');
+  title.textContent = 'Rainfall';
+  const where = document.createElement('span');
+  where.className = 'o-where';
+  where.textContent = ` ${rain.name} gauge · Station ${rain.id} · EA`;
+  title.append(where);
+  head.append(title);
+
+  const total = rain.days.reduce((t, d) => t + d.mm, 0);
+  const meta = document.createElement('p');
+  meta.className = 'o-meta';
+  meta.textContent = `${fmtRain(total)} in ${rain.days.length} days of readings`;
+
+  const strip = document.createElement('div');
+  strip.className = 'o-strip o-rainstrip';
+  strip.setAttribute('role', 'img');
+  strip.setAttribute('aria-label',
+    `Daily rainfall at the ${rain.name} gauge over the last ${data.window_days} days, ` +
+    `${fmtRain(total)} in total`);
+  for (const cell of cells) {
+    const day = byDay.get(dayKey(cell.start));
+    const col = document.createElement('span');
+    col.className = 'o-day o-rainday';
+    col.dataset.tipDate = fmtDate(cell.start);
+    if (day) {
+      const bar = document.createElement('span');
+      bar.className = 'o-rainbar';
+      bar.style.height = `${Math.max(day.mm > 0 ? 6 : 0, (day.mm / scale) * 100)}%`;
+      col.append(bar);
+      col.dataset.tipStatus = fmtRain(day.mm);
+      col.dataset.tipState = 'rain';
+      // A day with fewer than a full 96 readings is partial: today (still
+      // filling), the first day of data, or a gauge gap.
+      if (day.n < 90) col.dataset.tipNote = 'Incomplete day';
+    } else {
+      col.classList.add('o-rainday--nodata');
+      col.dataset.tipStatus = 'No gauge data';
+      col.dataset.tipState = 'nodata';
+    }
+    strip.append(col);
+  }
+
+  const axis = document.createElement('div');
+  axis.className = 'o-scale';
+  axis.append(
+    Object.assign(document.createElement('span'), { textContent: `${data.window_days} days ago` }),
+    Object.assign(document.createElement('span'), { textContent: 'Today' }));
+
+  card.append(head, meta, strip, axis);
+  container.append(card);
+}
+
 export function renderCards(container, data, onSeeOnMap, opts = {}) {
   const { sort = 'total', view = '90day' } = opts;
   const now = data.polled_at;
@@ -293,6 +369,9 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
       ? [`${runs} discharge${runs === 1 ? '' : 's'} ${window}`,
          `last was ${fmtWhen(last.start, now)}`]
       : [`0 discharge recorded ${window}`];
+    // Only said when true — "0 after no rain" on every card would be noise.
+    const dryRuns = monitor.events.filter((e) => spillWeather(e) === 'dry').length;
+    if (dryRuns) bits.push(`${dryRuns} began after no rain`);
 
     const meta = document.createElement('p');
     meta.className = 'o-meta';
@@ -334,7 +413,21 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
       // that day can fall just outside the visible window — not worth
       // special-casing for.
       const notes = [];
-      if (cell.state === 'spill') notes.push(...cell.events.map((e) => fmtSpillSpan(e, now)));
+      if (cell.state === 'spill') {
+        for (const e of cell.events) {
+          notes.push(fmtSpillSpan(e, now));
+          // The rain line under each spill: how much fell at the gauge in the
+          // 24h before it began, and the plain claim when that was next to
+          // nothing. No line at all when there's no usable rain data.
+          const weather = spillWeather(e);
+          if (weather === 'dry') {
+            notes.push(`Began after no rain at the gauge (${fmtRain(e.rain_mm)} in the 24h before)`);
+          } else if (weather === 'wet') {
+            notes.push(`${fmtRain(e.rain_mm)} of rain in the 24h before`);
+          }
+        }
+        if (cell.events.some((e) => spillWeather(e) === 'dry')) d.classList.add('o-day--dryspill');
+      }
       if (partial) notes.push('Incomplete day');
       if (notes.length) d.dataset.tipNote = notes.join('\n');
       strip.append(d);

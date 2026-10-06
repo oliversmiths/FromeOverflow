@@ -100,6 +100,7 @@
       </div>
     </div>
 
+    <div class="overflows overflows--rain" id="rain"></div>
     <div class="overflows" id="overflows"></div>
   </div>
 
@@ -131,12 +132,29 @@
           <p>The Timeline lists every CSO. Each has a strip showing the last 90 days,
             one bar per day: red for a discharge, amber for the 48 hours after, green for none,
             grey when the monitor was offline, and striped before we started watching.</p>
+          <p>A red bar with black cross-hatching is a discharge that began after no rain.
+            The blue bars above the list are daily rainfall (see below).</p>
           <p>Switch to <strong>History</strong> for the Environment Agency’s official yearly
             figures, from 2024 onwards. (Earlier years use an older ID system that can’t be
             reliably matched to each CSO.)</p>
           <p>Underneath are two averages. The first is the Environment Agency’s long-term
             average number of spills a year. The second is our own average total discharge time
             a year, since the EA doesn’t publish one.</p>
+
+          <h3>How dry spills are judged</h3>
+          <p>A discharge is marked as beginning after no rain when the Frome rain gauge
+            recorded 0.25&nbsp;mm or less in the 24 hours before it started. That’s a
+            fraction of a millimetre, about what a heavy mist leaves behind. We look back
+            from the start, so the answer is known as soon as a discharge begins. Rain that
+            falls during it isn’t counted. A card’s summary line says how many of its
+            discharges began this way, and only when there are any.</p>
+          <p>The rain comes from one Environment Agency gauge in the town, in 15-minute
+            readings. A shower over Mells or Nunney can be missed, and if the gauge has too
+            many gaps in those 24 hours we don’t make the call at all. The daily totals above
+            the list are for the calendar day, so they can differ a little from the Environment
+            Agency’s own figures, which run from 9am to 9am.</p>
+          <p>This is a flag, not a finding. It points to a discharge that began without recent
+            rain at one gauge. It doesn’t show that a rule was broken.</p>
         </div>
       </details>
 
@@ -163,6 +181,11 @@
           <p>Monitors record when an overflow starts and stops, not how much is released or
             what’s in it. Debris can also set them off, so an alert suggests a discharge rather
             than proving one.</p>
+          <p>The same goes for “began after no rain”. It compares a discharge’s start with one
+            rain gauge in the town. Groundwater, melting snow or a local shower the gauge
+            missed can all cause a discharge with no rain recorded, and whether a particular
+            discharge was permitted depends on things this site can’t see, such as the
+            works’ own flow. It’s a prompt to look closer, not proof of wrongdoing.</p>
 
           <h3>Why our numbers differ</h3>
           <p>If a CSO discharges twice between our checks, we only see the second,
@@ -193,6 +216,15 @@
               <a href="https://experience.arcgis.com/experience/c9b8f3ba094c429aa30e0e2b6eaf43ac"
               target="_blank" rel="noopener">Storm Overflow Explorer</a>. Contains Environment
               Agency data © Environment Agency copyright and/or database right,
+              <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+              target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
+            <li><strong>Rainfall</strong>: 15-minute readings from the Environment Agency’s
+              Frome rain gauge (station 531108), via its
+              <a href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
+              target="_blank" rel="noopener">flood monitoring</a> and
+              <a href="https://environment.data.gov.uk/hydrology/doc/reference"
+              target="_blank" rel="noopener">hydrology</a> APIs. Unchecked readings. Contains
+              Environment Agency data © Environment Agency copyright and/or database right,
               <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
               target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
             <li><strong>Swim spot readings</strong>: from Wessex Water’s
@@ -241,7 +273,7 @@
 <script type="module">
 import { fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
-import { renderCards, setCardsView } from './lib/cards.js';
+import { renderCards, renderRainStrip, setCardsView } from './lib/cards.js';
 import { initTooltips } from './lib/tooltip.js';
 
 // Fraction of the fully-zoomed-out view to open on. Opens on the town and its
@@ -556,6 +588,7 @@ try {
   });
 
   setViewAllPressed();
+  renderRainStrip($('rain'), data);
   renderList();
 
   function routeHash() {

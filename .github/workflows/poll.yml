@@ -38,6 +38,14 @@ jobs:
             echo "::warning::No db branch — poll.js will start a fresh database."
           fi
 
+      # Before the poll, not after: poll.js reads the rainfall table when it
+      # writes data.json, so a spill that has just started is judged against
+      # rain up to this tick. A top-up is one small request. A gauge outage
+      # shouldn't block the overflow poll, so failure is a warning — the
+      # export then just uses the rain already stored.
+      - name: Top up rainfall
+        run: node scripts/fetch-rainfall.js || echo "::warning::Rainfall top-up failed, continuing."
+
       # No install step — poll.js has no dependencies.
       - name: Fetch a reading
         run: node poll.js
@@ -61,7 +69,7 @@ jobs:
           fi
 
       # `snapshots` is pruned to 30 days, so the permanent record is monitors +
-      # events + offline + annual_returns + swim_spots + swim_spot_readings.
+      # events + offline + annual_returns + swim_spots + swim_spot_readings + rainfall.
       # That dumps to a couple of KB gzipped, so a weekly copy on main is a
       # cheap, public, forkable archive — and the recovery path if a
       # force-push to the db branch ever writes something broken.
@@ -74,6 +82,7 @@ jobs:
           else
             sqlite3 overflows.db ".dump monitors" ".dump events" ".dump offline" \
               ".dump annual_returns" ".dump swim_spots" ".dump swim_spot_readings" \
+              ".dump rainfall" \
               | gzip -9 > "$week"
             echo "Wrote $week ($(du -h "$week" | cut -f1))"
           fi

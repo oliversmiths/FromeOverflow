@@ -45,6 +45,13 @@ then exports JSON for a static page. See [README.md](README.md) and
   `poll.yml` — run it by hand only if you want a reading sooner than that.
   `--dry` shows what would change.
 
+- `npm run rainfall` → `node scripts/fetch-rainfall.js` — top up the 15-minute
+  rainfall readings from the EA's Frome gauge (station 531108) into `rainfall`.
+  The first run on an empty table backfills from two days before the earliest
+  monitor's `first_seen`. Already runs automatically on every `poll.yml` tick,
+  *before* `poll.js`, so the export sees fresh rain. `--dry` shows what would
+  change.
+
 There is no test suite or linter. `build-basemap.js` is the only build step and its
 output is committed. The page must be served over http — browsers block module
 imports and `fetch` on `file://`.
@@ -185,6 +192,26 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   Timeline" link), which opens the Timeline tab and scrolls straight to
   the matching card via `[data-monitor-id]` — set here on every card for
   exactly that lookup.
+- **Dry-weather spills** — `format.js` (`DRY_RAIN_MM` 0.25, `DRY_WINDOW_HOURS`
+  24, `RAIN_METHOD`, `rainBefore`, `spillWeather`, `fmtRain`, `dayKey`). A spill
+  is `'dry'` when the Frome gauge recorded ≤0.25 mm in the 24 hours *before it
+  began* (not the calendar day — so the answer is final the moment a spill
+  starts, with no "pending until the day closes" state), `'wet'` otherwise, or
+  `null` when under 90% of that window's 96 readings exist (never "dry" by
+  default). Rain *during* a spill is deliberately not counted; changing that is
+  a code edit only, since every 15-minute reading and every event is kept. The
+  verdict is **never stored** — `exportJson` writes only `rain_mm` on each event
+  (and a `rainfall` block: station, method constants, latest reading, 90 days of
+  UK-calendar-day totals `{date, mm, n}`), and the page derives the verdict via
+  `spillWeather`. Retuning the rule therefore republishes every past spill on
+  the next poll. Bump `RAIN_METHOD` when it changes. Copy must stay
+  "indicates, not proves": one gauge, can miss a shower, groundwater, and
+  compliance depends on flow data we don't have. UI: `cards.js`
+  `renderRainStrip` (a borderless weir-blue card above the list, white bars,
+  one bar per day, aligned to the monitor strips' columns) and a red
+  cross-hatched `.o-day--dryspill` bar + "N began after no rain" in a card's
+  summary (only when N > 0 — never "0 dry spills"). The explainer is the Info
+  tab's "How dry spills are judged" and a Safety paragraph.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
   anything with a `data-tip*` attribute, delegated from `document`. Two forms:
   `data-tip="…"` is one plain line; `data-tip-date` / `data-tip-status`
@@ -368,6 +395,18 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   regardless, so this doesn't protect the database from growing, only makes
   the console output honest about whether anything's actually new. `--dry` to
   preview.
+- **[scripts/fetch-rainfall.js](scripts/fetch-rainfall.js)** — zero-dep. Runs
+  every `poll.yml` tick (a failure is a `::warning::`, never a stop). Two EA
+  sources, same gauge, same UTC 15-minute stamps: the **flood-monitoring** API
+  (0.01 mm, but only the last ~28 days — the live window, used for 26) and the
+  **Hydrology** API (years of history, but each reading rounded to **0.1 mm**,
+  which matters against a 0.25 mm threshold). Rule: `live` rows always win;
+  Hydrology only inserts, only for what live can't reach, and only when the
+  table has a >3h hole there (so it self-heals the live/Hydrology seam and
+  the odd missed run). The live window starts at UTC midnight so the two ranges
+  butt together. Readings are "Unchecked" quality. The gauge itself drops the
+  odd reading (a 75-minute gap on 2026-09-23); `rainBefore`'s 90% coverage
+  floor absorbs that. `--dry` to preview.
 - **[.github/workflows/poll.yml](.github/workflows/poll.yml)** — GitHub Action.
   **`overflows.db` is NOT on `main`** — it lives on the orphan **`db` branch**,
   restored at the start of each run (`git show FETCH_HEAD:overflows.db`) and
@@ -376,7 +415,7 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   committing a ~1 MB binary 100×/day was adding hundreds of MB a year. `main`
   gets only `docs/data.json` and, once a week, `archive/YYYY-Www.sql.gz` — a
   gzipped dump of `monitors` + `events` + `offline` + `annual_returns` +
-  `swim_spots` + `swim_spot_readings` (~3 KB) that is the public,
+  `swim_spots` + `swim_spot_readings` + `rainfall` (~3 KB to start, growing ~150 KB/yr) that is the public,
   forkable, permanent record *and* the recovery path if a force-push to `db` ever
   writes something broken. To get the database locally:
   `git fetch origin db && git show origin/db:overflows.db > overflows.db`.
@@ -391,7 +430,12 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   sentinel file), not a fixed hour, so a missed tick just means the next one
   catches up rather than a day being silently skipped. A failure here logs a
   `::warning::` and the job carries on; a swim-spot source outage shouldn't
-  block the actual overflow poll.
+  block the actual overflow poll. **"Top up rainfall"** runs
+  `scripts/fetch-rainfall.js` every tick, *before* `poll.js` (which reads the
+  `rainfall` table when it writes `data.json`); a failure is a `::warning::` and
+  the export just uses the rain already stored. On a database with no `rainfall`
+  table yet it creates the table and backfills itself — no manual seeding of the
+  `db` branch is ever needed.
 
 ### Layout
 
@@ -403,6 +447,7 @@ scripts/audit-ids.js    one-off: diff the fallback rule against PIN_TO_IDS
 scripts/fetch-context.js one-off: site names + waterbody etc → monitors table
 scripts/fetch-annual-returns.js one-off: EA annual returns → annual_returns table
 scripts/fetch-swim-spots.js one-off: swim spot readings → swim_spots table
+scripts/fetch-rainfall.js   every poll: EA gauge 531108 → rainfall table
 docs/index.html         the page — full-screen map + slide-in panels
 docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
@@ -412,13 +457,13 @@ docs/lib/map.js         buildMap() — the no-library SVG map
 docs/data.json          generated by poll.js (git-committed; absent in a fresh
                         checkout until the first poll)
 docs/basemap.json       generated by build-basemap.js (git-committed)
-archive/*.sql.gz        weekly dump of monitors+events+offline+annual_returns+swim_spots (git-committed)
+archive/*.sql.gz        weekly dump of monitors+events+offline+annual_returns+swim_spots+rainfall (git-committed)
 overflows.db            node:sqlite file — on the orphan `db` branch, NOT main
 ```
 
 ## Data model & domain rules
 
-Seven tables (schema in [poll.js](poll.js) `SCHEMA`):
+Eight tables (schema in [poll.js](poll.js) `SCHEMA`):
 
 - **`monitors`** — one row per outfall, with three kinds of column:
   - `label` is **human-owned; nothing automated writes it** — not the poller, not
@@ -478,8 +523,15 @@ Seven tables (schema in [poll.js](poll.js) `SCHEMA`):
   sampling (Tellisford Weir isn't an EA-recognised bathing water) simply has
   no rows here.
 
+- **`rainfall`** — keyed on `(station_id, ts_ms)`: one row per 15-minute
+  reading from the EA's Frome gauge, with `mm` and `source` (`live` |
+  `hydrology`). `ts_ms` is the *end* of the period, UTC, as the EA stamp it.
+  Written only by `scripts/fetch-rainfall.js`. Permanent, never pruned (~35k
+  rows/year). Held at full resolution so the day-bucketing and the dry-spill
+  window can change without a refetch.
+
 **Retention is split by purpose.** `monitors`, `events`, `offline`,
-`annual_returns` and `swim_spots`/`swim_spot_readings` are the permanent
+`annual_returns`, `rainfall` and `swim_spots`/`swim_spot_readings` are the permanent
 record and are *never* pruned — together a few hundred KB a year.
 `snapshots` is ~99% of the file (3,876 rows/day at 91 bytes each) and holds
 almost no information, because nearly every row is identical to the one before

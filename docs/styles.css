@@ -20,6 +20,7 @@
   --oxide:    #B94A1D;   /* "discharging" — pins and the 90-day strip */
   --amber:   #E5B314;
   --dry:      #49AE5D ;   /* "not discharging" — pins and the 90-day strip */
+  --rain: #3F8FD6;   /* daily rainfall bars */
   --swim: #C468AA;   /* swim spots, pins and the 90-day strip */
   /* Computed, not hand-picked, so tweaking --oxide/--amber/--dry above moves
      its own tint with it — a 20% white mix, same ratio all three. */
@@ -917,6 +918,40 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-day--recent  { background: var(--amber); }
 .o-day--spill   { background: var(--oxide); }
 
+.overflows--rain { margin-bottom: -10px; }
+.overflows--rain:empty { display: none; }
+/* Inverted: the gauge is a reading, not a monitor, so it drops the card
+   look — no status border, panel-blue ground, white bars. */
+.o-rain {
+  background: var(--weir);
+  border-left: 0;
+  color: var(--chalk);
+  /* The other cards' 3px border + 16px padding, so its columns still line up
+     with theirs now the border's gone. */
+  padding-left: 19px;
+}
+.o-rain .o-head h3,
+.o-rain .o-where,
+.o-rain .o-meta { color: var(--chalk); }
+.o-rain .o-where { opacity: 0.75; }
+.o-rain .o-scale { color: rgba(255, 255, 255, 0.6); }
+/* Bars grow from the bottom of the column; the column itself is transparent
+   so an empty (no-data) day reads as a gap, not as a short bar. */
+.o-rainday { display: flex; align-items: flex-end; background: none; }
+.o-rainday--nodata { background: repeating-linear-gradient(
+  -45deg, rgba(255, 255, 255, 0.28) 0 1px, rgba(255, 255, 255, 0.08) 1px 3px); opacity: 1; }
+.o-rainbar { display: block; width: 100%; background: var(--chalk); border-radius: 1px 1px 0 0; }
+/* A spill that began after no rain: the bar stays red, cross-hatched in ink —
+   the same "something's different about this day" idea as the pre-record
+   hatching, but two-way and dark, so it can't be mistaken for it. Explained
+   in the Info tab, not on the page. */
+.o-day--dryspill {
+  background:
+    repeating-linear-gradient(45deg, var(--ink) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(-45deg, var(--ink) 0 1px, transparent 1px 3px),
+    var(--oxide);
+}
+
 .o-scale {
   display: flex;
   justify-content: space-between;
@@ -1106,6 +1141,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .tip-status--recent  { color: var(--amber); }
 .tip-status--offline { color: var(--silt); }
 .tip-status--nodata  { color: var(--silt); }
+.tip-status--rain    { color: var(--weir); }
 .tip-dot {
   flex: none;
   width: 8px;

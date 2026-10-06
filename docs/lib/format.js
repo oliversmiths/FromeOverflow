@@ -125,6 +125,69 @@ export function statusOf(status) {
 }
 
 /**
+ * Dry-weather spills. A spill is "dry" when the Frome rain gauge (EA 531108)
+ * recorded no more than `DRY_RAIN_MM` in the `DRY_WINDOW_HOURS` *before it
+ * began*. Looking back from the start, not across a calendar day, means the
+ * answer is final the moment a spill starts — a spill at 14:00 doesn't have to
+ * wait for the day's total. Rain that falls *during* a spill isn't counted.
+ *
+ * 0.25 mm is a widely used cut-off for a "dry" day; the 24-hour lookback from
+ * the spill's start is this project's own choice. One gauge, in the town: a
+ * shower over Mells or Nunney can be
+ * missed, so "dry" flags a spill that began without recent rain *at the gauge*
+ * — presumptive, not proof. Bump `RAIN_METHOD` if either number changes, so a
+ * published claim can be traced to the rule that made it.
+ */
+export const DRY_RAIN_MM = 0.25;
+export const DRY_WINDOW_HOURS = 24;
+export const RAIN_METHOD = 1;
+// A 24h window holds 96 fifteen-minute readings; the gauge drops the odd one,
+// but a window missing more than a tenth of them isn't evidence of dryness.
+const MIN_RAIN_COVERAGE = 0.9;
+
+/**
+ * Rain in the window before `startMs`, from sorted readings `[{ ts, mm }]`
+ * (ts = end of each 15-minute period, epoch ms). Returns `{ mm, n }`, or null
+ * when the readings don't cover the window well enough to say anything.
+ */
+export function rainBefore(readings, startMs) {
+  const from = startMs - DRY_WINDOW_HOURS * HOUR;
+  let mm = 0;
+  let n = 0;
+  for (const r of readings) {
+    if (r.ts <= from) continue;
+    if (r.ts > startMs) break;
+    mm += r.mm;
+    n += 1;
+  }
+  const expected = DRY_WINDOW_HOURS * 4;
+  return n >= expected * MIN_RAIN_COVERAGE ? { mm, n } : null;
+}
+
+/**
+ * 'dry' | 'wet' | null for one published event. `rain_mm` is written by
+ * `exportJson` (null = no usable rain data for that window).
+ */
+export function spillWeather(event) {
+  const mm = event?.rain_mm;
+  if (mm == null) return null;
+  return mm <= DRY_RAIN_MM ? 'dry' : 'wet';
+}
+
+/** "12.4 mm", or "0 mm" for none — one decimal, trailing ".0" dropped. */
+export function fmtRain(mm) {
+  if (mm == null) return '—';
+  if (mm > 0 && mm < 0.1) return '<0.1 mm';
+  return `${Number(mm.toFixed(1))} mm`;
+}
+
+/** Local calendar day as "YYYY-MM-DD" — the key `data.rainfall.days` uses. */
+export function dayKey(ms) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
  * True while a monitor's own record is shallower than `windowDays` — the shared
  * condition behind `windowPhrase`, so a caller that needs to know *which* phrase
  * applies (not just read it) doesn't re-implement the check.

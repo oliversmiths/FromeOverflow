@@ -250,7 +250,7 @@ export function renderRainStrip(container, data) {
   title.textContent = 'Rainfall';
   const where = document.createElement('span');
   where.className = 'o-where';
-  where.textContent = ` ${rain.name} gauge · Station ${rain.id} · EA`;
+  where.textContent = ` ${rain.name} gauge · EA station ${rain.id}`;
   title.append(where);
   head.append(title);
 

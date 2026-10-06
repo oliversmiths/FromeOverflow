@@ -918,7 +918,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 .o-day--recent  { background: var(--amber); }
 .o-day--spill   { background: var(--oxide); }
 
-.overflows--rain { margin-bottom: -10px; }
+.overflows--rain { margin-top: 14px; }
 .overflows--rain:empty { display: none; }
 /* Inverted: the gauge is a reading, not a monitor, so it drops the card
    look — no status border, panel-blue ground, white bars. */

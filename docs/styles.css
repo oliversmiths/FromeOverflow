@@ -20,6 +20,8 @@
   --oxide:    #B94A1D;   /* "discharging" — pins and the 90-day strip */
   --amber:   #E5B314;
   --dry:      #49AE5D ;   /* "not discharging" — pins and the 90-day strip */
+  --drop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-0.5 -0.5 11 15'%3E%3Cpath d='M5 0C5 0 0 6 0 9a5 5 0 0 0 10 0C10 6 5 0 5 0z'/%3E%3C/svg%3E");   /* teardrop mask, shared by the rain tooltip icons; the viewBox has half a unit of
+     padding so the curve's antialiased edge isn't cropped at small sizes */
   --rain: #3F8FD6;   /* daily rainfall bars */
   --swim: #C468AA;   /* swim spots, pins and the 90-day strip */
   /* Computed, not hand-picked, so tweaking --oxide/--amber/--dry above moves
@@ -1153,6 +1155,27 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 /* pre-line: a note with several spills (one per line) keeps its line breaks;
    a single-line note just wraps as normal text would. */
 .tip-note { color: var(--silt); white-space: pre-line; }
+/* Rain reading sat on the same line as a spill's times: the drop icon and the
+   figure in weir blue, so it's visibly a different fact from the grey times. */
+.tip-rainseg { color: var(--weir); white-space: nowrap; }
+.tip-rainseg--legend { display: block; margin-top: 5px; }
+.tip-status--rain .tip-dot {
+  width: 6.5px;
+  height: 9px;
+  border-radius: 0;
+  -webkit-mask: var(--drop) center / contain no-repeat;
+  mask: var(--drop) center / contain no-repeat;
+}
+.tip-drop {
+  display: inline-block;
+  width: 6.5px;
+  height: 9px;
+  margin-right: 4px;
+  vertical-align: -1px;
+  background: currentColor;
+  -webkit-mask: var(--drop) center / contain no-repeat;
+  mask: var(--drop) center / contain no-repeat;
+}
 
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }

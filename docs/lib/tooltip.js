@@ -60,6 +60,37 @@ function place(target) {
   el.style.top = `${Math.round(top)}px`;
 }
 
+const RAIN_MARK = '{rain}';
+
+/**
+ * A note's lines as text, except that anything after `{rain}` on a line is
+ * wrapped in `.tip-rainseg` behind a drop icon — the rain reading for a spill,
+ * kept on the same line as the spill's times but set apart in blue. Built from
+ * DOM nodes, never innerHTML, since the text comes from data.
+ */
+function appendNote(row, text) {
+  let afterBlock = false;
+  text.split('\n').forEach((line, i) => {
+    const at = line.indexOf(RAIN_MARK);
+    // A line that is *only* a rain segment is the legend: its own block, with a
+    // little space above it, rather than another line in the run of spills.
+    const legend = at === 0;
+    // No newline either side of the legend block — one next to a block box
+    // would add a blank line on top of the box's own spacing.
+    if (i > 0 && !legend && !afterBlock) row.append('\n');
+    afterBlock = legend;
+    if (at < 0) { row.append(line); return; }
+    row.append(line.slice(0, at));
+    const seg = document.createElement('span');
+    seg.className = legend ? 'tip-rainseg tip-rainseg--legend' : 'tip-rainseg';
+    const drop = document.createElement('span');
+    drop.className = 'tip-drop';
+    drop.setAttribute('aria-hidden', 'true');
+    seg.append(drop, line.slice(at + RAIN_MARK.length));
+    row.append(seg);
+  });
+}
+
 function build(el, d) {
   el.replaceChildren();
 
@@ -80,7 +111,8 @@ function build(el, d) {
         dot.className = 'tip-dot';
         row.append(dot);
       }
-      row.append(text);
+      if (cls === 'tip-note') appendNote(row, text);
+      else row.append(text);
       el.append(row);
     }
     return true;

@@ -414,18 +414,19 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
       // special-casing for.
       const notes = [];
       if (cell.state === 'spill') {
+        let anyRain = false;
         for (const e of cell.events) {
-          notes.push(fmtSpillSpan(e, now));
-          // The rain line under each spill: how much fell at the gauge in the
-          // 24h before it began, and the plain claim when that was next to
-          // nothing. No line at all when there's no usable rain data.
+          // Rain at the gauge in the 24h before this spill began, on the same
+          // line as its times. Just the figure: a single trailing line (below)
+          // says what it means, once, however many spills the day holds.
+          // `{rain}` is tooltip.js's marker for "drop icon, then the rain
+          // styling, to the end of the line". Nothing for a spill with no
+          // usable rain data.
           const weather = spillWeather(e);
-          if (weather === 'dry') {
-            notes.push(`Began after no rain at the gauge (${fmtRain(e.rain_mm)} in the 24h before)`);
-          } else if (weather === 'wet') {
-            notes.push(`${fmtRain(e.rain_mm)} of rain in the 24h before`);
-          }
+          if (weather) anyRain = true;
+          notes.push(fmtSpillSpan(e, now) + (weather ? ` · {rain}${fmtRain(e.rain_mm)}` : ''));
         }
+        if (anyRain) notes.push('{rain}Rain in the 24h before');
         if (cell.events.some((e) => spillWeather(e) === 'dry')) d.classList.add('o-day--dryspill');
       }
       if (partial) notes.push('Incomplete day');

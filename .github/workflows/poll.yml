@@ -46,6 +46,14 @@ jobs:
       - name: Top up rainfall
         run: node scripts/fetch-rainfall.js || echo "::warning::Rainfall top-up failed, continuing."
 
+      # Wessex's verified event history fills in spill ends the live feed never
+      # showed (poll.js's 'superseded' guesses) and adds spills missed between
+      # polls. Before the poll, for the same reason as rainfall. The table is
+      # republished about monthly, so on almost every tick this is one small
+      # metadata request and an early exit. Failure is a warning, never a stop.
+      - name: Reconcile with event history
+        run: node scripts/fetch-event-history.js || echo "::warning::Event history reconcile failed, continuing."
+
       # No install step — poll.js has no dependencies.
       - name: Fetch a reading
         run: node poll.js

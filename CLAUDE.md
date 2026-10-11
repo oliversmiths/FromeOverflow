@@ -52,6 +52,12 @@ then exports JSON for a static page. See [README.md](README.md) and
   *before* `poll.js`, so the export sees fresh rain. `--dry` shows what would
   change.
 
+- `npm run event-history` → `node scripts/fetch-event-history.js` — reconcile
+  `events` against Wessex's verified per-event history: fills in spill ends the
+  live feed never showed and adds spills missed between polls. Already runs
+  every `poll.yml` tick (cheap no-op unless Wessex republished). `--dry`
+  previews, `--force` ignores the "unchanged" check.
+
 There is no test suite or linter. `build-basemap.js` is the only build step and its
 output is committed. The page must be served over http — browsers block module
 imports and `fetch` on `file://`.
@@ -400,6 +406,23 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   regardless, so this doesn't protect the database from growing, only makes
   the console output honest about whether anything's actually new. `--dry` to
   preview.
+- **[scripts/fetch-event-history.js](scripts/fetch-event-history.js)** —
+  zero-dep, every `poll.yml` tick, *before* `poll.js`. The activity feed shows
+  only the latest event, so a spill that ends and is replaced between two polls
+  never shows its end (`store` closes it at the next start, `end_source =
+  'superseded'`), and one that starts and ends between polls is missed outright.
+  Wessex publish every event in `Wessex_Water_Event_Duration_Monitoring_<year>_
+  view2` (one row per spill, `EventVerified`), **about a month in arrears**.
+  This replaces superseded ends with the verified ones (`end_source =
+  'history'`) and inserts missed spills (`source = 'history'`). It never
+  overwrites an end the feed gave directly (only reports a disagreement), never
+  adds anything before `first_seen`, and skips (logs) a history spill that
+  overlaps one of ours. **Its times are UK wall-clock labelled as UTC** — no
+  events exist in the hour the clocks skip each spring — so `londonToUtc`
+  converts via Europe/London. `SERVICES` is one service name per year,
+  hand-maintained (2026's `_view` is empty; `_view2` is the real one); it warns
+  until the new year's is added. `history_sync` holds the table's
+  `dataLastEditDate` so an unchanged table is a single metadata request.
 - **[scripts/fetch-rainfall.js](scripts/fetch-rainfall.js)** — zero-dep. Runs
   every `poll.yml` tick (a failure is a `::warning::`, never a stop). Two EA
   sources, same gauge, same UTC 15-minute stamps: the **flood-monitoring** API
@@ -453,6 +476,7 @@ scripts/fetch-context.js one-off: site names + waterbody etc → monitors table
 scripts/fetch-annual-returns.js one-off: EA annual returns → annual_returns table
 scripts/fetch-swim-spots.js one-off: swim spot readings → swim_spots table
 scripts/fetch-rainfall.js   every poll: EA gauge 531108 → rainfall table
+scripts/fetch-event-history.js every poll: Wessex verified events → events table
 docs/index.html         the page — full-screen map + slide-in panels
 docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
@@ -468,7 +492,7 @@ overflows.db            node:sqlite file — on the orphan `db` branch, NOT main
 
 ## Data model & domain rules
 
-Eight tables (schema in [poll.js](poll.js) `SCHEMA`):
+Nine tables (schema in [poll.js](poll.js) `SCHEMA`):
 
 - **`monitors`** — one row per outfall, with three kinds of column:
   - `label` is **human-owned; nothing automated writes it** — not the poller, not
@@ -491,6 +515,15 @@ Eight tables (schema in [poll.js](poll.js) `SCHEMA`):
   event, which can be months old — 33 of 37 were, at cutover — and drawing those
   put a lone red bar in a field of hatching, implying we had covered the whole
   stretch. They stay in the table, just off the page.
+  Two provenance columns, both NULL for plain feed data and published in
+  `data.json` only when set: `source = 'history'` marks a spill the poller
+  missed, added from Wessex's history; `end_source` is `'superseded'` (end never
+  seen — inferred as the next event's start, the *latest* it can have been;
+  `store` sets it every poll) or `'history'` (verified). The page shows a
+  superseded end as "by 14:41 · up to 37m" (`fmtSpillSpan`/`fmtSpillLength`,
+  `endInferred` in format.js) until the history replaces it.
+- **`history_sync`** — one row per history service: the `dataLastEditDate`
+  last reconciled. A cache only; losing it just means one full re-check.
 - **`offline`** — offline spells as `{monitor_id, start_ms, end_ms}`, shaped
   exactly like `events` and maintained by `store` from `StatusStart`. **This is
   the permanent record of when a monitor was dark** — it used to be re-derived
@@ -566,8 +599,18 @@ Rules baked into `store` / `exportJson`:
 - ArcGIS returns `undefined` for absent fields; `node:sqlite` rejects `undefined`,
   so everything crossing into a query goes through `val()`.
 - **Known undercount:** if a monitor spills twice between two polls, only the
-  second is recorded. Totals are a floor. Rare at a 15-min interval against a
-  15-min feed; `snapshots` is the recovery path.
+  second is seen live. Totals are a floor until `scripts/fetch-event-history.js`
+  adds the missed spill from Wessex's history, about a month later. The feed
+  itself also lags: on 2026-10-09 WXW00401 still read "discharging since
+  13:04" at 13:45 UTC though the spill had ended at 13:25.
+- **Feed timestamps are rounded to the whole second** (`sec` in poll.js)
+  before they key anything. The feed sometimes returns the same time 20 ms
+  late (…300000, then …300020, then back), which used to open a duplicate spill
+  each time; `migrate` folded the 13 it had left into their whole-second twins.
+- **A new event closes any older open one** (`closeSuperseded` in `store`): a
+  newer start proves the older spill had ended, so it's closed there and
+  flagged `end_source = 'superseded'`, rather than left open and drawn as a
+  spill on every day since.
 - **`exportJson` only publishes monitors seen in the last 7 days** (`last_seen`).
   One that stops matching the filter ages off the page but keeps its history in
   the DB.

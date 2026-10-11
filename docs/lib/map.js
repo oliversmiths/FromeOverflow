@@ -11,7 +11,7 @@
 
 import {
   DAY, MINUTE, RECENT_HOURS, fmtAnnualReturn, fmtDate, fmtDuration, fmtFlow,
-  fmtWhen, fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs, spillMs,
+  fmtSpillLength, fmtWhen, fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs,
   windowPhrase,
 } from './format.js';
 
@@ -191,7 +191,7 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   const d = document.createElement('p');
   d.className = 'pop-last';
   d.textContent = last
-    ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtDuration(spillMs(last, now))}.`
+    ? `Last discharge ${fmtWhen(last.start, now)}, ${fmtSpillLength(last, now)}.`
     : `0 discharge recorded ${windowPhrase(monitor, windowDays, now)}.`;
 
   el.append(h, d);

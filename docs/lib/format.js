@@ -76,7 +76,10 @@ export function fmtTime(ms) {
  * tooltip: "14:32–16:05 · 1h 33m" when it starts and ends the same calendar
  * day, "04.09.26 14:32–05.09.26 02:10 · 11h 38m" when it crosses midnight (so
  * the reader isn't left assuming a same-day span), "14:32–ongoing · 3h 10m"
- * while still discharging.
+ * while still discharging. An end we never saw (`end_source: 'superseded'` —
+ * the feed had moved on to the next spill before showing it) is only the
+ * latest it can have been, so it reads "14:32–by 16:05 · up to 1h 33m" until
+ * Wessex's verified history fills in the real one.
  */
 export function fmtSpillSpan(event, now) {
   const endMs = event.end ?? now;
@@ -85,8 +88,17 @@ export function fmtSpillSpan(event, now) {
   const startStr = startDay === endDay ? fmtTime(event.start) : `${startDay} ${fmtTime(event.start)}`;
   const endStr = event.end == null
     ? 'ongoing'
-    : startDay === endDay ? fmtTime(event.end) : `${endDay} ${fmtTime(event.end)}`;
-  return `${startStr}–${endStr} · ${fmtDuration(spillMs(event, now))}`;
+    : (endInferred(event) ? 'by ' : '') +
+      (startDay === endDay ? fmtTime(event.end) : `${endDay} ${fmtTime(event.end)}`);
+  return `${startStr}–${endStr} · ${fmtSpillLength(event, now)}`;
+}
+
+/** True when a spill's end was never seen, only bounded — see `fmtSpillSpan`. */
+export const endInferred = (event) => event?.end_source === 'superseded';
+
+/** `fmtDuration` of a spill, as "up to …" when its end is only a bound. */
+export function fmtSpillLength(event, now) {
+  return (endInferred(event) ? 'up to ' : '') + fmtDuration(spillMs(event, now));
 }
 
 /**

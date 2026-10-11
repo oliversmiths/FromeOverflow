@@ -131,7 +131,24 @@ CREATE TABLE IF NOT EXISTS events (
   monitor_id   TEXT NOT NULL,
   start_ms     INTEGER NOT NULL,
   end_ms       INTEGER,         -- NULL while ongoing
+  -- Where the row came from: NULL = the live feed, 'history' = a spill the
+  -- poller missed outright, added later from Wessex's verified event history
+  -- (scripts/fetch-event-history.js).
+  source       TEXT,
+  -- Where end_ms came from: NULL = the live feed; 'superseded' = never seen,
+  -- inferred as the next event's start, so the *latest* it can have ended;
+  -- 'history' = Wessex's verified event history, which replaces the guess.
+  end_source   TEXT,
   PRIMARY KEY (monitor_id, start_ms)
+);
+
+-- Which version of Wessex's event-history table was last reconciled against
+-- events, so scripts/fetch-event-history.js can run every poll but only do the
+-- work when Wessex have actually published something new (about monthly).
+CREATE TABLE IF NOT EXISTS history_sync (
+  service        TEXT PRIMARY KEY,
+  data_edited_at INTEGER NOT NULL,   -- the service's own dataLastEditDate
+  applied_at     INTEGER NOT NULL
 );
 
 -- Offline spells, shaped exactly like events. Materialised here rather than
@@ -242,6 +259,8 @@ const ADDED_COLUMNS = [
   ['monitors', 'treatment', 'TEXT'],
   ['monitors', 'cause', 'TEXT'],
   ['monitors', 'context_at', 'INTEGER'],
+  ['events', 'source', 'TEXT'],
+  ['events', 'end_source', 'TEXT'],
 ];
 
 function migrate(db) {
@@ -250,6 +269,30 @@ function migrate(db) {
     if (!existing.includes(column)) {
       db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
     }
+  }
+
+  // One-off: fold the duplicate spills the feed's 20 ms timestamp wobble left
+  // behind (see `sec`) into their whole-second twin, keeping whichever end is
+  // known, then round any that had no twin. A no-op once nothing is off-second.
+  const jittered = db.prepare(
+    'SELECT monitor_id, start_ms, end_ms, source, end_source FROM events WHERE start_ms % 1000 <> 0 OR end_ms % 1000 <> 0').all();
+  if (jittered.length) {
+    const twin = db.prepare('SELECT end_ms FROM events WHERE monitor_id = ? AND start_ms = ?');
+    const drop = db.prepare('DELETE FROM events WHERE monitor_id = ? AND start_ms = ?');
+    const keep = db.prepare('UPDATE events SET end_ms = ? WHERE monitor_id = ? AND start_ms = ?');
+    const insert = db.prepare(
+      'INSERT INTO events (monitor_id, start_ms, end_ms, source, end_source) VALUES (?, ?, ?, ?, ?)');
+    db.exec('BEGIN');
+    for (const e of jittered) {
+      const start = Math.round(e.start_ms / 1000) * 1000;
+      const end = e.end_ms == null ? null : Math.round(e.end_ms / 1000) * 1000;
+      drop.run(e.monitor_id, e.start_ms);
+      const other = start === e.start_ms ? undefined : twin.get(e.monitor_id, start);
+      if (other) keep.run(other.end_ms ?? end, e.monitor_id, start);
+      else insert.run(e.monitor_id, start, end, e.source, e.end_source);
+    }
+    db.exec('COMMIT');
+    console.log(`  folded ${jittered.length} off-second event row(s) into whole seconds`);
   }
 
   // One-off: `offline` used to be derived from the snapshot log on every export.
@@ -331,6 +374,14 @@ function pruneSnapshots(db, polledAt) {
 
 /** node:sqlite rejects `undefined`, which ArcGIS hands us for absent fields. */
 const val = (x) => (x === undefined ? null : x);
+
+/**
+ * A feed timestamp, to the whole second. Wessex's times are whole minutes, but
+ * the feed now and then hands the same one back 20 ms late (…300000 one poll,
+ * …300020 the next, then back again). Events are keyed on their exact start,
+ * so each wobble used to open a duplicate spill.
+ */
+const sec = (x) => (x == null ? null : Math.round(x / 1000) * 1000);
 
 // --- Fetching --------------------------------------------------------------
 
@@ -450,6 +501,21 @@ function store(db, rows, polledAt) {
     ON CONFLICT(monitor_id, start_ms) DO UPDATE SET
       end_ms = COALESCE(excluded.end_ms, events.end_ms)`);
 
+  // Wessex only ever show the *latest* event, so if one ends and another starts
+  // between two polls we never see the first one's end — it would sit open
+  // forever and paint every day since as a spill. A newer start proves it had
+  // ended by then, so close it there: the latest moment it can have run to (an
+  // upper bound, not a measured end — flagged as such, and replaced by the real
+  // end once scripts/fetch-event-history.js finds it). Runs every poll, so it
+  // also repairs rows written before this existed.
+  const closeSuperseded = db.prepare(`
+    UPDATE events SET end_source = 'superseded', end_ms = (
+      SELECT MIN(n.start_ms) FROM events n
+      WHERE n.monitor_id = events.monitor_id AND n.start_ms > events.start_ms)
+    WHERE end_ms IS NULL AND EXISTS (
+      SELECT 1 FROM events n
+      WHERE n.monitor_id = events.monitor_id AND n.start_ms > events.start_ms)`);
+
   // Offline is a status, not an event: Wessex never put it in LatestEventStart.
   // `StatusStart` is the exact moment the current status began, so it both opens
   // a spell and — read from the *next* status — closes it.
@@ -476,7 +542,7 @@ function store(db, rows, polledAt) {
 
       // Track the offline spell first — it has to happen even for a monitor with
       // no event history at all, which the `continue` below would skip.
-      const since = row.StatusStart ?? polledAt;
+      const since = sec(row.StatusStart) ?? polledAt;
       if (row.Status === -1) {
         closeOffline.run(since, id, since);   // a *different* spell was left open
         openOffline.run(id, since);
@@ -484,16 +550,17 @@ function store(db, rows, polledAt) {
         closeOffline.run(since, id, 0);       // 0 never matches a real start
       }
 
-      const start = row.LatestEventStart;
+      const start = sec(row.LatestEventStart);
       if (start == null) continue;
 
       // While it's still discharging the reported end belongs to a previous
       // event, so leave the end open until the status clears.
-      const end = row.Status === 1 ? null : val(row.LatestEventEnd);
+      const end = row.Status === 1 ? null : sec(row.LatestEventEnd);
 
       if (!seenEvent.get(id, start)) fresh += 1;
       upsertEvent.run(id, start, end);
     }
+    closeSuperseded.run();
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
@@ -544,7 +611,7 @@ async function exportJson(db, rows, polledAt) {
   // we had covered the whole stretch. Only events that reach into this monitor's
   // own record are published; the rest stay in the database, just off the page.
   const eventsFor = db.prepare(`
-    SELECT start_ms, end_ms FROM events
+    SELECT start_ms, end_ms, source, end_source FROM events
     WHERE monitor_id = ? AND start_ms >= ?
       AND (end_ms IS NULL OR end_ms >= ?)
     ORDER BY start_ms`);
@@ -617,6 +684,9 @@ async function exportJson(db, rows, polledAt) {
           // Rain at the gauge in the 24h before this began — see
           // format.js `spillWeather`. null = no usable rain data for it.
           rain_mm: round2(rainBefore(rainReadings, e.start_ms)?.mm ?? null),
+          // Only when set — nearly every event is plain feed data.
+          ...(e.source && { source: e.source }),
+          ...(e.end_source && { end_source: e.end_source }),
         })),
       offline: offlineFor.all(m.id, cutoff)
         .map((o) => ({ start: o.start_ms, end: o.end_ms })),

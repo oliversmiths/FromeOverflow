@@ -587,7 +587,22 @@ Rules baked into `store` / `exportJson`:
   monitor is dark. `store` therefore tracks it from `StatusStart`: a `-1` reading
   opens a row in `offline`, and the *next* status's `StatusStart` closes it. If a
   recovery is missed between polls, the open spell is closed at the new one's
-  start. `backfillOffline` is the one-off that seeded the table from the old
+  start. Two feed quirks bend that rule: a dark monitor often reports **no
+  `StatusStart`** (the spell opens at the first poll that saw it and is carried
+  on, not reopened each poll — doing so once chopped WXW00051 into 1,360
+  15-minute spells), and a recovered monitor's `StatusStart` can be **far older
+  than the spell** (dry's is the last discharge's end), so an end that isn't
+  after the start falls back to the first poll that saw it back. `migrate`
+  repaired 12 spells closed before they began and joined 1,766 fragments; five
+  predated the snapshot log and were placed from `docs/data.json`'s git history
+  (`RECOVERED_FROM_GIT`).
+- **A monitor going dark can roll its latest event back.** When Wessex lose a
+  monitor, its `LatestEventStart`/`End` can fall back to an older event
+  (WXW00454 on 2026-10-16 showed 29 Aug again, once at 12:00 and then for good
+  from 14:31, offline). That's the monitor's own record, not a stale API reply
+  — no other monitor has ever done it — so don't discard readings for it; the
+  `events` upsert is harmless (`COALESCE`).
+  `backfillOffline` is the one-off that seeded the table from the old
   snapshot log (splitting runs on `OFFLINE_GAP_MS`, 90 min, for rows written
   before `status_start_ms` existed); it will not re-run once the table is
   non-empty.

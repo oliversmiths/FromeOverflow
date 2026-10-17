@@ -245,6 +245,15 @@ CREATE INDEX IF NOT EXISTS idx_snap_monitor ON snapshots (monitor_id, polled_at)
 CREATE INDEX IF NOT EXISTS idx_swim_readings ON swim_spot_readings (spot_id, sampled_at);
 `;
 
+// [monitor, offline start_ms, first poll seen back] — see migrate().
+const RECOVERED_FROM_GIT = [
+  ['WXW00490', 1788852643971, 1788859839934],
+  ['WXW00816', 1789037129253, 1789040729808],
+  ['WXW01297', 1789133442212, 1789145129653],
+  ['WXW01068', 1789551929374, 1789571730309],
+  ['WXW01243', 1789633838261, 1789641927031],
+];
+
 /**
  * `CREATE TABLE IF NOT EXISTS` won't add a column to a database that already
  * exists, so every column added after the first release is listed here and
@@ -293,6 +302,54 @@ function migrate(db) {
     }
     db.exec('COMMIT');
     console.log(`  folded ${jittered.length} off-second event row(s) into whole seconds`);
+  }
+
+  // Repairs for two old `offline` bugs (see `store`), both no-ops once clean.
+  // A spell closed before it began — at a recovered monitor's stale StatusStart
+  // — gets the first poll that saw the monitor back, if the snapshot log still
+  // covers it (a spell that began before the log's first poll for that monitor
+  // can't be placed and is left for a hand decision). Then runs that a missing
+  // StatusStart chopped into one spell per poll are joined back up.
+  const backwards = db.prepare('SELECT monitor_id, start_ms FROM offline WHERE end_ms < start_ms').all();
+  const fragments = db.prepare(`
+    SELECT COUNT(*) AS n FROM offline a JOIN offline b
+      ON b.monitor_id = a.monitor_id AND b.start_ms = a.end_ms`).get().n;
+  if (backwards.length || fragments) {
+    const recovered = db.prepare(`
+      SELECT MIN(polled_at) AS at FROM snapshots
+      WHERE monitor_id = ? AND polled_at > ? AND status IS NOT -1
+        AND EXISTS (SELECT 1 FROM snapshots o WHERE o.monitor_id = snapshots.monitor_id AND o.polled_at <= ?)`);
+    const setEnd = db.prepare('UPDATE offline SET end_ms = ? WHERE monitor_id = ? AND start_ms = ?');
+    const spells = db.prepare('SELECT monitor_id, start_ms, end_ms FROM offline ORDER BY monitor_id, start_ms');
+    const drop = db.prepare('DELETE FROM offline WHERE monitor_id = ? AND start_ms = ?');
+    const setEndIfBackwards = db.prepare(
+      'UPDATE offline SET end_ms = ? WHERE monitor_id = ? AND start_ms = ? AND end_ms < start_ms');
+    db.exec('BEGIN');
+    let placed = 0, joined = 0;
+    for (const b of backwards) {
+      const at = recovered.get(b.monitor_id, b.start_ms, b.start_ms)?.at;
+      if (at != null) { setEnd.run(at, b.monitor_id, b.start_ms); placed += 1; }
+    }
+    let run = null;
+    for (const o of spells.all()) {
+      if (run && o.monitor_id === run.monitor_id && run.end_ms != null && o.start_ms === run.end_ms) {
+        run.end_ms = o.end_ms;
+        drop.run(o.monitor_id, o.start_ms);
+        setEnd.run(run.end_ms, run.monitor_id, run.start_ms);
+        joined += 1;
+      } else {
+        run = { ...o };
+      }
+    }
+    // Five that went dark and came back before the snapshot log's first poll,
+    // so the log can't place them. Their recovery is the first bot commit of
+    // docs/data.json (git history on main) showing the monitor not offline —
+    // the same "first poll that saw it back" rule, read from a different log.
+    for (const [id, start, back] of RECOVERED_FROM_GIT) {
+      placed += setEndIfBackwards.run(back, id, start).changes;
+    }
+    db.exec('COMMIT');
+    if (placed || joined) console.log(`  offline: re-ended ${placed} backwards spell(s), joined ${joined} fragment(s)`);
   }
 
   // One-off: `offline` used to be derived from the snapshot log on every export.
@@ -517,13 +574,23 @@ function store(db, rows, polledAt) {
       WHERE n.monitor_id = events.monitor_id AND n.start_ms > events.start_ms)`);
 
   // Offline is a status, not an event: Wessex never put it in LatestEventStart.
-  // `StatusStart` is the exact moment the current status began, so it both opens
-  // a spell and — read from the *next* status — closes it.
+  // `StatusStart` is the moment the current status began, so it opens a spell
+  // and — read from the *next* status — usually closes it. Two exceptions, both
+  // seen in the feed: a dark monitor often has no StatusStart at all (the spell
+  // then opens at the first poll that saw it, and carries on until a reading
+  // says otherwise), and a recovered one's StatusStart can be far older than the
+  // spell (dry's is the last discharge's end, sometimes months back). An end
+  // that isn't after the start falls back to this poll — the first that saw the
+  // monitor back — rather than closing the spell before it began.
   const openOffline = db.prepare(
     'INSERT OR IGNORE INTO offline (monitor_id, start_ms, end_ms) VALUES (?, ?, NULL)');
 
-  const closeOffline = db.prepare(
-    'UPDATE offline SET end_ms = ? WHERE monitor_id = ? AND end_ms IS NULL AND start_ms <> ?');
+  const openSpell = db.prepare(
+    'SELECT 1 AS found FROM offline WHERE monitor_id = ? AND end_ms IS NULL');
+
+  const closeOffline = db.prepare(`
+    UPDATE offline SET end_ms = CASE WHEN :since > start_ms THEN :since ELSE :polled END
+    WHERE monitor_id = :id AND end_ms IS NULL AND start_ms <> :keep`);
 
   let fresh = 0;
 
@@ -542,12 +609,18 @@ function store(db, rows, polledAt) {
 
       // Track the offline spell first — it has to happen even for a monitor with
       // no event history at all, which the `continue` below would skip.
-      const since = sec(row.StatusStart) ?? polledAt;
+      const since = sec(row.StatusStart);
       if (row.Status === -1) {
-        closeOffline.run(since, id, since);   // a *different* spell was left open
-        openOffline.run(id, since);
+        if (since != null) {
+          // A *different* spell was left open: close it, open this one.
+          closeOffline.run({ id, since, polled: polledAt, keep: since });
+          openOffline.run(id, since);
+        } else if (!openSpell.get(id)) {
+          openOffline.run(id, polledAt);
+        }
       } else {
-        closeOffline.run(since, id, 0);       // 0 never matches a real start
+        // 0 never matches a real start, so this closes whatever is open.
+        closeOffline.run({ id, since, polled: polledAt, keep: 0 });
       }
 
       const start = sec(row.LatestEventStart);

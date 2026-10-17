@@ -132,7 +132,7 @@ export function fmtWhen(ms, now = Date.now()) {
  */
 export function statusOf(status) {
   if (status === 1) return { key: 'discharging', text: 'Discharging' };
-  if (status === -1) return { key: 'offline', text: 'No signal' };
+  if (status === -1) return { key: 'offline', text: 'Offline' };
   return { key: 'dry', text: 'Dry' };
 }
 
@@ -254,7 +254,7 @@ export const RECENT_MS = RECENT_HOURS * HOUR;
 export function mapStatusOf(monitor, now) {
   if (monitor.status === 1) return { key: 'discharging', text: 'Discharging now' };
   if (monitor.status === -1 || monitor.status == null) {
-    return { key: 'offline', text: 'No data' };
+    return { key: 'offline', text: 'Offline' };
   }
   const last = monitor.events.at(-1);
   const endedAt = last ? (last.end ?? now) : null;

@@ -42,6 +42,11 @@ function ensure() {
 function place(target) {
   const el = ensure();
   const t = target.getBoundingClientRect();
+  // Measure from the left edge, not wherever it was last shown: a fixed box
+  // with no set width shrinks to the room between its `left` and the viewport's
+  // right edge, so one last placed over a right-hand bar would wrap its lines
+  // before being moved.
+  el.style.left = '0px';
   const w = el.offsetWidth;
   const h = el.offsetHeight;
 

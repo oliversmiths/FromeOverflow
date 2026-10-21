@@ -1,5 +1,5 @@
 {
- "polled_at": 1792562456101,
+ "polled_at": 1792563335760,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -221,8 +221,14 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
-   "events": [],
+   "status": 1,
+   "events": [
+    {
+     "start": 1792561800000,
+     "end": null,
+     "rain_mm": 18.14
+    }
+   ],
    "offline": [],
    "annual_returns": [
     {
@@ -322,7 +328,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1790794260000,
@@ -339,6 +345,11 @@
      "start": 1791553260000,
      "end": 1791553320000,
      "rain_mm": 3.23
+    },
+    {
+     "start": 1792560600000,
+     "end": null,
+     "rain_mm": 14.2
     }
    ],
    "offline": [],
@@ -404,7 +415,13 @@
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
    "status": 0,
-   "events": [],
+   "events": [
+    {
+     "start": 1792561320000,
+     "end": 1792561440000,
+     "rain_mm": 14.2
+    }
+   ],
    "offline": [],
    "annual_returns": [
     {
@@ -604,8 +621,14 @@
     },
     {
      "start": 1792560480000,
+     "end": 1792561800000,
+     "rain_mm": 12.71,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792561800000,
      "end": null,
-     "rain_mm": 12.71
+     "rain_mm": 18.14
     }
    ],
    "offline": [],
@@ -638,12 +661,17 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1788145080000,
      "end": 1788145560000,
      "rain_mm": 2.8
+    },
+    {
+     "start": 1792560840000,
+     "end": null,
+     "rain_mm": 14.2
     }
    ],
    "offline": [],
@@ -777,8 +805,14 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
-   "events": [],
+   "status": 1,
+   "events": [
+    {
+     "start": 1792561320000,
+     "end": null,
+     "rain_mm": 14.2
+    }
+   ],
    "offline": [],
    "annual_returns": [
     {
@@ -1200,8 +1234,14 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
-   "events": [],
+   "status": 1,
+   "events": [
+    {
+     "start": 1792561860000,
+     "end": null,
+     "rain_mm": 18.14
+    }
+   ],
    "offline": [],
    "annual_returns": [
     {
@@ -1373,12 +1413,17 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1788144240000,
      "end": 1788144480000,
      "rain_mm": 1.5
+    },
+    {
+     "start": 1792560960000,
+     "end": null,
+     "rain_mm": 14.2
     }
    ],
    "offline": [],
@@ -1443,8 +1488,14 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
-   "events": [],
+   "status": 1,
+   "events": [
+    {
+     "start": 1792560840000,
+     "end": null,
+     "rain_mm": 14.2
+    }
+   ],
    "offline": [
     {
      "start": 1789133442212,
@@ -1537,10 +1588,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792560600000,
-   "mm": 1.59
+   "ts": 1792561500000,
+   "mm": 4.3
   },
-  "last_24h_mm": 14.2,
+  "last_24h_mm": 18.14,
   "days": [
    {
     "date": "2026-08-28",
@@ -1814,8 +1865,8 @@
    },
    {
     "date": "2026-10-21",
-    "mm": 2.08,
-    "n": 26
+    "mm": 6.38,
+    "n": 27
    }
   ]
  }

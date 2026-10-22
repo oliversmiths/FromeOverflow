@@ -1,5 +1,5 @@
 {
- "polled_at": 1792709135782,
+ "polled_at": 1792710061380,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -76,7 +76,7 @@
     {
      "start": 1792705680000,
      "end": null,
-     "rain_mm": 13.53
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -150,7 +150,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1791551640000,
@@ -184,8 +184,8 @@
     },
     {
      "start": 1792706280000,
-     "end": null,
-     "rain_mm": 13.53
+     "end": 1792708440000,
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -260,7 +260,7 @@
     {
      "start": 1792706280000,
      "end": null,
-     "rain_mm": 13.53
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -448,7 +448,7 @@
     {
      "start": 1792706100000,
      "end": null,
-     "rain_mm": 13.53
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -560,7 +560,7 @@
     {
      "start": 1792706100000,
      "end": null,
-     "rain_mm": 13.53
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -804,7 +804,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1791551400000,
@@ -829,8 +829,8 @@
     },
     {
      "start": 1792706160000,
-     "end": null,
-     "rain_mm": 13.53
+     "end": 1792708200000,
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -888,7 +888,7 @@
     {
      "start": 1792705560000,
      "end": null,
-     "rain_mm": 13.53
+     "rain_mm": 14.58
     }
    ],
    "offline": [],
@@ -1482,7 +1482,7 @@
     {
      "start": 1792707120000,
      "end": null,
-     "rain_mm": 13.35
+     "rain_mm": 15.54
     }
    ],
    "offline": [],
@@ -1837,10 +1837,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792704600000,
-   "mm": 0.32
+   "ts": 1792708200000,
+   "mm": 0.44
   },
-  "last_24h_mm": 13.54,
+  "last_24h_mm": 15.69,
   "days": [
    {
     "date": "2026-08-28",
@@ -2119,8 +2119,8 @@
    },
    {
     "date": "2026-10-22",
-    "mm": 11.56,
-    "n": 89
+    "mm": 14.95,
+    "n": 93
    }
   ]
  }

@@ -1,5 +1,5 @@
 {
- "polled_at": 1792710061380,
+ "polled_at": 1792710931622,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -56,7 +56,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1788144600000,
@@ -75,8 +75,14 @@
     },
     {
      "start": 1792705680000,
-     "end": null,
-     "rain_mm": 14.58
+     "end": 1792708560000,
+     "rain_mm": 14.58,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792708560000,
+     "end": 1792709040000,
+     "rain_mm": 15.69
     }
    ],
    "offline": [],
@@ -150,7 +156,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1791551640000,
@@ -186,6 +192,11 @@
      "start": 1792706280000,
      "end": 1792708440000,
      "rain_mm": 14.58
+    },
+    {
+     "start": 1792709280000,
+     "end": null,
+     "rain_mm": 15.95
     }
    ],
    "offline": [],
@@ -863,7 +874,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1788145080000,
@@ -887,7 +898,7 @@
     },
     {
      "start": 1792705560000,
-     "end": null,
+     "end": 1792708560000,
      "rain_mm": 14.58
     }
    ],
@@ -1837,10 +1848,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792708200000,
-   "mm": 0.44
+   "ts": 1792709100000,
+   "mm": 0.45
   },
-  "last_24h_mm": 15.69,
+  "last_24h_mm": 15.95,
   "days": [
    {
     "date": "2026-08-28",
@@ -2119,8 +2130,8 @@
    },
    {
     "date": "2026-10-22",
-    "mm": 14.95,
-    "n": 93
+    "mm": 15.4,
+    "n": 94
    }
   ]
  }

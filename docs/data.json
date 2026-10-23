@@ -1,5 +1,5 @@
 {
- "polled_at": 1792724461151,
+ "polled_at": 1792725341290,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -416,7 +416,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1790794260000,
@@ -486,6 +486,11 @@
      "start": 1792719900000,
      "end": 1792719960000,
      "rain_mm": 15.18
+    },
+    {
+     "start": 1792723920000,
+     "end": null,
+     "rain_mm": 15.21
     }
    ],
    "offline": [],
@@ -518,7 +523,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1792565640000,
@@ -654,6 +659,11 @@
      "start": 1792722900000,
      "end": 1792723260000,
      "rain_mm": 15.13
+    },
+    {
+     "start": 1792723500000,
+     "end": null,
+     "rain_mm": 15.21
     }
    ],
    "offline": [],
@@ -1942,10 +1952,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792722600000,
-   "mm": 0.01
+   "ts": 1792723500000,
+   "mm": 0.11
   },
-  "last_24h_mm": 15.13,
+  "last_24h_mm": 15.21,
   "days": [
    {
     "date": "2026-08-28",
@@ -2229,8 +2239,8 @@
    },
    {
     "date": "2026-10-23",
-    "mm": 2.58,
-    "n": 14
+    "mm": 2.69,
+    "n": 15
    }
   ]
  }

@@ -557,10 +557,13 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   background: var(--weir);   /* deep water blue */
   color: var(--sewage);        /* bright yellow-green */
   transform: translateX(100%);
-  transition: transform 0.28s ease;
+  transition: transform 0.28s ease, width 0.28s ease;
 }
 
 .panel.is-open { transform: none; }
+/* Overview's factsheet wants the room: full width while that tab is showing
+   (index.html selectTab). A phone's panel is already 100%, so no change there. */
+.panel--wide { width: 100%; }
 
 .panel-head {
   flex: none;
@@ -664,6 +667,119 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   color: rgba(255, 255, 255, 0.55);
 }
 .credit a { color: var(--sewage); }
+
+/* --- Overview tab: the factsheet (docs/lib/factsheet.js) --- */
+
+/* Left-aligned on the panel's own padding, so a wide screen keeps the same
+   left margin as the 500px panel rather than centring the grid. */
+.fs-wrap { max-width: 1180px; }
+
+/* Bento grid: four columns on a wide screen, two on a tablet, one on a phone.
+   Wide tiles span two columns and the league table two rows, where there's
+   room for them to. */
+.fs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 12px;
+}
+.fs-wide { grid-column: span 2; }
+.fs-tall { grid-row: span 2; }
+
+.fs-tile, .fs-cta {
+  padding: 16px 18px 18px;
+  /* background: rgba(255, 255, 255, 0.07);   white tint — off for now, may come back */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.86);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fs-tile.is-hot { border-color: var(--sewage); }
+
+/* Which kind of figure this is — official EA, or our own live watch. It's
+   the one line that stops the two being read as the same count. */
+.fs-kicker {
+  margin: 0;
+  font-family: var(--data);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.62);
+}
+.fs-figure {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 46px;
+  line-height: 1;
+  color: var(--sewage);
+}
+.fs-unit { font-family: var(--body); font-size: 15px; color: var(--sewage); }
+.fs-note { margin: 0; font-size: 14px; }
+.fs-small { font-size: 12px; color: rgba(255, 255, 255, 0.62); }
+/* A source line pinned to the foot of its tile. */
+.fs-foot { margin-top: auto; padding-top: 6px; }
+/* A note straight after a bar chart (the league table's source line). */
+.fs-bars + .fs-note { margin-top: 14px; }
+
+.fs-bars { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.fs-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; font-size: 13px; }
+.fs-bar-label {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  appearance: none; border: 0; background: none; padding: 0;
+  font: inherit; color: inherit; text-align: left;
+}
+/* A monitor's name (only those are buttons — the overflow-types bars aren't):
+   display face, yellow, like the tiles' own figures. */
+button.fs-bar-label { cursor: pointer; font-family: var(--display); font-size: 21px; line-height: 1.1; color: var(--sewage); }
+/* Name, then its tags (kind, groundwater) — on one line where there's room,
+   the tags wrapping under the name where there isn't, so the name itself is
+   never cut short to make space for them. */
+.fs-bar-head { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 6px; min-width: 0; }
+.fs-bar-head .fs-bar-label { flex: 0 1 auto; min-width: 0; }
+.fs-tag {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-family: var(--data);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.75);
+}
+button.fs-bar-label { transition: opacity 0.15s; }
+button.fs-bar-label:hover { opacity: 0.7; }
+/* The league's rows carry a display-size name and tags, so they want more air
+   between them than the overflow-types bars do. */
+.fs-league .fs-bars { gap: 18px; }
+.fs-bar-value { font-family: var(--data); font-size: 11px; color: rgba(255, 255, 255, 0.62); align-self: center; }
+.fs-bar-track { grid-column: 1 / -1; height: 6px; background: rgba(255, 255, 255, 0.12); }
+.fs-bar-fill { display: block; height: 100%; background: var(--sewage); }
+
+/* Period switch — the same look as the Timeline's 90-Day/History toggle. */
+.fs-switch {
+  display: flex; align-self: flex-start;
+  border: 1px solid var(--sewage);
+  font-family: var(--data); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.fs-switch-btn { appearance: none; border: 0; background: none; padding: 3px 7px; color: var(--sewage); cursor: pointer; }
+.fs-switch-btn + .fs-switch-btn { border-left: 1px solid var(--sewage); }
+.fs-switch-btn[aria-pressed="true"] { background: var(--sewage); color: var(--weir); }
+
+
+.fs-cta { border-color: var(--sewage); }
+.fs-cta h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; color: var(--sewage); }
+.fs-cta p { margin: 0; font-size: 15px; max-width: 46em; }
+.fs-cta .nowrap { white-space: nowrap; }
+.fs-cta a { color: var(--sewage); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+
+@media (max-width: 1000px) {
+  .fs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .fs-grid { grid-template-columns: minmax(0, 1fr); }
+  .fs-wide, .fs-tall { grid-column: auto; grid-row: auto; }
+}
 
 .stamp { font-family: var(--data); font-size: 11px; color:  rgba(255, 255, 255, 0.62); margin: 0 0 4px; }
 .standfirst { margin: 8px 0 20px; color: var(--sewage); font-size: 18px; }
@@ -1185,7 +1301,7 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
   /* The tabs plus the 75px close button — tighten so they fit a phone.
      Vertical padding stays out of it (see .tab's base rule — height now
      comes from stretching the full panel-head, not padding). */
-  .tab { padding: 0 24px; font-size: 24px; }
+  .tab { padding: 0 12px; font-size: 22px; }
 }
 
 /* --- Intro splash: shown on load, fades after 5s --- */

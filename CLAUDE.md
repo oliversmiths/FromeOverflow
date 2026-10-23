@@ -35,8 +35,10 @@ then exports JSON for a static page. See [README.md](README.md) and
 - `npm run annual-returns` → `node scripts/fetch-annual-returns.js` — fill in
   each monitor's regulator-verified annual spill figures (spill count,
   duration, long-term average) from the Environment Agency's EDM Storm
-  Overflow Annual Return. Writes to `annual_returns`; run once a year, after
-  EA publishes (typically spring). `--dry` shows what would change.
+  Overflow Annual Return. Writes to `annual_returns`. Already runs weekly from
+  `poll.yml`, so a new year (EA publish once, usually late March) arrives
+  within a week; run it by hand only to check sooner. `--dry` shows what would
+  change.
 - `npm run swim-spots` → `node scripts/fetch-swim-spots.js` — refresh the
   hand-curated swim spots (currently Farleigh Hungerford, Tellisford Weir) and
   their latest water-quality/river-flow readings from a public FeatureServer
@@ -223,6 +225,22 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   hiding the line — when the gauge has been silent over 3h (`RAIN_STALE_MS`) or
   the 24h window is under 90% covered. Sentence case on purpose: the brand
   line is uppercased, and "MM" would read as megametres.
+- **`docs/lib/factsheet.js`** — `renderFactsheet(container, data, onSeeOnMap)`:
+  the Overview tab's bento grid (`.fs-grid`: 4 columns / 2 below 1000px / 1
+  below 560px; `.fs-wide` spans 2, `.fs-tall` 2 rows). Tiles: right now,
+  catchment total per EA year, our own live-watch total, a top-five league switchable between our
+  window and each EA year (each row tagged with its kind and, if it applies,
+  Groundwater — `KINDS`/`tagsOf`, the same grouping as the overflow-types
+  tile), dry-weather spills, groundwater-affected count, EA
+  year-on-year change (with the "weather moves this" caveat), overflow types,
+  and offline time, then index.html's own `#fs-cta` "Take action" box, moved
+  in as the last wide tile (the `cta` argument). **Every tile's kicker says whether it's the EA's official
+  return or our live watch, and the two are never summed or drawn on one axis**
+  — they're counted differently (12/24h method vs raw activations). All maths
+  goes through `format.js` (`rankByTotal`, `spillWeather`, `offlineMs`,
+  `mapStatusOf`); the window wording follows `recordIsYoung` like
+  `windowPhrase`. League rows and "View on map" call `onSeeOnMap`, the same
+  close-panel-and-fly the cards use.
 - **`docs/lib/tooltip.js`** — `initTooltips()`: one shared `.tip` element for
   anything with a `data-tip*` attribute, delegated from `document`. Two forms:
   `data-tip="…"` is one plain line; `data-tip-date` / `data-tip-status`
@@ -292,13 +310,15 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   then one-open-at-a-time `<details>` accordions: How to use, **Safety** —
   leads with the water-quality disclaimer, then the interpretation caveats —
   and **Sources**, Data + Map provenance and the CC BY attribution), and
-  **Action** (the River Frome groups — Friends of the River Frome, Frome
-  Families for the Future — shown directly, no accordion). Opens to Timeline;
+  **Overview** (the `factsheet.js` bento grid, left-aligned at up to 1180px, then a
+  `.fs-cta` "Take action" box: the River Frome groups and the EA incident
+  hotline, as the grid's last tile). **Overview widens the panel to the full viewport on desktop**
+  (`.panel--wide`, toggled in `selectTab`; a phone's panel is full width
+  already) and the other tabs shrink it back. Opens to Timeline;
   tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
-  (`#timeline` / `#info` / `#action`), and an accordion's own name opens Info
+  (`#timeline` / `#info` / `#overview`), and an accordion's own name opens Info
   on it expanded (`#how-to-use` / `#safety` / `#sources`). `HASH_ALIASES` keeps
-  moved names working — `#river-frome`, an Info accordion before Action
-  existed, opens Action. The Timeline tab leads with
+  moved names working — `#river-frome`, once an Info accordion, opens Overview. The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
   project's own avg annual duration) and a panel-wide 90-Day/History toggle
@@ -382,8 +402,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `long_term_avg_spills`, `data_start_year` on `annual_returns`, one row per
   `(monitor, year)`. This is deliberately the *other* number from everything
   `poll.js` tracks — see "Known undercount" below — so it's kept in its own
-  table rather than merged into `monitors`. Static data, not part of the poll;
-  `--dry` to preview.
+  table rather than merged into `monitors`. Runs weekly from `poll.yml` (see
+  "Refresh EA annual returns" there); `--dry` to preview.
 - **[scripts/fetch-swim-spots.js](scripts/fetch-swim-spots.js)** — zero-dep.
   Run automatically (see `poll.yml`'s "Refresh swim spots" below) as well as
   by hand. **`SWIM_SPOTS`** is the whole list of points of interest — hand-
@@ -469,7 +489,10 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `rainfall` table when it writes `data.json`); a failure is a `::warning::` and
   the export just uses the rain already stored. On a database with no `rainfall`
   table yet it creates the table and backfills itself — no manual seeding of the
-  `db` branch is ever needed.
+  `db` branch is ever needed. **"Refresh EA annual returns (weekly)"** runs
+  `scripts/fetch-annual-returns.js` before `poll.js` when the newest
+  `annual_returns.fetched_at` is 7+ days old — same self-healing gate as the
+  swim spots; a failure is a `::warning::`.
 
 ### Layout
 
@@ -488,6 +511,7 @@ docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
 docs/lib/cards.js       renderCards() — the per-monitor list + 90-day strip
 docs/lib/tooltip.js     initTooltips() — one shared [data-tip] tooltip
+docs/lib/factsheet.js   renderFactsheet() — the Overview tab's bento grid
 docs/lib/map.js         buildMap() — the no-library SVG map
 docs/data.json          generated by poll.js (git-committed; absent in a fresh
                         checkout until the first poll)

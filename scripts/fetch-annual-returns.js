@@ -18,9 +18,10 @@
  *
  * This is deliberately the *other* number from what poll.js tracks: our own
  * totals are a live-tracked floor (see CLAUDE.md's "Known undercount"), this
- * is Wessex's official return for the year. Not part of the 15-minute poll —
- * run this by hand once EA publishes each year's figures (typically spring),
- * like scripts/fetch-context.js.
+ * is Wessex's official return for the year. Runs weekly from poll.yml (gated
+ * on `fetched_at`), so a new year's figures — published once, usually late
+ * March — arrive within a week without anyone remembering. Safe to run by hand
+ * any time too.
  */
 
 import { DatabaseSync } from 'node:sqlite';

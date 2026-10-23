@@ -54,6 +54,21 @@ jobs:
       - name: Reconcile with event history
         run: node scripts/fetch-event-history.js || echo "::warning::Event history reconcile failed, continuing."
 
+      # The EA publish each year's annual returns once, usually late March, so
+      # this checks weekly rather than every tick — gated on the newest
+      # `fetched_at` in annual_returns (the script stamps every row it writes),
+      # the same self-healing gate as the swim spots below. Before the poll, so
+      # a new year reaches data.json on the same run. Failure is a warning.
+      - name: Refresh EA annual returns (weekly)
+        run: |
+          last_s=$(( $(sqlite3 overflows.db "SELECT COALESCE(MAX(fetched_at), 0) FROM annual_returns;" 2>/dev/null || echo 0) / 1000 ))
+          age_d=$(( ($(date -u +%s) - last_s) / 86400 ))
+          if [ "$age_d" -ge 7 ]; then
+            node scripts/fetch-annual-returns.js || echo "::warning::Annual returns refresh failed, continuing."
+          else
+            echo "Checked ${age_d}d ago, skipping."
+          fi
+
       # No install step — poll.js has no dependencies.
       - name: Fetch a reading
         run: node poll.js

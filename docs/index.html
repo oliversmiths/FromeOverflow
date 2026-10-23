@@ -69,8 +69,8 @@
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
       <button class="tab" type="button" role="tab" id="tab-info" tabindex="-1"
         aria-controls="tabpanel-info" aria-selected="false">Info</button>
-      <button class="tab" type="button" role="tab" id="tab-action" tabindex="-1"
-        aria-controls="tabpanel-action" aria-selected="false">Action</button>
+      <button class="tab" type="button" role="tab" id="tab-overview" tabindex="-1"
+        aria-controls="tabpanel-overview" aria-selected="false">Overview</button>
     </div>
     <div class="panel-head-fill" aria-hidden="true"></div>
     <button class="panel-close" type="button" aria-label="Close">
@@ -266,14 +266,22 @@
       target="_blank" rel="noopener">Smiths.Studio</a></div>
   </div>
 
-  <div class="panel-body prose" id="tabpanel-action" role="tabpanel"
-    aria-labelledby="tab-action" tabindex="0" hidden>
-    <p>Overflows are only one part of the River Frome’s health. To find out more and get
-      involved, visit
-      <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
-      of the River Frome</a> and
-      <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank"
-      rel="noopener">Frome Families for the Future</a>.</p>
+  <div class="panel-body overview" id="tabpanel-overview" role="tabpanel"
+    aria-labelledby="tab-overview" tabindex="0" hidden>
+    <div class="fs-wrap">
+      <div id="factsheet"></div>
+      <section class="fs-cta" id="fs-cta">
+        <h3>Take action</h3>
+        <p>Overflows are only one part of the River Frome’s health. To find out more and get
+          involved, visit
+          <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
+          of the River Frome</a> and
+          <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank"
+          rel="noopener">Frome Families for the Future</a>.</p>
+        <p>Seen pollution in the river? Report it to the Environment Agency’s 24-hour incident
+          hotline on <a href="tel:08008070060" class="nowrap">0800 80 70 60</a>.</p>
+      </section>
+    </div>
   </div>
 </aside>
 
@@ -283,6 +291,7 @@
 import { fmtRain, fmtWhen, mapStatusOf } from './lib/format.js';
 import { buildMap, renderLegend } from './lib/map.js';
 import { renderCards, renderRainStrip, setCardsView } from './lib/cards.js';
+import { renderFactsheet } from './lib/factsheet.js';
 import { initTooltips } from './lib/tooltip.js';
 
 // Fraction of the fully-zoomed-out view to open on. Opens on the town and its
@@ -434,18 +443,18 @@ function paintStatus(data) {
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }
 
-// --- panel (one drawer, tabs: timeline / info / action) ---
+// --- panel (one drawer, tabs: timeline / info / overview) ---
 //
 // Info holds Safety and Sources too, as <details> accordions rather than
 // tabs of their own — see docs/lib's sibling comment in styles.css (.acc) for
 // why. `acc-*` ids let a link jump straight to one, expanded (see the hash
 // routing at the bottom of this script).
-const TABS = ['timeline', 'info', 'action'];
+const TABS = ['timeline', 'info', 'overview'];
 const ACC_SECTIONS = ['how-to-use', 'safety', 'sources'];
 // Hashes that used to name something which has since moved — kept so an old
 // link still lands somewhere sensible. River Frome was an Info section before
-// it became the Action tab.
-const HASH_ALIASES = { 'river-frome': 'action' };
+// its links moved to the Overview tab's call to action.
+const HASH_ALIASES = { 'river-frome': 'overview' };
 const panel = $('panel');
 const openBtn = $('open-panel');
 const scrim = $('scrim');
@@ -460,6 +469,10 @@ function selectTab(tab) {
     btn.tabIndex = on ? 0 : -1;
     $(`tabpanel-${t}`).hidden = !on;
   }
+  // The factsheet wants room: on desktop the panel grows to the full width
+  // while Overview is showing (styles.css .panel--wide; already full width on
+  // a phone), and shrinks back for the other tabs.
+  panel.classList.toggle('panel--wide', tab === 'overview');
   history.replaceState(null, '', `#${tab}`);
 }
 
@@ -606,6 +619,10 @@ try {
   setViewAllPressed();
   renderRainStrip($('rain'), data);
   renderList();
+  renderFactsheet($('factsheet'), data, (monitor) => {
+    closePanel();
+    map.focus(monitor);
+  }, $('fs-cta'));
 
   function routeHash() {
     const raw = location.hash.slice(1);

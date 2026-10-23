@@ -69,6 +69,8 @@
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
       <button class="tab" type="button" role="tab" id="tab-info" tabindex="-1"
         aria-controls="tabpanel-info" aria-selected="false">Info</button>
+      <button class="tab" type="button" role="tab" id="tab-action" tabindex="-1"
+        aria-controls="tabpanel-action" aria-selected="false">Action</button>
     </div>
     <div class="panel-head-fill" aria-hidden="true"></div>
     <button class="panel-close" type="button" aria-label="Close">
@@ -108,11 +110,11 @@
 
   <div class="panel-body prose" id="tabpanel-info" role="tabpanel"
     aria-labelledby="tab-info" tabindex="0" hidden>
-    <p>Overflow Watch tracks storm overflows (CSOs) on the River Frome and its tributaries
-      around Frome, Somerset. Every 15 minutes it checks Wessex Water’s live overflow data and
+    <p>Overflow Watch tracks combined sewer overflows (CSOs) on the River Frome and its tributaries
+      around Frome, Somerset. It checks Wessex Water’s live overflow data every 15 minutes and
       keeps its own history. It also shows the Environment Agency’s official yearly spill
       figures.</p>
-    <p>It’s an independent project, not affiliated with Wessex Water. It covers the Frome
+    <p>This watch covers the Frome
       catchment only and doesn’t try to replace the national trackers. The aim is a
       hyperlocal window onto current and past sewage overflows.</p>
 
@@ -258,22 +260,20 @@
           </ul>
         </div>
       </details>
-
-      <details class="acc-item" id="acc-river-frome">
-        <summary class="acc-summary">River Frome</summary>
-        <div class="acc-body">
-          <p>Overflows are only one part of the River Frome’s health. To find out more and get
-            involved, visit
-            <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
-            of the River Frome</a> and
-            <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank"
-            rel="noopener">Frome Families for the Future</a>.</p>
-        </div>
-      </details>
     </div>
 
     <div class="credit">An independent project by <a href="https://www.smiths.studio/"
       target="_blank" rel="noopener">Smiths.Studio</a></div>
+  </div>
+
+  <div class="panel-body prose" id="tabpanel-action" role="tabpanel"
+    aria-labelledby="tab-action" tabindex="0" hidden>
+    <p>Overflows are only one part of the River Frome’s health. To find out more and get
+      involved, visit
+      <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
+      of the River Frome</a> and
+      <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank"
+      rel="noopener">Frome Families for the Future</a>.</p>
   </div>
 </aside>
 
@@ -434,14 +434,18 @@ function paintStatus(data) {
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }
 
-// --- panel (one drawer, tabs: timeline / info) ---
+// --- panel (one drawer, tabs: timeline / info / action) ---
 //
 // Info holds Safety and Sources too, as <details> accordions rather than
 // tabs of their own — see docs/lib's sibling comment in styles.css (.acc) for
 // why. `acc-*` ids let a link jump straight to one, expanded (see the hash
 // routing at the bottom of this script).
-const TABS = ['timeline', 'info'];
-const ACC_SECTIONS = ['how-to-use', 'safety', 'sources', 'river-frome'];
+const TABS = ['timeline', 'info', 'action'];
+const ACC_SECTIONS = ['how-to-use', 'safety', 'sources'];
+// Hashes that used to name something which has since moved — kept so an old
+// link still lands somewhere sensible. River Frome was an Info section before
+// it became the Action tab.
+const HASH_ALIASES = { 'river-frome': 'action' };
 const panel = $('panel');
 const openBtn = $('open-panel');
 const scrim = $('scrim');
@@ -615,7 +619,8 @@ try {
   renderList();
 
   function routeHash() {
-    const h = location.hash.slice(1);
+    const raw = location.hash.slice(1);
+    const h = HASH_ALIASES[raw] ?? raw;
     if (ACC_SECTIONS.includes(h)) {
       openPanel('info');
       const details = $(`acc-${h}`);

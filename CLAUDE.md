@@ -289,11 +289,16 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
   drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
   with a tab strip — **Timeline** (the `cards.js` list), **Info** (what this is,
-  how to read the map and strip, Friends of the River Frome), **Safety** (leads
-  with the water-quality disclaimer, then the interpretation caveats), **Sources**
-  (just Data + Map — provenance and the CC BY attribution). Opens to Timeline;
+  then one-open-at-a-time `<details>` accordions: How to use, **Safety** —
+  leads with the water-quality disclaimer, then the interpretation caveats —
+  and **Sources**, Data + Map provenance and the CC BY attribution), and
+  **Action** (the River Frome groups — Friends of the River Frome, Frome
+  Families for the Future — shown directly, no accordion). Opens to Timeline;
   tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
-  (`#timeline` / `#info` / `#safety` / `#sources`). The Timeline tab leads with
+  (`#timeline` / `#info` / `#action`), and an accordion's own name opens Info
+  on it expanded (`#how-to-use` / `#safety` / `#sources`). `HASH_ALIASES` keeps
+  moved names working — `#river-frome`, an Info accordion before Action
+  existed, opens Action. The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
   project's own avg annual duration) and a panel-wide 90-Day/History toggle

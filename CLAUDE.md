@@ -304,7 +304,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   project's own avg annual duration) and a panel-wide 90-Day/History toggle
   (`setCardsView`, cards.js) that flips every card at once — then the `cards.js`
   list itself.
-  The legend is a bottom-centre pill. On load a full-screen `.splash` shows the
+  The legend is a bottom-right `<details>` (`#legend-wrap`), closed to
+  "+ Legend" by default at every width; opening it stacks the rows under it. On load a full-screen `.splash` shows the
   verdict big (`#splash-verdict`, `setSplashVerdict` sets it word-by-word for the
   hand-set look) over `docs/assets/overflow-img.webp`; then it fades after 5 s
   (tap/Esc to skip). No framework

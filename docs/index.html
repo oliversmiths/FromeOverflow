@@ -535,27 +535,16 @@ function flashCard(card) {
   card.classList.add('is-focused');
 }
 
-// The legend (#legend-wrap, a <details>) stays permanently open on desktop
-// and starts closed on mobile — styles.css hides its own "Legend" summary
-// above this same 720px breakpoint, so the two need to agree. Synced via
-// the `open` attribute itself, not a CSS override forcing the closed
-// content to display: a closed <details>'s content doesn't contribute to
-// layout sizing in any engine even when its `display` is overridden by
-// author CSS, so only the real attribute gets a box that sizes correctly.
+// The legend (#legend-wrap, a <details>) starts closed at every width — just
+// "+ Legend" until tapped.
 const legendWrap = $('legend-wrap');
 
 // "+ Legend" / "− Legend" — the `toggle` event fires for every way `open`
-// can change (a tap, the keyboard, or syncLegendOpen's own assignment
-// below), so the label never drifts out of sync with the real state.
-// Registered before that first assignment happens, so it also catches it.
+// can change (a tap or the keyboard), so the label never drifts out of sync
+// with the real state.
 legendWrap.addEventListener('toggle', () => {
   legendWrap.querySelector('.legend-toggle span').textContent = legendWrap.open ? '− Legend' : '+ Legend';
 });
-
-const legendDesktop = matchMedia('(min-width: 721px)');
-const syncLegendOpen = () => { legendWrap.open = legendDesktop.matches; };
-syncLegendOpen();
-legendDesktop.addEventListener('change', syncLegendOpen);
 
 // --- load ---
 try {

@@ -404,12 +404,9 @@ b, strong { font-weight: 500; }
 
 /* The white box itself — positioning, sizing and the box's own chrome sit
    here on the <details>, not on .legend below, so the same box holds either
-   the full row (desktop, always open — index.html syncs the `open`
-   attribute to the same 720px breakpoint on load/resize, since a closed
-   <details>'s content doesn't contribute to layout sizing even when its own
-   `display` is overridden by author CSS — only forcing `open` natively
-   gets a reliable box, in every engine, not just a paint override) or just
-   the "Legend" summary (mobile, collapsed by default). */
+   just the "+ Legend" summary (closed, the default at every width — five
+   rows are something you glance at once, not furniture to keep on screen)
+   or the summary plus the list stacked under it (open). */
 .legend-wrap {
   position: fixed;
   right: 16px;
@@ -422,14 +419,12 @@ b, strong { font-weight: 500; }
   font-size: 10px;
 }
 
-/* Hidden by default (desktop) — nothing to collapse when the full row
-   already fits, so no toggle affordance either; the max-width:720px block
-   below turns it back on for mobile. Text swap, not an icon — the same
-   "+ More"/"− Less" treatment as the map popup's own .pop-more-toggle (its
-   label swap is a plain `toggle` listener too; see index.html). */
+/* Text swap, not an icon — the same "+ More"/"− Less" treatment as the map
+   popup's own .pop-more-toggle (its label swap is a plain `toggle` listener
+   too; see index.html). */
 .legend-toggle {
   padding: 7px 13px;
-  display: none;
+  display: flex;
   align-items: center;
   cursor: pointer;
   list-style: none;
@@ -440,8 +435,7 @@ b, strong { font-weight: 500; }
 
 .legend {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   gap: 5px 15px;
   margin: 0;
   padding: 7px 13px;
@@ -451,6 +445,12 @@ b, strong { font-weight: 500; }
 
 /* Each row is coloured by state (`.legend--discharging` etc.), so the label
    takes the colour and the dot rides on currentColor. */
+/* .legend's own display:flex above is an author rule, which beats the UA
+   stylesheet's native "hide a closed <details>'s content" rule regardless of
+   specificity (author always beats user-agent origin) — so without this, the
+   list would stay visible even while collapsed. Opening (`[open]` present)
+   just stops this matching and falls back to the base flex. */
+.legend-wrap:not([open]) .legend { display: none; }
 .legend li { display: flex; align-items: center; gap: 7px; }
 .legend--discharging { color: var(--oxide); }
 .legend--recent      { color: var(--amber); }
@@ -1180,23 +1180,9 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 @media (max-width: 720px) {
   .panel { width: 100%; border-left: 0; }
   /* .map-ctrl { display: none; } */
-  /* Collapsed to just "Legend" by default (closed <details>, no `open`
-     attribute in the markup) — five rows stacked in a column eat real
-     screen height on a phone for something you glance at once. Tap to open;
-     .legend-toggle's own display:flex above turns the summary back on. */
   .legend-wrap { max-width: calc(100vw - 50vw); bottom: 46px; right: 14px; }
-  .legend-toggle { display: flex; }
-  .legend { flex-direction: column; }
-  /* .legend's own display:flex above is an author rule, which beats the
-     UA stylesheet's native "hide a closed <details>'s content" rule
-     regardless of specificity (author always beats user-agent origin) — so
-     without this, the list would stay visible even while collapsed. Higher
-     specificity than the bare .legend rule, so it wins while closed;
-     opening (`[open]` present) just stops this matching and falls back to
-     the base flex. */
-  .legend-wrap:not([open]) .legend { display: none; }
   .map-attr { bottom: 14px; }
-  /* Two tabs plus the 75px close button — tighten so they fit a phone.
+  /* The tabs plus the 75px close button — tighten so they fit a phone.
      Vertical padding stays out of it (see .tab's base rule — height now
      comes from stretching the full panel-head, not padding). */
   .tab { padding: 0 24px; font-size: 24px; }

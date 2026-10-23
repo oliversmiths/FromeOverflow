@@ -1,5 +1,5 @@
 {
- "polled_at": 1792719053388,
+ "polled_at": 1792719934181,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -416,7 +416,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1790794260000,
@@ -468,8 +468,14 @@
     },
     {
      "start": 1792717680000,
-     "end": null,
-     "rain_mm": 14.6
+     "end": 1792718640000,
+     "rain_mm": 14.6,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792718640000,
+     "end": 1792718700000,
+     "rain_mm": 14.55
     }
    ],
    "offline": [],
@@ -502,7 +508,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1792565640000,
@@ -614,8 +620,14 @@
     },
     {
      "start": 1792717860000,
-     "end": null,
-     "rain_mm": 14.6
+     "end": 1792719060000,
+     "rain_mm": 14.6,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792719060000,
+     "end": 1792719120000,
+     "rain_mm": 14.53
     }
    ],
    "offline": [],
@@ -1536,8 +1548,14 @@
     },
     {
      "start": 1792707120000,
+     "end": 1792716420000,
+     "rain_mm": 15.54,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792716420000,
      "end": null,
-     "rain_mm": 15.54
+     "rain_mm": 15.09
     }
    ],
    "offline": [],
@@ -1892,10 +1910,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792717200000,
-   "mm": 0.08
+   "ts": 1792718100000,
+   "mm": 0.07
   },
-  "last_24h_mm": 14.6,
+  "last_24h_mm": 14.55,
   "days": [
    {
     "date": "2026-08-28",
@@ -2179,8 +2197,8 @@
    },
    {
     "date": "2026-10-23",
-    "mm": 1.81,
-    "n": 8
+    "mm": 1.88,
+    "n": 9
    }
   ]
  }

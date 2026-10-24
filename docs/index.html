@@ -322,6 +322,11 @@ function showSplash() {
   splash.hidden = false;
   void splash.offsetWidth;                 // restart the transition
   splash.classList.remove('is-gone');
+  // Drop the last showing's words, not just `is-ready`: each one was pinned
+  // fully revealed by an inline style on animationend (setSplashVerdict), so
+  // left in place they'd sit there visible through the pause, then vanish and
+  // retype. revealVerdict() rebuilds them from verdictText.
+  $('splash-verdict').replaceChildren();
   $('splash-verdict').classList.remove('is-ready');
   $('splash-rain').classList.remove('is-ready');
   pauseDone = false;

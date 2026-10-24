@@ -167,6 +167,12 @@ b, strong { font-weight: 500; }
 .swimpin:focus-visible,
 .swimpin.is-selected { outline-color: var(--weir);border-color: var(--chalk); }
 
+/* The EA rain gauge — the rain bars' own blue, so it reads as "where the rain
+   is measured", not as another overflow state. Ring as for .swimpin. */
+.gaugepin { background: var(--rain); }
+.gaugepin:focus-visible,
+.gaugepin.is-selected { outline-color: var(--weir); }
+
 .mappin--discharging { background: var(--oxide); }
 .mappin--recent      { background: var(--amber); }
 .mappin--dry         { background: var(--dry); }
@@ -321,6 +327,7 @@ b, strong { font-weight: 500; }
   font-size: 11px;
   line-height: 1.35;
 }
+.map-popup .pop-note a { font: inherit; letter-spacing: inherit; text-transform: none; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
 /* The Environment Agency's own regulator-verified figures — set apart in
    their own bordered box rather than folded into .pop-context's grid, since
@@ -387,6 +394,7 @@ b, strong { font-weight: 500; }
 .map-popup .pop-state.is-recent      { color: var(--amber); }
 .map-popup .pop-state.is-dry         { color: var(--dry); }
 .map-popup .pop-state.is-offline     { color: var(--silt); }
+.map-popup .pop-state.is-gauge       { color: var(--rain); }
 
 .map-popup .pop-close {
   position: absolute;
@@ -457,6 +465,7 @@ b, strong { font-weight: 500; }
 .legend--dry         { color: var(--dry); }
 .legend--offline     { color: var(--silt); }
 .legend--swim        { color: var(--swim); }
+.legend--gauge       { color: var(--rain); }
 
 /* transform: none overrides .mappin's own translate(-50%, -50%) — without
    it every dot here sits 4px up-left of where the flex row's align-items:
@@ -949,6 +958,17 @@ button.fs-bar-label:hover { opacity: 0.7; }
     60%      { transform: translateX(-3px); }
     80%      { transform: translateX(2px); }
   }
+}
+/* The rain strip (reached from the gauge's popup) keeps its own blue — the
+   white wash above would fade it to white and snap back. Just the ring, in
+   yellow so it shows against the blue panel, plus the same jiggle. */
+@keyframes rain-focus-flash {
+  0%   { outline-color: var(--sewage); }
+  100% { outline-color: transparent; }
+}
+.o-rain.is-focused { animation: rain-focus-flash 1.8s ease-out; }
+@media (prefers-reduced-motion: no-preference) {
+  .o-rain.is-focused { animation: rain-focus-flash 1.8s ease-out, card-jiggle 1s ease-in-out; }
 }
 
 .o-head {

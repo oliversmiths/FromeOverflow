@@ -219,7 +219,7 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   one bar per day, aligned to the monitor strips' columns) and a red
   cross-hatched `.o-day--dryspill` bar + "N began after no rain" in a card's
   summary (only when N > 0 — never "0 dry spills"). The explainer is the Info
-  tab's "How dry spills are judged" and a Safety paragraph.
+  tab's Reading the timeline → "Dry spills" and a Safety paragraph.
   The splash also carries a bottom-right "💧 X mm rain in the last 24h" line
   (`.splash-rain`) from `rainfall.last_24h_mm`, which `exportJson` sets to null —
   hiding the line — when the gauge has been silent over 3h (`RAIN_STALE_MS`) or
@@ -293,6 +293,18 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   Wessex's dashboard if there is one (Tellisford Weir has none — not an
   EA-recognised bathing water, so nothing to link to).
 
+  **The rain gauge** (`gaugePins`, from `data.rainfall`'s own `lat`/`lon`) is
+  a third pin set on the same layer — `.gaugepin`, `--rain` blue, legend "Rain
+  gauge". It's the one EA gauge (station 531108, at Frome sewage treatment
+  works) every dry-spill call is judged against. `gaugePopup` shows the last
+  24h of rain, the station id, a note on the dry-spill rule (`DRY_RAIN_MM` /
+  `DRY_WINDOW_HOURS`, so it can't drift from format.js) with the EA's own
+  station page linked inline, then Share and "View Timeline" — which calls
+  `onSeeInTimeline({ id: GAUGE_ID })`, and index.html scrolls to and flashes
+  the rain strip instead of a card. Its hash is `#rain-gauge` (`GAUGE_ID`, exported
+  for index.html's routing); `allPins()` is what the shared ring/close/place
+  loops iterate.
+
   Labels: `bm.labels.places` carry a `kind` (`town`/`village`/`suburb`/
   `hamlet`), `bm.labels.roads` are all `road`, `bm.labels.waterways` are all
   `waterway` (named brooks/streams from `build-basemap.js`'s OS Open Rivers
@@ -306,19 +318,21 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
 - **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
   `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
   drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
-  with a tab strip — **Timeline** (the `cards.js` list), **Info** (what this is,
-  then one-open-at-a-time `<details>` accordions: How to use, **Safety** —
-  leads with the water-quality disclaimer, then the interpretation caveats —
-  and **Sources**, Data + Map provenance and the CC BY attribution), and
-  **Overview** (the `factsheet.js` bento grid, left-aligned at up to 1180px, then a
-  `.fs-cta` "Take action" box: the River Frome groups and the EA incident
-  hotline, as the grid's last tile). **Overview widens the panel to the full viewport on desktop**
-  (`.panel--wide`, toggled in `selectTab`; a phone's panel is full width
-  already) and the other tabs shrink it back. Opens to Timeline;
+  with a tab strip — **Timeline** (the `cards.js` list), **Overview** (the
+  `factsheet.js` bento grid, left-aligned at up to 1180px, ending in a
+  `.fs-cta` "Take action" tile: the River Frome groups and the EA incident
+  hotline), and **Info** (what this is, then one-open-at-a-time `<details>`
+  accordions: Reading the map, Reading the timeline — with a "Dry spills"
+  subsection — **Safety**, which leads with the water-quality disclaimer, then
+  the interpretation caveats, and **Sources**, Data + Map provenance and the
+  CC BY attribution). **Overview widens the panel to the full viewport on
+  desktop** (`.panel--wide`, toggled in `selectTab`; a phone's panel is full
+  width already) and the other tabs shrink it back. Opens to Timeline;
   tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
-  (`#timeline` / `#info` / `#overview`), and an accordion's own name opens Info
-  on it expanded (`#how-to-use` / `#safety` / `#sources`). `HASH_ALIASES` keeps
-  moved names working — `#river-frome`, once an Info accordion, opens Overview. The Timeline tab leads with
+  (`#timeline` / `#overview` / `#info`), and an accordion's own name opens Info
+  on it expanded (`#reading-the-map` / `#reading-the-timeline` / `#safety` /
+  `#sources`). `HASH_ALIASES` keeps moved names working — `#river-frome` opens
+  Overview, `#how-to-use` opens Reading the map. The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
   project's own avg annual duration) and a panel-wide 90-Day/History toggle

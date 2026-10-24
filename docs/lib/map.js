@@ -11,8 +11,8 @@
 
 import {
   DAY, MINUTE, RECENT_HOURS, fmtAnnualReturn, fmtDate, fmtDuration, fmtFlow,
-  fmtSpillLength, fmtWhen, fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs,
-  windowPhrase,
+  fmtRain, fmtSpillLength, fmtWhen, fmtWaterQuality, mapStatusOf, mapsUrl, offlineMs,
+  windowPhrase, DRY_RAIN_MM, DRY_WINDOW_HOURS,
 } from './format.js';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -87,7 +87,15 @@ export const LEGEND = [
   ['dry', 'Not discharging'],
   ['offline', 'Offline'],
   ['swim', 'Swimming spot', 'swimpin'],
+  ['gauge', 'Rain gauge', 'gaugepin'],
 ];
+
+// The rain gauge's id as a URL hash (#rain-gauge), the same way a monitor's
+// or swim spot's own id is. Disjoint from both: neither is ever this slug.
+export const GAUGE_ID = 'rain-gauge';
+
+// The EA's own public page for the gauge (live and recent readings).
+const gaugeUrl = (id) => `https://check-for-flooding.service.gov.uk/rainfall-station/${id}`;
 
 export function renderLegend(ul) {
   for (const [key, text, extraClass] of LEGEND) {
@@ -404,6 +412,75 @@ function swimPopup(spot) {
 }
 
 /**
+ * The rain gauge's popup — the one EA gauge every dry-spill call is judged
+ * against (format.js `rainBefore`), so the map shows where that rain is
+ * actually measured. Same shape as a monitor's: heading, the live fact,
+ * coordinates, a note (with the EA's own station page linked inline), then
+ * Share and "View Timeline", which opens the timeline on the rain strip.
+ */
+function gaugePopup(gauge, now, onSeeInTimeline) {
+  const el = document.createElement('div');
+
+  const h = document.createElement('h3');
+  const label = document.createElement('span');
+  label.className = 'pop-label';
+  label.textContent = `${gauge.name} rain gauge`;
+  h.append(label);
+
+  const f = document.createElement('p');
+  f.className = 'pop-last';
+  const mm = gauge.last_24h_mm;
+  f.textContent = mm != null
+    ? (mm === 0 ? 'No rain in the last 24h.' : `${fmtRain(mm)} rain in the last 24h.`)
+    : gauge.latest ? `Last reading ${fmtWhen(gauge.latest.ts, now)}.` : 'No recent reading.';
+  el.append(h, f);
+
+  const badge = document.createElement('p');
+  badge.className = 'pop-state is-gauge';
+  badge.textContent = `EA station ${gauge.id}`;
+  const top = document.createElement('div');
+  top.className = 'pop-top';
+  top.append(badge);
+  const lat = gauge.lat.toFixed(5);
+  const lon = gauge.lon.toFixed(5);
+  const a = document.createElement('a');
+  a.href = mapsUrl(lat, lon);
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.innerHTML = `${PIN}<span>${lat}, ${lon} ↗</span>`;
+  top.append(a);
+  el.append(top);
+
+  const link = document.createElement('a');
+  link.href = gaugeUrl(gauge.id);
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = 'its readings on GOV.UK ↗';
+  const d = document.createElement('p');
+  d.className = 'pop-note';
+  d.append(
+    'The Environment Agency’s rain gauge at Frome sewage treatment works, read every 15 minutes ' +
+    '(see ', link, '). A spill is flagged as beginning after no rain when this gauge recorded ' +
+    `${DRY_RAIN_MM} mm or less in the ${DRY_WINDOW_HOURS} hours before it started.`);
+  el.append(d);
+
+  // Same pair as a monitor's popup: Share, then the way back to the timeline —
+  // here its rain strip rather than a card.
+  const foot = document.createElement('div');
+  foot.className = 'pop-foot';
+  foot.append(buildShareButton());
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'pop-action';
+  btn.innerHTML = `${BARS}<span>View Timeline</span>`;
+  btn.addEventListener('click', () => onSeeInTimeline({ id: GAUGE_ID }));
+  foot.append(btn);
+  el.append(foot);
+
+  return el;
+}
+
+/**
  * Fetch `basemap.json` and draw the map into `host`. `opts.initialZoom` is the
  * fraction of the full 10 km box to open on (1 = whole box, 0.36 ≈ two clicks in).
  * `opts.onSeeInTimeline(monitor)` is called when a popup's "View Timeline"
@@ -417,7 +494,7 @@ export function buildMap(host, data, opts = {}) {
   fetch(`basemap.json?${Date.now()}`)
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((bm) => {
-      api = drawMap(host, bm, data.monitors, data.swim_spots, data.polled_at, initialZoom,
+      api = drawMap(host, bm, data.monitors, data.swim_spots, data.rainfall, data.polled_at, initialZoom,
         data.window_days, onSeeInTimeline);
       for (const m of pending) api.focus(m);
       pending.length = 0;
@@ -435,7 +512,7 @@ export function buildMap(host, data, opts = {}) {
   };
 }
 
-function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, onSeeInTimeline) {
+function drawMap(host, bm, monitors, swimSpots, rainfall, now, initialZoom, windowDays, onSeeInTimeline) {
   const [BW, BS, BE, BN] = bm.box;
   const [GW, GH] = bm.size;
 
@@ -628,6 +705,22 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
       return { s, el, gx: projX(s.lon), gy: projY(s.lat) };
     });
 
+  // The rain gauge — a single point of reference, not a monitor. Same layer,
+  // its own colour (.gaugepin, the rain bars' blue).
+  const gaugePins = rainfall?.lat != null && rainfall?.lon != null
+    ? [(() => {
+        const g = { ...rainfall, id: GAUGE_ID, stationId: rainfall.id };
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'mappin gaugepin';
+        el.setAttribute('aria-label', `${rainfall.name} rain gauge`);
+        el.addEventListener('click', (e) => { e.stopPropagation(); openGaugePopup(g); });
+        pinLayer.append(el);
+        return { g, el, gx: projX(g.lon), gy: projY(g.lat) };
+      })()]
+    : [];
+  const allPins = () => [...pins, ...swimPins, ...gaugePins];
+
   // Position within the crop first (so anything beyond it sticks to the edge),
   // then within the viewport (so one panned off-screen sticks too).
   function screenXY(gx, gy) {
@@ -641,7 +734,7 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
   }
 
   function placePins() {
-    for (const p of [...pins, ...swimPins]) {
+    for (const p of allPins()) {
       const { sx, sy, edge } = screenXY(p.gx, p.gy);
       if (edge && !SHOW_EDGE_MARKERS) { p.el.classList.remove('is-shown'); continue; }
       p.el.classList.add('is-shown');
@@ -714,7 +807,7 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
     placePopup();
     // Ring the pin its popup belongs to, so it stays visually tied to it
     // rather than just wherever the popup happens to be pointing.
-    for (const p of [...pins, ...swimPins]) p.el.classList.toggle('is-selected', p.el === pinEl);
+    for (const p of allPins()) p.el.classList.toggle('is-selected', p.el === pinEl);
 
     // popup()'s own "+ More" toggle (CONTEXT_ROWS + Share — swimPopup() has
     // no equivalent, Share sits straight in its .pop-foot instead) changes
@@ -753,10 +846,14 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
     showPopup(swimPopup(s), s, swimPins.find((p) => p.s.id === s.id)?.el);
     history.replaceState(null, '', `#${s.id}`);
   }
+  function openGaugePopup(g) {
+    showPopup(gaugePopup({ ...g, id: g.stationId }, now, onSeeInTimeline), g, gaugePins[0]?.el);
+    history.replaceState(null, '', `#${GAUGE_ID}`);
+  }
   function closePopup() {
     openItem = null;
     pop.hidden = true;
-    for (const p of [...pins, ...swimPins]) p.el.classList.remove('is-selected');
+    for (const p of allPins()) p.el.classList.remove('is-selected');
     history.replaceState(null, '', location.pathname + location.search);
   }
 
@@ -903,13 +1000,14 @@ function drawMap(host, bm, monitors, swimSpots, now, initialZoom, windowDays, on
   // which popup opens, so a card's "View on map" and index.html's own hash
   // routing can pass either a monitor or a swim spot interchangeably.
   function focus(item) {
-    const p = pins.find((x) => x.m.id === item.id) ?? swimPins.find((x) => x.s.id === item.id);
+    const p = pins.find((x) => x.m.id === item.id) ?? swimPins.find((x) => x.s.id === item.id)
+      ?? gaugePins.find((x) => x.g.id === item.id);
     if (!p) return;                       // unknown id, or an item with no coords
     const [pw, ph] = size();
     const vw2 = Math.max(VW_IN, VW_OUT * 0.14);  // lean in on the pin
     const vh2 = vw2 / (pw / ph);
     flyTo(vw2, p.gx - vw2 / 2, p.gy - vh2 / 2, () => {
-      if (p.m) openPopup(p.m); else openSwimPopup(p.s);
+      if (p.m) openPopup(p.m); else if (p.s) openSwimPopup(p.s); else openGaugePopup(p.g);
     });
   }
 

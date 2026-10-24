@@ -67,10 +67,10 @@
     <div class="tabs" role="tablist" aria-label="Panel sections">
       <button class="tab" type="button" role="tab" id="tab-timeline"
         aria-controls="tabpanel-timeline" aria-selected="true">Timeline</button>
-      <button class="tab" type="button" role="tab" id="tab-info" tabindex="-1"
-        aria-controls="tabpanel-info" aria-selected="false">Info</button>
       <button class="tab" type="button" role="tab" id="tab-overview" tabindex="-1"
         aria-controls="tabpanel-overview" aria-selected="false">Overview</button>
+      <button class="tab" type="button" role="tab" id="tab-info" tabindex="-1"
+        aria-controls="tabpanel-info" aria-selected="false">Info</button>
     </div>
     <div class="panel-head-fill" aria-hidden="true"></div>
     <button class="panel-close" type="button" aria-label="Close">
@@ -119,10 +119,9 @@
       hyperlocal window onto current and past sewage overflows.</p>
 
     <div class="acc">
-      <details class="acc-item" id="acc-how-to-use">
-        <summary class="acc-summary">How to use</summary>
+      <details class="acc-item" id="acc-reading-the-map">
+        <summary class="acc-summary">Reading the map</summary>
         <div class="acc-body">
-          <h3>Reading the map</h3>
           <p>Each pin marks a CSO, a point where sewage can be released into the river. Each one
             is watched by an event duration monitor (EDM), which reports when it starts and
             stops discharging.</p>
@@ -131,8 +130,12 @@
             <strong>Grey</strong>: monitor offline.</p>
           <p><strong>Purple</strong> squares are swimming spots, with the latest water quality and river flow
             readings where available.</p>
+        </div>
+      </details>
 
-          <h3>Reading the timeline</h3>
+      <details class="acc-item" id="acc-reading-the-timeline">
+        <summary class="acc-summary">Reading the timeline</summary>
+        <div class="acc-body">
           <p>The Timeline lists every CSO. Each has a strip showing the last 90 days,
             one bar per day: red for a discharge, amber for the 48 hours after, green for none,
             grey when the monitor was offline, and striped before we started watching.</p>
@@ -145,7 +148,7 @@
             average number of spills a year. The second is our own average total discharge time
             a year, since the EA doesn’t publish one.</p>
 
-          <h3>How dry spills are judged</h3>
+          <h3>Dry spills</h3>
           <p>A discharge is marked as beginning after no rain when the Frome rain gauge
             recorded 0.25&nbsp;mm or less in the 24 hours before it started. That’s a
             fraction of a millimetre, about what a heavy mist leaves behind. We look back
@@ -213,7 +216,7 @@
               rel="noopener">CC BY 4.0</a>.</li>
             <li><strong>Event history</strong>: the live data shows only each overflow’s latest
               spill, so one that ends between two checks can be replaced before we see it end.
-              Its timeline then reads “by” and “up to” — the latest it can have run to — until
+              Its timeline then reads “by” and “up to” – the latest it can have run to – until
               Wessex Water’s verified
               <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2026_view2/FeatureServer"
               target="_blank" rel="noopener">event history</a> (published about a month
@@ -289,7 +292,7 @@
 
 <script type="module">
 import { fmtRain, fmtWhen, mapStatusOf } from './lib/format.js';
-import { buildMap, renderLegend } from './lib/map.js';
+import { GAUGE_ID, buildMap, renderLegend } from './lib/map.js';
 import { renderCards, renderRainStrip, setCardsView } from './lib/cards.js';
 import { renderFactsheet } from './lib/factsheet.js';
 import { initTooltips } from './lib/tooltip.js';
@@ -443,18 +446,19 @@ function paintStatus(data) {
     `${data.monitors.length} monitors · last checked ${fmtWhen(now)}`;
 }
 
-// --- panel (one drawer, tabs: timeline / info / overview) ---
+// --- panel (one drawer, tabs: timeline / overview / info) ---
 //
 // Info holds Safety and Sources too, as <details> accordions rather than
 // tabs of their own — see docs/lib's sibling comment in styles.css (.acc) for
 // why. `acc-*` ids let a link jump straight to one, expanded (see the hash
 // routing at the bottom of this script).
-const TABS = ['timeline', 'info', 'overview'];
-const ACC_SECTIONS = ['how-to-use', 'safety', 'sources'];
+const TABS = ['timeline', 'overview', 'info'];
+const ACC_SECTIONS = ['reading-the-map', 'reading-the-timeline', 'safety', 'sources'];
 // Hashes that used to name something which has since moved — kept so an old
 // link still lands somewhere sensible. River Frome was an Info section before
-// its links moved to the Overview tab's call to action.
-const HASH_ALIASES = { 'river-frome': 'overview' };
+// its links moved to the Overview tab's call to action; How to use was split
+// into Reading the map and Reading the timeline.
+const HASH_ALIASES = { 'river-frome': 'overview', 'how-to-use': 'reading-the-map' };
 const panel = $('panel');
 const openBtn = $('open-panel');
 const scrim = $('scrim');
@@ -575,7 +579,10 @@ try {
     onSeeInTimeline: (monitor) => {
       map.closePopup();
       openPanel('timeline');
-      const card = $('overflows').querySelector(`[data-monitor-id="${CSS.escape(monitor.id)}"]`);
+      // The rain gauge's own popup lands on the rain strip above the list.
+      const card = monitor.id === GAUGE_ID
+        ? $('rain').querySelector('.o-card')
+        : $('overflows').querySelector(`[data-monitor-id="${CSS.escape(monitor.id)}"]`);
       card?.scrollIntoView({ block: 'start' });
       if (card) flashCard(card);
     },
@@ -640,7 +647,8 @@ try {
       // (renderList, above). Checked last, after the fixed tab/section names
       // above, so there's no ambiguity between the hash vocabularies.
       const item = data.monitors.find((m) => m.id === h)
-        ?? data.swim_spots.find((s) => s.id === h);
+        ?? data.swim_spots.find((s) => s.id === h)
+        ?? (h === GAUGE_ID && data.rainfall ? { id: GAUGE_ID } : null);
       if (item) {
         // Only if it's actually open — closePanel() also moves focus to the
         // FAB, which a fresh page load landing straight on a monitor hash

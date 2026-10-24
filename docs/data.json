@@ -1,5 +1,5 @@
 {
- "polled_at": 1792845943632,
+ "polled_at": 1792846858130,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -56,7 +56,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1788144600000,
@@ -93,6 +93,11 @@
      "start": 1792756920000,
      "end": 1792758960000,
      "rain_mm": 19.74
+    },
+    {
+     "start": 1792845120000,
+     "end": null,
+     "rain_mm": 7
     }
    ],
    "offline": [],
@@ -270,7 +275,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1791555300000,
@@ -318,6 +323,11 @@
      "start": 1792773840000,
      "end": 1792774500000,
      "rain_mm": 21.94
+    },
+    {
+     "start": 1792845660000,
+     "end": null,
+     "rain_mm": 7
     }
    ],
    "offline": [],
@@ -457,7 +467,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1790794260000,
@@ -570,6 +580,11 @@
      "start": 1792841220000,
      "end": 1792841460000,
      "rain_mm": 7.89
+    },
+    {
+     "start": 1792845480000,
+     "end": null,
+     "rain_mm": 7
     }
    ],
    "offline": [],
@@ -857,8 +872,14 @@
     },
     {
      "start": 1792844520000,
+     "end": 1792845180000,
+     "rain_mm": 6.61,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792845180000,
      "end": null,
-     "rain_mm": 6.61
+     "rain_mm": 7
     }
    ],
    "offline": [],
@@ -1192,7 +1213,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1788145080000,
@@ -1223,6 +1244,11 @@
      "start": 1792757040000,
      "end": 1792758720000,
      "rain_mm": 19.74
+    },
+    {
+     "start": 1792845000000,
+     "end": null,
+     "rain_mm": 7
     }
    ],
    "offline": [],
@@ -2204,10 +2230,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792844100000,
-   "mm": 0.62
+   "ts": 1792845000000,
+   "mm": 0.89
   },
-  "last_24h_mm": 6.61,
+  "last_24h_mm": 7,
   "days": [
    {
     "date": "2026-08-28",
@@ -2496,8 +2522,8 @@
    },
    {
     "date": "2026-10-24",
-    "mm": 5.26,
-    "n": 53
+    "mm": 6.15,
+    "n": 54
    }
   ]
  }

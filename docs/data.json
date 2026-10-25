@@ -1,5 +1,5 @@
 {
- "polled_at": 1792931446812,
+ "polled_at": 1792932333404,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -1755,7 +1755,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1792851840000,
@@ -1814,7 +1814,7 @@
     },
     {
      "start": 1792929840000,
-     "end": null,
+     "end": 1792930440000,
      "rain_mm": 35.07
     }
    ],
@@ -2621,10 +2621,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792929600000,
+   "ts": 1792930500000,
    "mm": 0
   },
-  "last_24h_mm": 35.07,
+  "last_24h_mm": 34.45,
   "days": [
    {
     "date": "2026-08-28",
@@ -2919,7 +2919,7 @@
    {
     "date": "2026-10-25",
     "mm": 1.4,
-    "n": 52
+    "n": 53
    }
   ]
  }

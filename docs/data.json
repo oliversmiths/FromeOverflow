@@ -1,5 +1,5 @@
 {
- "polled_at": 1792894542715,
+ "polled_at": 1792895469592,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -424,7 +424,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1792852560000,
@@ -507,8 +507,14 @@
     },
     {
      "start": 1792888080000,
-     "end": null,
-     "rain_mm": 38.32
+     "end": 1792891740000,
+     "rain_mm": 38.32,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1792891740000,
+     "end": 1792892820000,
+     "rain_mm": 38.67
     }
    ],
    "offline": [],
@@ -1644,11 +1650,11 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1792851840000,
-     "end": null,
+     "end": 1792894560000,
      "rain_mm": 15.59
     }
    ],
@@ -1832,7 +1838,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1792495200000,
@@ -1856,7 +1862,7 @@
     },
     {
      "start": 1792851960000,
-     "end": null,
+     "end": 1792891440000,
      "rain_mm": 15.59
     }
    ],
@@ -2455,10 +2461,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1792892700000,
-   "mm": 0.09
+   "ts": 1792893600000,
+   "mm": 0.03
   },
-  "last_24h_mm": 38.76,
+  "last_24h_mm": 38.79,
   "days": [
    {
     "date": "2026-08-28",
@@ -2752,8 +2758,8 @@
    },
    {
     "date": "2026-10-25",
-    "mm": 0.45,
-    "n": 11
+    "mm": 0.48,
+    "n": 12
    }
   ]
  }

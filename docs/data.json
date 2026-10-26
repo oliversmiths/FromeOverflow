@@ -1,5 +1,5 @@
 {
- "polled_at": 1793012505462,
+ "polled_at": 1793013338399,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -475,7 +475,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1792852560000,
@@ -571,6 +571,11 @@
      "start": 1792895760000,
      "end": 1792896780000,
      "rain_mm": 38.79
+    },
+    {
+     "start": 1793012520000,
+     "end": null,
+     "rain_mm": 8.27
     }
    ],
    "offline": [],
@@ -1432,7 +1437,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1791551400000,
@@ -1500,8 +1505,14 @@
     },
     {
      "start": 1793009640000,
-     "end": null,
-     "rain_mm": 5.54
+     "end": 1793011440000,
+     "rain_mm": 5.54,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1793011440000,
+     "end": 1793012160000,
+     "rain_mm": 7.46
     }
    ],
    "offline": [],
@@ -2385,12 +2396,17 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1792850760000,
      "end": 1792882080000,
      "rain_mm": 13.78
+    },
+    {
+     "start": 1793011800000,
+     "end": null,
+     "rain_mm": 8.27
     }
    ],
    "offline": [],
@@ -2724,10 +2740,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1793010600000,
-   "mm": 1.15
+   "ts": 1793011500000,
+   "mm": 0.81
   },
-  "last_24h_mm": 7.46,
+  "last_24h_mm": 8.27,
   "days": [
    {
     "date": "2026-08-28",
@@ -3026,8 +3042,8 @@
    },
    {
     "date": "2026-10-26",
-    "mm": 7.42,
-    "n": 42
+    "mm": 8.23,
+    "n": 43
    }
   ]
  }

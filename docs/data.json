@@ -1,5 +1,5 @@
 {
- "polled_at": 1793052056349,
+ "polled_at": 1793052934016,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -410,8 +410,14 @@
     },
     {
      "start": 1793049600000,
+     "end": 1793051520000,
+     "rain_mm": 9.52,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1793051520000,
      "end": null,
-     "rain_mm": 9.52
+     "rain_mm": 9.55
     }
    ],
    "offline": [],

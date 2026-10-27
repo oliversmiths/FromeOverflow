@@ -69,9 +69,10 @@ const RAIN_MARK = '{rain}';
 
 /**
  * A note's lines as text, except that anything after `{rain}` on a line is
- * wrapped in `.tip-rainseg` behind a drop icon — the rain reading for a spill,
- * kept on the same line as the spill's times but set apart in blue. Built from
- * DOM nodes, never innerHTML, since the text comes from data.
+ * wrapped in `.tip-rainseg` behind a drop icon, set apart in blue. A line that
+ * is only that (cards.js's one rain figure per day, at the tooltip's foot)
+ * becomes its own block; mid-line it stays inline. Built from DOM nodes, never
+ * innerHTML, since the text comes from data.
  */
 function appendNote(row, text) {
   let afterBlock = false;

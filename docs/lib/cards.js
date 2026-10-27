@@ -414,19 +414,21 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
       // special-casing for.
       const notes = [];
       if (cell.state === 'spill') {
-        let anyRain = false;
-        for (const e of cell.events) {
-          // Rain at the gauge in the 24h before this spill began, on the same
-          // line as its times. Just the figure: a single trailing line (below)
-          // says what it means, once, however many spills the day holds.
-          // `{rain}` is tooltip.js's marker for "drop icon, then the rain
-          // styling, to the end of the line". Nothing for a spill with no
-          // usable rain data.
-          const weather = spillWeather(e);
-          if (weather) anyRain = true;
-          notes.push(fmtSpillSpan(e, now) + (weather ? ` · {rain}${fmtRain(e.rain_mm)}` : ''));
+        for (const e of cell.events) notes.push(fmtSpillSpan(e, now));
+        // One rain figure per day, on its own line at the foot, rather than one
+        // per spill beside its times — several spills (an inferred "by … · up
+        // to …" especially) made those lines too long. It's the gauge's 24h
+        // before the day's *first* spill (cell.events is oldest first): the
+        // window is relative to a spill's start, so a day of several needs one
+        // to anchor on, and the first says whether it was raining before the
+        // day's spilling began. `{rain}` is tooltip.js's marker for "drop icon,
+        // then the rain styling"; a line that is only that renders as its own
+        // block. Nothing when that spill has no usable rain data.
+        const first = cell.events[0];
+        if (spillWeather(first)) {
+          notes.push(`{rain}${fmtRain(first.rain_mm)} in 24hr before ` +
+            (cell.events.length > 1 ? 'first spill' : 'spill'));
         }
-        if (anyRain) notes.push('{rain}Rain in the 24h before');
         if (cell.events.some((e) => spillWeather(e) === 'dry')) d.classList.add('o-day--dryspill');
       }
       if (partial) notes.push('Incomplete day');

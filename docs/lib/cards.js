@@ -15,13 +15,31 @@
 import {
   DAY, HOUR, annualHistory, avgAnnualDurationMs, dayCells, dayKey, fmtAnnualReturn,
   fmtDate, fmtDuration, fmtRain, fmtSpillSpan, fmtWhen, mapStatusOf, offlineMs,
-  rankByAvgDuration, rankByAvgSpills, rankByTotal, spillWeather, windowPhrase,
+  rankByAvgDuration, rankByAvgSpills, rankByRecent, rankByTotal, spillWeather, windowPhrase,
 } from './format.js';
 
 const SORTS = {
   total: rankByTotal,
+  recent: rankByRecent,
   avgSpills: rankByAvgSpills,
   avgDuration: rankByAvgDuration,
+};
+
+/**
+ * The sorts offered in each view, first one the default — index.html fills
+ * the sort <select> from this whenever the view changes. Each view ranks by
+ * figures it actually shows, so a card's position is never explained by a
+ * number hidden in the other view.
+ */
+export const SORTS_BY_VIEW = {
+  '90day': [
+    ['total', 'Total duration'],
+    ['recent', 'Most recent discharge'],
+  ],
+  history: [
+    ['avgSpills', 'Historic avg spills/yr'],
+    ['avgDuration', 'Historic avg duration/yr'],
+  ],
 };
 
 // A year's own severity tier, same three-colour vocabulary as the map

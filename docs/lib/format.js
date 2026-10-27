@@ -512,6 +512,24 @@ export function rankByTotal(monitors, now) {
 }
 
 /**
+ * Monitors sorted by their most recent discharge, newest first: one still
+ * discharging leads (it's happening now, however long ago it began), then
+ * the rest by when their last spill began — the same start the card's own
+ * "last was …" line reports. A monitor with no discharge on the page sorts
+ * last.
+ */
+export function rankByRecent(monitors, now) {
+  // Ongoing spills are offset far past any real timestamp so they always
+  // lead, still ordered among themselves by start.
+  const ONGOING = 1e15;
+  const key = (m) => {
+    const e = m.events.at(-1);
+    return e ? (e.end == null ? ONGOING : 0) + e.start : null;
+  };
+  return withTotal(monitors, now).sort(byFieldDesc(key));
+}
+
+/**
  * Monitors sorted by the Environment Agency's own long-term average spill
  * count (the same figure `fmtAnnualReturn`'s `avg` formats, from the latest
  * annual-return year on record), highest first. A monitor with no

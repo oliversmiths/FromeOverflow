@@ -336,9 +336,12 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `#sources`). `HASH_ALIASES` keeps moved names working — `#river-frome` opens
   Overview, `#how-to-use` opens Reading the map. The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
-  `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
-  project's own avg annual duration) and a panel-wide 90-Day/History toggle
-  (`setCardsView`, cards.js) that flips every card at once — on phones
+  `<select>` whose options follow the view (`SORTS_BY_VIEW` in cards.js —
+  90-Day: total duration / most recent discharge, `rankByRecent`, ongoing
+  first; History: EA long-term avg spills / this project's own avg annual
+  duration — each view remembers its own pick, and only ranks by figures it
+  shows) and a panel-wide 90-Day/History toggle that re-renders every card
+  in the new view and order — on phones
   (≤640px) it's the only one, each card's own switch hidden to give the
   heading's site name room — then the `cards.js`
   list itself.

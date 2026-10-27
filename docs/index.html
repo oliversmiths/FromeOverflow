@@ -89,15 +89,11 @@
     <div class="overflows-controls">
       <label class="sort-label" for="sort-select" aria-label="Sort">
         <svg class="ico" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"
-          fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 4v16"/><path d="M4 7l3-3 3 3"/>
-          <path d="M17 20V4"/><path d="M20 17l-3 3-3-3"/>
+          fill="currentColor">
+          <path d="M12 2l7 8H5z"/><path d="M12 22l-7-8h14z"/>
         </svg>
-        <select id="sort-select">
-          <option value="total">90-day total duration</option>
-          <option value="avgSpills">Historic avg spills/yr</option>
-          <option value="avgDuration">Historic avg duration/yr</option>
-        </select>
+        <!-- Options filled per view from cards.js's SORTS_BY_VIEW. -->
+        <select id="sort-select"></select>
       </label>
       <div class="o-view-toggle" id="view-all-toggle" role="group" aria-label="Switch every card's view">
         <button type="button" class="o-view-btn" data-view="90day">90-Day</button>
@@ -293,7 +289,7 @@
 <script type="module">
 import { fmtRain, fmtWhen, mapStatusOf } from './lib/format.js';
 import { GAUGE_ID, buildMap, renderLegend } from './lib/map.js';
-import { renderCards, renderRainStrip, setCardsView } from './lib/cards.js';
+import { SORTS_BY_VIEW, renderCards, renderRainStrip } from './lib/cards.js';
 import { renderFactsheet } from './lib/factsheet.js';
 import { initTooltips } from './lib/tooltip.js';
 
@@ -592,43 +588,43 @@ try {
       if (card) flashCard(card);
     },
   });
-  // Sort and view both live outside renderCards() itself so the view toggle
-  // can re-render without resetting the sort, and vice versa — except a sort
-  // change also drives the view (see below), since a card's visible content
-  // should match the reason it's in that position.
+  // The sort list follows the panel-wide view: each view offers only sorts
+  // by figures it shows (SORTS_BY_VIEW), so a card's position is always
+  // explained by what's on it. Each view remembers its own choice, so
+  // flipping 90-Day → History → 90-Day comes back to the same order.
   let currentView = '90day';
+  const sortByView = Object.fromEntries(
+    Object.entries(SORTS_BY_VIEW).map(([view, opts]) => [view, opts[0][0]]));
   const sortSelect = $('sort-select');
   const viewAllToggle = $('view-all-toggle');
 
   const renderList = () => renderCards($('overflows'), data, (monitor) => {
     closePanel();
     map.focus(monitor);
-  }, { sort: sortSelect.value, view: currentView });
+  }, { sort: sortByView[currentView], view: currentView });
 
-  const setViewAllPressed = () => {
+  const syncControls = () => {
     for (const btn of viewAllToggle.querySelectorAll('.o-view-btn')) {
       btn.setAttribute('aria-pressed', String(btn.dataset.view === currentView));
     }
+    sortSelect.replaceChildren(...SORTS_BY_VIEW[currentView].map(([value, text]) =>
+      new Option(text, value, false, value === sortByView[currentView])));
   };
 
   sortSelect.addEventListener('change', () => {
-    // A historic sort ranks by a figure the 90-Day view never shows — left
-    // alone, the #1 card's position would look arbitrary. Both directions:
-    // switching back to the 90-day sort switches the view back too, same
-    // reasoning in reverse.
-    currentView = sortSelect.value === 'total' ? '90day' : 'history';
-    setViewAllPressed();
+    sortByView[currentView] = sortSelect.value;
     renderList();
   });
   viewAllToggle.addEventListener('click', (e) => {
     const btn = e.target.closest('.o-view-btn');
-    if (!btn) return;
+    if (!btn || btn.dataset.view === currentView) return;
     currentView = btn.dataset.view;
-    setViewAllPressed();
-    setCardsView($('overflows'), currentView);
+    syncControls();
+    // A full re-render, not just setCardsView: the order changes with the view.
+    renderList();
   });
 
-  setViewAllPressed();
+  syncControls();
   renderRainStrip($('rain'), data);
   renderList();
   renderFactsheet($('factsheet'), data, (monitor) => {

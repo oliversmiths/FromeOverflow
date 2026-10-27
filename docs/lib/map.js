@@ -112,13 +112,15 @@ export function renderLegend(ul) {
 // `overflow_context` layer, filled in by scripts/fetch-context.js. Everything
 // above the divider comes from the live activity feed; everything below is
 // context that explains it. Rows with no value are skipped, so a monitor whose
-// context hasn't been fetched simply shows the feed half. `treatment` is
+// context hasn't been fetched simply shows the feed half. (Two crossovers: the
+// site name is promoted to the heading, and the feed's own `watercourse` sits
+// down here in its place.) `treatment` is
 // fetched and stored (scripts/fetch-context.js, monitors.treatment) but not
 // listed here — it reads like Wessex's own framing of the discharge rather
 // than a neutral fact, and it's one of the longer fields for the space it
 // bought. Still in the database and in data.json for anyone who wants it.
 const CONTEXT_ROWS = [
-  ['Site', 'site_name'],
+  ['Watercourse', 'watercourse'],
   ['Waterbody', 'waterbody'],
   ['Type', 'overflow_type'],
   ['Cause', 'cause'],
@@ -163,15 +165,19 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   const last = monitor.events.at(-1);
   const el = document.createElement('div');
 
-  // Label and watercourse share one heading line; each in its own span so the
-  // stylesheet can treat them differently.
+  // Label and site share one heading line — "WXW00051 FROME SINGERS CATTLE
+  // MARKET" — each in its own span so the stylesheet can treat them
+  // differently. The site name says where an outfall is far better than the
+  // feed's receiving watercourse, which moves down into "+ More" instead. A
+  // monitor whose context hasn't been fetched falls back to the watercourse
+  // here, so the heading is never just a bare Id.
   const h = document.createElement('h3');
   const label = document.createElement('span');
   label.className = 'pop-label';
   label.textContent = monitor.label;
   const w = document.createElement('span');
-  w.className = 'pop-watercourse';
-  w.textContent = monitor.watercourse;
+  w.className = 'pop-site';
+  w.textContent = monitor.site_name || monitor.watercourse;
   h.append(label, ' ', w);
 
   // State and coordinates share one row — status left, location right — so the
@@ -270,7 +276,10 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
   // Always built, even with no CONTEXT_ROWS to show — Share (see
   // buildShareButton) lives in here too, and needs a home regardless of
   // whether this monitor's context has been fetched yet.
-  const rows = CONTEXT_ROWS.filter(([, key]) => monitor[key]);
+  // Watercourse only once the heading has the site name to show instead —
+  // otherwise it's already up there.
+  const rows = CONTEXT_ROWS.filter(([, key]) =>
+    monitor[key] && (key !== 'watercourse' || monitor.site_name));
   const toggle = document.createElement('button');
   toggle.type = 'button';
   toggle.className = 'pop-action pop-more-toggle';

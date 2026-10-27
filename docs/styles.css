@@ -264,10 +264,13 @@ b, strong { font-weight: 500; }
   /* left / top are set in px by placePopup() so it stays on screen near edges */
 }
 
-.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 13px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Wraps rather than truncating — a site name ("FROME NORTH OF CARPET FACTORY
+   NEAR RAILWAY JUNCTION") is the descriptive half of the heading, so it's worth
+   the extra line. The right gap keeps it clear of the close button. */
+.map-popup h3 { margin: 0 0 4px; font-family: var(--data); font-weight: 400; font-size: 13px; max-width: calc(100% - 20px); }
 .map-popup p { margin: 0 0 6px; }
 .map-popup .pop-label { color: var(--weir); text-transform: uppercase;}
-.map-popup .pop-watercourse { color: var(--weir); font-size: 13px;  }
+.map-popup .pop-site { color: var(--weir); font-size: 13px; }
 /* Status and coordinates on one line — status left, link right — closing the
    feed half just above the context divider. Wraps to two rows if they can't fit
    side by side (the preceding <p> already supplies the gap above). */
@@ -986,7 +989,13 @@ button.fs-bar-label:hover { opacity: 0.7; }
   text-transform: uppercase;
   line-height: 1.35;
   color: var(--weir);
-  min-width: 0;   /* lets a long label/watercourse wrap before pushing the toggle out */
+  min-width: 0;   /* lets a long site name shrink before pushing the toggle out */
+  /* One line, cut with an ellipsis: site names run up to ~50 characters
+     ("FROME NORTH OF CARPET FACTORY NEAR RAILWAY JUNCTION"), and wrapping them
+     would set each card's strip at a different height. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .o-where {  }
@@ -1071,6 +1080,9 @@ button.fs-bar-label:hover { opacity: 0.7; }
 .o-rain .o-head h3,
 .o-rain .o-where,
 .o-rain .o-meta { color: var(--chalk); }
+/* Its heading is fixed text, not a site name — let it wrap rather than lose
+   the station number to the monitor cards' ellipsis. */
+.o-rain .o-head h3 { white-space: normal; }
 .o-rain .o-where { opacity: 0.75; }
 .o-rain .o-scale { color: rgba(255, 255, 255, 0.6); }
 /* Bars grow from the bottom of the column; the column itself is transparent
@@ -1474,6 +1486,10 @@ opacity: 0.5;
 }
 
 @media (max-width: 640px) {
+  /* Phones: drop each card's own 90-Day/History switch — the panel-wide one
+     above the list does the same for every card, and the room goes to the
+     heading's site name, which the switch otherwise cut to ~14 characters. */
+  .o-head .o-view-toggle { display: none; }
   .splash-verdict {
     right: clamp(12px, 4vw, 20px);
     /* bigger on phones: 15% of width, floored at 42px, capped at 96px.

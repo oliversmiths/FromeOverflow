@@ -106,7 +106,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   else. `statusOf` is the 3-state code (discharging / offline / dry); `mapStatusOf`
   adds the "recent" step (a spill that ended within `RECENT_HOURS`, default 48) for
   the traffic light. The map popup is split in two by a rule: **above it is the
-  live activity feed** (Id + watercourse, state, last discharge, offline total,
+  live activity feed** (heading `Id site_name` — falling back to the
+  watercourse when context isn't fetched — then state, last discharge, offline total,
   coordinates). **Below it, in order:** a monitor with annual-return data gets
   its own `.pop-annual` box — not folded into the context grid below, because
   a regulator's published figure reads as a claim of its own, not just
@@ -119,7 +120,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   the *other* figure from everything else on the page (ours is a live-tracked
   floor; theirs is official, counted differently, a year in arrears). Then
   `CONTEXT_ROWS` — `overflow_context` fields as a `.pop-context` term/value
-  grid, **`site_name`/`waterbody`/`overflow_type`/`cause` only**; `treatment`
+  grid, **`watercourse`/`waterbody`/`overflow_type`/`cause` only** (the feed's
+  `watercourse` swaps places with `site_name`, which is the heading); `treatment`
   is fetched and stored the same as the rest (`scripts/fetch-context.js`,
   `monitors.treatment`) but deliberately left off this list — it reads like
   Wessex's own framing of the discharge rather than a neutral fact, and costs
@@ -336,7 +338,9 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` (`SORTS` in cards.js: 90-day total / EA long-term avg spills / this
   project's own avg annual duration) and a panel-wide 90-Day/History toggle
-  (`setCardsView`, cards.js) that flips every card at once — then the `cards.js`
+  (`setCardsView`, cards.js) that flips every card at once — on phones
+  (≤640px) it's the only one, each card's own switch hidden to give the
+  heading's site name room — then the `cards.js`
   list itself.
   The legend is a bottom-right `<details>` (`#legend-wrap`), closed to
   "+ Legend" by default at every width; opening it stacks the rows under it. On load a full-screen `.splash` shows the
@@ -550,7 +554,10 @@ Nine tables (schema in [poll.js](poll.js) `SCHEMA`):
   `exportJson` publishes the heading as **`label ?? id`** — the Wessex Id is the
   title on both card types, exactly as the activity feed gives it, and `label` is
   a hand-set escape hatch that is normally NULL. `site_name` is published
-  *separately* and appears in the popup's context block, not as the title.
+  *separately*; both the map popup and the timeline card show it after the Id as the heading's
+  second half (`WXW00805 FROME NORTH OF …`), falling back to `watercourse` if
+  context isn't fetched. The popup heading wraps; the card's is one line,
+  ellipsis-truncated, so every strip starts at the same height.
 - **`events`** — keyed on `(monitor_id, start_ms)`. Wessex give us only the latest
   event's start/end, so: a start we've seen before just fills in `end_ms`
   (`COALESCE`, never overwritten); an unseen start is a new spill. **`exportJson`

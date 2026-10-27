@@ -334,9 +334,13 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
     head.className = 'o-head';
     const heading = document.createElement('h3');
     heading.textContent = monitor.label;
+    // Id then site name, as in the map popup — the site says where an outfall
+    // is far better than its receiving watercourse. One line, truncated (see
+    // .o-head h3), so every card's strip starts at the same height; falls back
+    // to the watercourse while context hasn't been fetched.
     const where = document.createElement('span');
     where.className = 'o-where';
-    where.textContent = ` ${monitor.watercourse}`;
+    where.textContent = ` ${monitor.site_name || monitor.watercourse}`;
     heading.append(document.createTextNode(''), where);
 
     // 90-Day / History — same switch as the panel-wide one above the list

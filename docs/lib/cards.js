@@ -394,10 +394,16 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
     // Only said when true — "0 after no rain" on every card would be noise.
     const dryRuns = monitor.events.filter((e) => spillWeather(e) === 'dry').length;
     if (dryRuns) bits.push(`${dryRuns} began after no rain`);
+    const items = bits.map((text) => ({ text }));
+    // The feed's "discharging" claim, set aside (see mapStatusOf) — said here
+    // so the card's grey border and empty today aren't a mystery.
+    if (state.key === 'unconfirmed') {
+      items.push({ text: 'feed says discharging, unconfirmed', className: 'o-unconfirmed' });
+    }
 
     const meta = document.createElement('p');
     meta.className = 'o-meta';
-    meta.append(joinRow(bits.map((text) => ({ text })), 'o-meta-item', 'o-meta-sep'));
+    meta.append(joinRow(items, 'o-meta-item', 'o-meta-sep'));
 
     const cells = dayCells(monitor, now, data.window_days);
     const tally = cells.reduce((t, c) => (t[c.state]++, t),

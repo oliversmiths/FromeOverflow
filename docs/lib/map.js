@@ -86,6 +86,7 @@ export const LEGEND = [
   ['recent', `Discharged recently`],
   ['dry', 'Not discharging'],
   ['offline', 'Offline'],
+  ['unconfirmed', 'Unconfirmed'],
   ['swim', 'Swimming spot', 'swimpin'],
   ['gauge', 'Rain gauge', 'gaugepin'],
 ];
@@ -209,6 +210,15 @@ function popup(monitor, now, windowDays, onSeeInTimeline) {
     : `0 discharge recorded ${windowPhrase(monitor, windowDays, now)}.`;
 
   el.append(h, d);
+
+  // Why a pin that the feed calls discharging isn't red — see mapStatusOf.
+  if (state.key === 'unconfirmed') {
+    const u = document.createElement('p');
+    u.className = 'pop-unconfirmed';
+    u.textContent = `Wessex's feed says discharging, but it points to a spill ` +
+      `from ${fmtDate(monitor.unconfirmed_start)} that later readings show had ended.`;
+    el.append(u);
+  }
 
   // Same caveat the timeline cards carry: what the record doesn't cover.
   const dark = offlineMs(monitor, now);

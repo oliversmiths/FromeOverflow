@@ -676,7 +676,23 @@ function dailyRain(readings) {
 
 async function exportJson(db, rows, polledAt) {
   const liveStatus = new Map(rows.map((r) => [String(r.Id), r.Status]));
+  const liveStart = new Map(rows.map((r) => [String(r.Id), sec(r.LatestEventStart)]));
   const cutoff = polledAt - EXPORT_DAYS * DAY;
+
+  // A "discharging" reading can't be taken at face value when its spill has
+  // already been followed by a newer one: a later start proves it ended. The
+  // feed does this — falling back to an old spill whose end it never reported
+  // (WXW00401 on 24, 26 and 28 Oct 2026 replayed one from 24 Oct, on a dry
+  // day, for hours). Published as `unconfirmed_start` and shown as
+  // "Unconfirmed", not as a live spill; the raw reading is still stored as
+  // it came. It clears by itself once the feed moves on to a fresh event.
+  const newerEvent = db.prepare(
+    'SELECT 1 FROM events WHERE monitor_id = ? AND start_ms > ? LIMIT 1');
+  const unconfirmedStart = (id) => {
+    const start = liveStart.get(id);
+    if (liveStatus.get(id) !== 1 || start == null) return null;
+    return newerEvent.get(id, start) ? start : null;
+  };
 
   // Wessex hand over their latest event with the very first reading, so most
   // monitors carry one spill from before we were watching — sometimes months
@@ -750,6 +766,8 @@ async function exportJson(db, rows, polledAt) {
       cause: m.cause,
       since: m.first_seen,
       status: liveStatus.get(m.id) ?? null,
+      // Only when set — see unconfirmedStart above.
+      ...(unconfirmedStart(m.id) != null && { unconfirmed_start: unconfirmedStart(m.id) }),
       events: eventsFor.all(m.id, cutoff, m.first_seen ?? 0)
         .map((e) => ({
           start: e.start_ms,
@@ -835,6 +853,8 @@ async function main() {
   db.close();
 
   const discharging = local.filter((r) => r.Status === 1);
+  // The console's count is the feed's own claim; the page sets aside any the
+  // export marks unconfirmed (see exportJson's unconfirmedStart).
   const offline = local.filter((r) => r.Status === -1).length;
   const ongoing = discharging
     .map((r) => spillMs({ start: r.LatestEventStart, end: null }, polledAt))

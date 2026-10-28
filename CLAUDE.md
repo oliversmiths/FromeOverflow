@@ -656,6 +656,18 @@ Rules baked into `store` / `exportJson`:
   from 14:31, offline). That's the monitor's own record, not a stale API reply
   — no other monitor has ever done it — so don't discard readings for it; the
   `events` upsert is harmless (`COALESCE`).
+- **A "discharging" reading can replay an old spill.** WXW00401 did it on 24,
+  26 and 28 Oct 2026: `Status` 1 with a `LatestEventStart` days old, always a
+  spill whose end the feed never reported (one we'd marked `superseded`),
+  apparently left open in Wessex's own system — on a dry day, for hours. A
+  later start proves that spill ended, so `exportJson` publishes
+  `unconfirmed_start` when the live start has a newer event after it, and
+  `mapStatusOf` returns **`unconfirmed`** instead of `discharging`: grey,
+  red-hatched pin (`.mappin--unconfirmed`, no pulse), "Unconfirmed" in the
+  legend, a line in the popup and on the card, and it's **never counted as
+  discharging** (verdict, "Right now"). The snapshot is still stored as it
+  came; the state clears itself when the feed moves on. The poll's console
+  count is still the feed's own claim.
   `backfillOffline` is the one-off that seeded the table from the old
   snapshot log (splitting runs on `OFFLINE_GAP_MS`, 90 min, for rows written
   before `status_start_ms` existed); it will not re-run once the table is

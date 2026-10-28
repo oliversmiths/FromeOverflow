@@ -177,6 +177,13 @@ b, strong { font-weight: 500; }
 .mappin--recent      { background: var(--amber); }
 .mappin--dry         { background: var(--dry); }
 .mappin--offline     { background: var(--silt); }
+/* The feed says discharging but can't be believed (mapStatusOf) — grey, like
+   "we don't know", hatched with the discharge red so it doesn't read as just
+   offline. Never pulses: that's reserved for a spill we accept as live. */
+.mappin--unconfirmed,
+.legend .legend--unconfirmed .mappin {
+  background: repeating-linear-gradient(45deg, var(--oxide) 0 2px, var(--silt) 2px 4px);
+}
 
 .mappin.is-edge { border-radius: 2px; width: 12px; height: 12px; box-shadow: none; opacity: 0.9; }
 
@@ -397,6 +404,8 @@ b, strong { font-weight: 500; }
 .map-popup .pop-state.is-recent      { color: var(--amber); }
 .map-popup .pop-state.is-dry         { color: var(--dry); }
 .map-popup .pop-state.is-offline     { color: var(--silt); }
+.map-popup .pop-state.is-unconfirmed { color: var(--silt); }
+.map-popup .pop-unconfirmed { font-size: 11px; color: var(--silt); }
 .map-popup .pop-state.is-gauge       { color: var(--rain); }
 
 .map-popup .pop-close {
@@ -467,6 +476,7 @@ b, strong { font-weight: 500; }
 .legend--recent      { color: var(--amber); }
 .legend--dry         { color: var(--dry); }
 .legend--offline     { color: var(--silt); }
+.legend--unconfirmed { color: var(--silt); }
 .legend--swim        { color: var(--swim); }
 .legend--gauge       { color: var(--rain); }
 
@@ -917,6 +927,7 @@ button.fs-bar-label:hover { opacity: 0.7; }
 .o-card.is-recent      { border-left-color: var(--amber); }
 .o-card.is-dry         { border-left-color: var(--dry); }
 .o-card.is-offline     { border-left-color: var(--silt); }
+.o-card.is-unconfirmed { border-left-color: var(--silt); }
 /* History view swaps to this monitor's own representative historic severity
    instead (cards.js's monitorSeverity/applyView) — .is-dry above already
    covers that tier's colour (same green either way), .is-amber reuses the
@@ -1235,7 +1246,8 @@ button.fs-bar-label:hover { opacity: 0.7; }
    time spent discharging (the strip's spill bars, the discharging pin/state),
    silt for time spent offline (the strip's offline bars, the offline pin/state). */
 .o-total   { color: var(--oxide); }
-.o-offline { color: var(--silt); }
+.o-offline,
+.o-unconfirmed { color: var(--silt); }
 .o-foot button {
   display: inline-flex;
   align-items: center;

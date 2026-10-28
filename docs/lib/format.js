@@ -249,9 +249,16 @@ export const RECENT_MS = RECENT_HOURS * HOUR;
  *   recent      – stopped within RECENT_HOURS   (amber)
  *   dry         – not spilling, nothing recent  (green)
  *   offline     – no signal / unknown           (grey)
- * `key` matches the `.mappin--*` CSS classes in `index.html`.
+ *   unconfirmed – the feed says discharging, but about a spill a newer one
+ *                 proves had ended (`unconfirmed_start`, set by poll.js's
+ *                 exportJson)                   (grey, red-hatched)
+ * `key` matches the `.mappin--*` CSS classes in `index.html`. Unconfirmed is
+ * never counted as discharging — not in the verdict, not in "Right now".
  */
 export function mapStatusOf(monitor, now) {
+  if (monitor.status === 1 && monitor.unconfirmed_start != null) {
+    return { key: 'unconfirmed', text: 'Unconfirmed' };
+  }
   if (monitor.status === 1) return { key: 'discharging', text: 'Discharging now' };
   if (monitor.status === -1 || monitor.status == null) {
     return { key: 'offline', text: 'Offline' };

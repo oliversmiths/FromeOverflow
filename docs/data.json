@@ -1,5 +1,5 @@
 {
- "polled_at": 1794737738373,
+ "polled_at": 1794738659700,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -1864,7 +1864,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1791551400000,
@@ -1948,8 +1948,14 @@
     },
     {
      "start": 1794734040000,
-     "end": null,
-     "rain_mm": 1.6
+     "end": 1794736920000,
+     "rain_mm": 1.6,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1794736920000,
+     "end": 1794737040000,
+     "rain_mm": 7.3
     }
    ],
    "offline": [],
@@ -3090,7 +3096,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1788144240000,
@@ -3125,7 +3131,7 @@
     },
     {
      "start": 1794735000000,
-     "end": null,
+     "end": 1794736560000,
      "rain_mm": 4.3
     }
    ],
@@ -3197,7 +3203,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1792560840000,
@@ -3222,7 +3228,7 @@
     },
     {
      "start": 1794735360000,
-     "end": null,
+     "end": 1794736200000,
      "rain_mm": 4.3
     }
    ],
@@ -3318,10 +3324,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1794735900000,
-   "mm": 2.26
+   "ts": 1794736800000,
+   "mm": 0.74
   },
-  "last_24h_mm": 6.56,
+  "last_24h_mm": 7.3,
   "days": [
    {
     "date": "2026-08-28",
@@ -3720,8 +3726,8 @@
    },
    {
     "date": "2026-11-15",
-    "mm": 6.51,
-    "n": 39
+    "mm": 7.25,
+    "n": 40
    }
   ]
  }

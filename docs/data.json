@@ -1,5 +1,5 @@
 {
- "polled_at": 1794956487867,
+ "polled_at": 1794957353377,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -56,7 +56,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1788144600000,
@@ -139,6 +139,11 @@
      "start": 1794908760000,
      "end": 1794911760000,
      "rain_mm": 17.22
+    },
+    {
+     "start": 1794954840000,
+     "end": null,
+     "rain_mm": 19.31
     }
    ],
    "offline": [
@@ -884,7 +889,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1790794260000,
@@ -1241,8 +1246,14 @@
     },
     {
      "start": 1794954840000,
-     "end": null,
-     "rain_mm": 19.31
+     "end": 1794956460000,
+     "rain_mm": 19.31,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1794956460000,
+     "end": 1794956520000,
+     "rain_mm": 19.48
     }
    ],
    "offline": [
@@ -2666,7 +2677,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1792851840000,
@@ -2826,6 +2837,11 @@
      "start": 1793111880000,
      "end": 1793113920000,
      "rain_mm": 8.35
+    },
+    {
+     "start": 1794955920000,
+     "end": null,
+     "rain_mm": 19.49
     }
    ],
    "offline": [
@@ -3763,10 +3779,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1794954600000,
-   "mm": 1.2
+   "ts": 1794955500000,
+   "mm": 0.18
   },
-  "last_24h_mm": 19.31,
+  "last_24h_mm": 19.49,
   "days": [
    {
     "date": "2026-08-28",
@@ -4175,8 +4191,8 @@
    },
    {
     "date": "2026-11-17",
-    "mm": 18.94,
-    "n": 90
+    "mm": 19.12,
+    "n": 91
    }
   ]
  }

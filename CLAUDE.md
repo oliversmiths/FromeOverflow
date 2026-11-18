@@ -356,7 +356,7 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   (tap/Esc to skip). No framework
   — `fetch`es `data.json` once, then `renderCards` + `buildMap`. `styles.css` is
   the only stylesheet.
-- **`docs/assets/`** — committed static assets: `icon.png` (favicon / apple-touch),
+- **`docs/assets/`** — committed static assets: `icon.png` (apple-touch / app icon), `favicon-light.png` / `favicon-dark.png` (tab favicon, picked by `prefers-color-scheme`),
   `overflow-img.webp` (splash backdrop), `happy-times-NG_italic_master_web.woff2`
   (the `--display` face, self-hosted via `@font-face`; `--body`/`--data` still
   come from the Adobe kit `hpb4tyd`). `data.json` / `basemap.json` stay at the

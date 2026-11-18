@@ -362,6 +362,19 @@ function migrate(db) {
     const n = backfillOffline(db);
     console.log(`  recovered ${n} offline spell(s) from the snapshot log`);
   }
+
+  // Repair: until upsertEvent cleared it, a 'superseded' flag outlived the real
+  // end the feed later reported for that spill (WXW00454's 14:52 on 11 Nov
+  // 2026). An end that matches one the feed reported for the same start is
+  // measured, not inferred. Idempotent; a no-op once nothing matches.
+  const unflagged = db.prepare(`
+    UPDATE events SET end_source = NULL
+    WHERE end_source = 'superseded' AND EXISTS (
+      SELECT 1 FROM snapshots s
+      WHERE s.monitor_id = events.monitor_id AND s.status <> 1
+        AND ABS(s.latest_start_ms - events.start_ms) < 1000
+        AND ABS(s.latest_end_ms - events.end_ms) < 1000)`).run().changes;
+  if (unflagged) console.log(`  events: cleared ${unflagged} stale 'superseded' flag(s)`);
 }
 
 // Two offline readings this far apart are treated as separate spells. Only
@@ -556,7 +569,12 @@ function store(db, rows, polledAt) {
   const upsertEvent = db.prepare(`
     INSERT INTO events (monitor_id, start_ms, end_ms) VALUES (?, ?, ?)
     ON CONFLICT(monitor_id, start_ms) DO UPDATE SET
-      end_ms = COALESCE(excluded.end_ms, events.end_ms)`);
+      end_ms = COALESCE(excluded.end_ms, events.end_ms),
+      -- A real end from the feed replaces an inferred one, so drop the flag
+      -- with it, or the page goes on calling a measured end "up to".
+      end_source = CASE
+        WHEN excluded.end_ms IS NOT NULL AND events.end_source = 'superseded' THEN NULL
+        ELSE events.end_source END`);
 
   // Wessex only ever show the *latest* event, so if one ends and another starts
   // between two polls we never see the first one's end — it would sit open
@@ -572,6 +590,30 @@ function store(db, rows, polledAt) {
     WHERE end_ms IS NULL AND EXISTS (
       SELECT 1 FROM events n
       WHERE n.monitor_id = events.monitor_id AND n.start_ms > events.start_ms)`);
+
+  // A dry reading proves nothing is discharging, yet an open spill can be left
+  // with no way to close: when Wessex lose a monitor its LatestEventStart can
+  // roll back to an older event (WXW00454, 11 Nov 2026: discharging since 15:26
+  // at 16:01, offline and showing 14:52 → 15:24 at 16:30), so the feed never
+  // reports that spill's end and no newer start supersedes it. Close any spill
+  // still open on a dry monitor at the first poll that stopped reporting it as
+  // discharging — the latest it can have ended, so flagged 'superseded' like
+  // the rule above, and replaced if the verified history has it. Runs after
+  // closeSuperseded, which gives a tighter bound when there is a newer start.
+  // Offline readings don't count: a dark monitor may still be spilling.
+  const closeOnDry = db.prepare(`
+    UPDATE events SET end_source = 'superseded', end_ms = COALESCE((
+      SELECT MIN(s.polled_at) FROM snapshots s
+      WHERE s.monitor_id = events.monitor_id
+        AND (s.status IS NULL OR s.status <> 1)
+        AND s.polled_at > COALESCE((
+          SELECT MAX(d.polled_at) FROM snapshots d
+          WHERE d.monitor_id = events.monitor_id AND d.status = 1
+            AND ABS(d.latest_start_ms - events.start_ms) < 1000), events.start_ms)
+    ), :polled)
+    WHERE end_ms IS NULL AND monitor_id IN (
+      SELECT monitor_id FROM snapshots
+      WHERE polled_at = :polled AND status IS NOT NULL AND status NOT IN (1, -1))`);
 
   // Offline is a status, not an event: Wessex never put it in LatestEventStart.
   // `StatusStart` is the moment the current status began, so it opens a spell
@@ -634,6 +676,7 @@ function store(db, rows, polledAt) {
       upsertEvent.run(id, start, end);
     }
     closeSuperseded.run();
+    closeOnDry.run({ polled: polledAt });
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');

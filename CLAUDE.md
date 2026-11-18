@@ -692,6 +692,14 @@ Rules baked into `store` / `exportJson`:
   newer start proves the older spill had ended, so it's closed there and
   flagged `end_source = 'superseded'`, rather than left open and drawn as a
   spill on every day since.
+- **A dry reading closes any spill still open** (`closeOnDry` in `store`, run
+  after `closeSuperseded`). When a monitor goes dark its feed can roll back
+  past a spill that's still open, so the feed never reports that spill's end
+  and no newer start supersedes it (WXW00454, 11 Nov 2026, was drawn as
+  spilling for a week). It's closed at the first poll after the last one that
+  reported it discharging, the latest it can have ended, so it's flagged
+  `superseded` too. Offline readings don't trigger this. Separately, a real end
+  from the feed clears a `superseded` flag (`upsertEvent`).
 - **`exportJson` only publishes monitors seen in the last 7 days** (`last_seen`).
   One that stops matching the filter ages off the page but keeps its history in
   the DB.

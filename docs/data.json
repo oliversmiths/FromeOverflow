@@ -1,5 +1,5 @@
 {
- "polled_at": 1795005053751,
+ "polled_at": 1795005953972,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -3851,10 +3851,24 @@
    "description": "A recognised bathing spot on the Frome, sampled weekly through the season.",
    "dashboard_url": "https://www.arcgis.com/apps/dashboards/a058553168f44f02905dd0b9dd667875",
    "flow": {
-    "value": 0.622,
-    "measured_at": 1788771600000
+    "value": 1.103,
+    "measured_at": 1793610000000
    },
    "water_quality": [
+    {
+     "determinand": "Enterococci",
+     "result": 260,
+     "units": "Enterococci/ 100 mL",
+     "status": "03/11/2026 show good indicative water quality at this location.",
+     "sampled_at": 1793698200000
+    },
+    {
+     "determinand": "E coli",
+     "result": 600,
+     "units": "E. Coli/ 100 mL",
+     "status": "03/11/2026 show good indicative water quality at this location.",
+     "sampled_at": 1793698200000
+    },
     {
      "determinand": "Enterococci",
      "result": 7500,
@@ -3868,20 +3882,6 @@
      "units": "E. Coli/ 100 mL",
      "status": "08/09/2026 show below good indicative water quality at this location.",
      "sampled_at": 1788869700000
-    },
-    {
-     "determinand": "Enterococci",
-     "result": 66,
-     "units": "Enterococci/ 100 mL",
-     "status": "11/08/2026 show excellent indicative water quality at this location.",
-     "sampled_at": 1786441800000
-    },
-    {
-     "determinand": "E coli",
-     "result": 170,
-     "units": "E. Coli/ 100 mL",
-     "status": "11/08/2026 show excellent indicative water quality at this location.",
-     "sampled_at": 1786441800000
     }
    ]
   },
@@ -3894,8 +3894,8 @@
    "description": "A popular spot on the Frome, just upstream of Farleigh Hungerford — not an officially recognised bathing water, so no water quality sampling here.",
    "dashboard_url": null,
    "flow": {
-    "value": 0.622,
-    "measured_at": 1788771600000
+    "value": 1.103,
+    "measured_at": 1793610000000
    },
    "water_quality": []
   }
@@ -3909,7 +3909,7 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1795003200000,
+   "ts": 1795004100000,
    "mm": 0
   },
   "last_24h_mm": 4.99,
@@ -4327,7 +4327,7 @@
    {
     "date": "2026-11-18",
     "mm": 1.87,
-    "n": 48
+    "n": 49
    }
   ]
  }

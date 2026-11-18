@@ -168,7 +168,7 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   zero-padded — "01.09.26"), chosen for brevity on the card's meta line;
   `fmtWhen`'s day branch matches it, "4d ago" not "4 days ago".
 - **`docs/lib/cards.js`** — `renderCards(container, data, onSeeOnMap)`: the
-  per-monitor list. One card each (ranked by total discharge time) with a
+  per-monitor list. One card each (ranked by most recent discharge by default) with a
   `statusOf` badge, a summary line, and a GitHub-status-style 90-day strip — one
   bar per day from `dayCells` (`.o-day--spill` red / `--recent` amber /
   `--offline` mid-grey / `--nodata` **hatched** / plain `.o-day` green), capped at
@@ -270,7 +270,11 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `0.28`) opens centred on the town, ~6 km across. Monitor pins coloured by
   `mapStatusOf` (`.mappin--*`: red / amber / bright green / grey), which also
   drives the legend. A pin outside the crop (or panned off-screen) is hidden;
-  flip `SHOW_EDGE_MARKERS` to stick it to the edge instead. Web Mercator
+  flip `SHOW_EDGE_MARKERS` to stick it to the edge instead. Pins sharing
+  exact coordinates (Wessex give every outfall at a works the works' location
+  — WXW00307/00308, WXW00333/00711) are fanned out by `FAN_PX` *screen*
+  pixels, so they stay a fixed nudge apart at every zoom; `placePopup` adds
+  the same nudge. Web Mercator
   projection in `drawMap` **must match `scripts/build-basemap.js`**.
 
   **Swim spots** (`swimPins`, built from `data.swim_spots`) are a second,
@@ -337,8 +341,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   Overview, `#how-to-use` opens Reading the map. The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` whose options follow the view (`SORTS_BY_VIEW` in cards.js —
-  90-Day: total duration / most recent discharge, `rankByRecent`, ongoing
-  first; History: EA long-term avg spills / this project's own avg annual
+  90-Day: most recent discharge (the default), `rankByRecent`, ongoing
+  first / total duration; History: EA long-term avg spills / this project's own avg annual
   duration — each view remembers its own pick, and only ranks by figures it
   shows) and a panel-wide 90-Day/History toggle that re-renders every card
   in the new view and order — on phones

@@ -7,7 +7,7 @@
  *   setCardsView(containerEl, view);                              // flips every rendered card at once
  *
  * `onSeeOnMap(monitor)` is called when a card's "View on map" button is clicked.
- * `sort` is one of `SORTS`' keys (default `'total'`); `view` is `'90day'`
+ * `sort` is one of `SORTS`' keys (default `'recent'`); `view` is `'90day'`
  * (default) or `'history'` — the view every card, and the global toggle
  * (built in index.html), starts on.
  */
@@ -33,8 +33,8 @@ const SORTS = {
  */
 export const SORTS_BY_VIEW = {
   '90day': [
+    ['recent', 'Most recent discharge'],   // first = the default
     ['total', 'Total duration'],
-    ['recent', 'Most recent discharge'],
   ],
   history: [
     ['avgSpills', 'Historic avg spills/yr'],
@@ -317,7 +317,7 @@ export function renderRainStrip(container, data) {
 }
 
 export function renderCards(container, data, onSeeOnMap, opts = {}) {
-  const { sort = 'total', view = '90day' } = opts;
+  const { sort = 'recent', view = '90day' } = opts;
   const now = data.polled_at;
   const rank = SORTS[sort] ?? rankByTotal;
   const monitors = rank(data.monitors, now);

@@ -740,6 +740,32 @@ function drawMap(host, bm, monitors, swimSpots, rainfall, now, initialZoom, wind
     : [];
   const allPins = () => [...pins, ...swimPins, ...gaugePins];
 
+  // Wessex give every outfall at a works the works' own coordinates (WXW00307
+  // and WXW00308 at Coleford; WXW00333 and WXW00711), so those pins would
+  // stack exactly and only the top one could be seen or clicked. Fan each
+  // shared spot out around a small ring in *screen* pixels — a fixed nudge at
+  // every zoom, so it never reads as a different place on the map. Ordered
+  // by id so the layout is stable from poll to poll.
+  const FAN_PX = 9;   // half the gap between centres: pin 12px + 2px ring each side
+  const spots = new Map();
+  for (const p of allPins()) {
+    p.dx = 0; p.dy = 0;
+    const key = `${p.gx},${p.gy}`;
+    spots.set(key, [...(spots.get(key) ?? []), p]);
+  }
+  for (const group of spots.values()) {
+    if (group.length < 2) continue;
+    const n = group.length;
+    const r = FAN_PX / Math.sin(Math.PI / n);   // keeps neighbours 2×FAN_PX apart
+    group.sort((a, b) => String(itemOf(a).id).localeCompare(String(itemOf(b).id)));
+    group.forEach((p, i) => {
+      const angle = Math.PI + (i * 2 * Math.PI) / n;   // first one on the left
+      p.dx = Math.round(r * Math.cos(angle));
+      p.dy = Math.round(r * Math.sin(angle));
+    });
+  }
+  function itemOf(p) { return p.m ?? p.s ?? p.g; }
+
   // Position within the crop first (so anything beyond it sticks to the edge),
   // then within the viewport (so one panned off-screen sticks too).
   function screenXY(gx, gy) {
@@ -758,8 +784,8 @@ function drawMap(host, bm, monitors, swimSpots, rainfall, now, initialZoom, wind
       if (edge && !SHOW_EDGE_MARKERS) { p.el.classList.remove('is-shown'); continue; }
       p.el.classList.add('is-shown');
       p.el.classList.toggle('is-edge', edge);
-      p.el.style.left = `${sx * 100}%`;
-      p.el.style.top = `${sy * 100}%`;
+      p.el.style.left = `calc(${sx * 100}% + ${p.dx}px)`;
+      p.el.style.top = `calc(${sy * 100}% + ${p.dy}px)`;
     }
   }
 
@@ -886,8 +912,9 @@ function drawMap(host, bm, monitors, swimSpots, rainfall, now, initialZoom, wind
     pop.hidden = false;
 
     const [pw, ph] = size();
-    const px = sx * pw;
-    const py = sy * ph;
+    const pin = allPins().find((p) => itemOf(p) === openItem);   // its fan-out nudge
+    const px = sx * pw + (pin?.dx ?? 0);
+    const py = sy * ph + (pin?.dy ?? 0);
     const M = 8;      // keep this far from the map edge
     const GAP = 14;   // gap between pin and popup
     const PIN = 10;   // pin half-height

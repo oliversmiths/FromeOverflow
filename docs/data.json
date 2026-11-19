@@ -1,5 +1,5 @@
 {
- "polled_at": 1795059937294,
+ "polled_at": 1795060871846,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -1354,8 +1354,14 @@
     },
     {
      "start": 1795058280000,
+     "end": 1795059480000,
+     "rain_mm": 6.75,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1795059480000,
      "end": null,
-     "rain_mm": 6.75
+     "rain_mm": 6.62
     }
    ],
    "offline": [
@@ -4124,10 +4130,10 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1795058100000,
+   "ts": 1795059000000,
    "mm": 0
   },
-  "last_24h_mm": 6.75,
+  "last_24h_mm": 6.62,
   "days": [
    {
     "date": "2026-08-28",
@@ -4547,7 +4553,7 @@
    {
     "date": "2026-11-19",
     "mm": 0.05,
-    "n": 12
+    "n": 13
    }
   ]
  }

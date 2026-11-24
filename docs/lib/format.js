@@ -229,13 +229,83 @@ export function recordIsYoung(monitor, windowDays, now) {
  * record from scratch, and for its first 90 days "in the last 90 days" would
  * claim a history nobody has. It switches over per monitor, on its own.
  *
- * `dayCells` (hatching before `since`) and `exportJson`'s event filter handle
- * the same case the same way, for the same reason.
+ * `dayCells` (hatching before `since`), `countFrom` and `exportJson`'s event
+ * filter handle the same case the same way, for the same reason.
  */
 export function windowPhrase(monitor, windowDays, now) {
   return recordIsYoung(monitor, windowDays, now)
     ? `(watching since ${fmtDate(monitor.since)})`
     : `in the last ${windowDays} days`;
+}
+
+/** How many days the page shows. `poll.js` exports a little more than this. */
+export const WINDOW_DAYS = 90;
+
+/**
+ * Local midnight at the start of the window: the first day `dayCells` draws.
+ * Stepped with setDate, not a fixed 24h offset, for the reason given in
+ * `dayCells`. Every windowed figure (strip, totals, counts) starts here, so
+ * the numbers and the bars always cover the same days.
+ */
+export function windowStart(now, days = WINDOW_DAYS) {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - (days - 1));
+  return d.getTime();
+}
+
+/**
+ * The earliest moment a monitor's windowed totals may count: the later of
+ * when we started watching it and the window's first midnight. A spill that
+ * was already running at either point is counted only from there.
+ */
+export function countFrom(monitor, now, days = WINDOW_DAYS) {
+  return Math.max(monitor?.since ?? -Infinity, windowStart(now, days));
+}
+
+/** True when a `{start, end}` span reaches past `from` (an open one always does). */
+const reaches = (span, from) => span.end == null || span.end > from;
+
+/**
+ * Trim freshly loaded `data.json` to the page's window, in the viewer's own
+ * timezone. `poll.js` publishes a day more than `window_days` (it runs in
+ * UTC and can't know where the viewer's midnight falls), and publishes every
+ * spill or offline spell that *overlaps* the window, not just ones that
+ * started inside it, so a long spill running across the window's start is
+ * still drawn. This drops what lies wholly before the first day; spans that
+ * cross it are kept whole (their real start times show in tooltips) and are
+ * clipped only when summed, by `countFrom`. Call once, straight after fetch.
+ */
+export function trimToWindow(data) {
+  const days = data.window_days ?? WINDOW_DAYS;
+  const from = windowStart(data.polled_at, days);
+  for (const m of data.monitors ?? []) {
+    m.events = (m.events ?? []).filter((e) => reaches(e, from));
+    m.offline = (m.offline ?? []).filter((o) => reaches(o, from));
+  }
+  if (data.rainfall?.days) {
+    const first = dayKey(from);
+    data.rainfall.days = data.rainfall.days.filter((d) => d.date >= first);
+  }
+  return data;
+}
+
+/**
+ * Milliseconds of a `{start, end}` span inside `[from, to)`, an open span
+ * running up to `now`. 0 when it misses the range or its start is unknown.
+ * Shared by the windowed totals here and poll.js's per-year `watch_years`.
+ */
+export function overlapMs(span, from, to, now) {
+  const ms = spillMs({
+    start: Math.max(span.start, from),
+    end: Math.min(span.end ?? now, to),
+  }, now);
+  return Number.isFinite(ms) ? Math.max(0, ms) : 0;
+}
+
+/** Milliseconds of `span` from `from` onwards, up to `now` if still open. */
+function clippedMs(span, from, now) {
+  return overlapMs(span, from, Infinity, now);
 }
 
 /** A discharge that ended within this long counts as "recent" on the map. */
@@ -293,7 +363,7 @@ export function mapStatusOf(monitor, now) {
  * than one discrete spill (or more than one recently-ended one), so this is
  * always an array, never a single event.
  */
-export function dayCells(monitor, now, days = 90) {
+export function dayCells(monitor, now, days = WINDOW_DAYS) {
   const since = monitor.since ?? null;
   const events = monitor.events ?? [];
   const offline = monitor.offline ?? [];
@@ -311,9 +381,7 @@ export function dayCells(monitor, now, days = 90) {
   // zone, and it keeps working when the dates move each year (or if the UK ever
   // changes the rules). Verified clean across all twelve UK transitions 2026–31.
   const edges = [];
-  const walk = new Date(now);
-  walk.setHours(0, 0, 0, 0);
-  walk.setDate(walk.getDate() - (days - 1));
+  const walk = new Date(windowStart(now, days));
   for (let i = 0; i <= days; i++) {
     edges.push(walk.getTime());
     walk.setDate(walk.getDate() + 1);
@@ -470,32 +538,29 @@ export function fmtFlow(spot) {
  * Total time a monitor spent offline within the published window, in ms. The
  * counterpart to a monitor's discharge `total`: "no discharge recorded" means
  * much less when the sensor was dark for a stretch, so the card says both.
+ * A spell that began before the window counts only from its first day
+ * (`countFrom`) — a 17-day outage mostly in the past isn't "offline for 17d
+ * in the last 90 days".
  */
-export function offlineMs(monitor, now) {
-  return (monitor.offline ?? []).reduce((sum, span) => {
-    const ms = spillMs(span, now);
-    return Number.isFinite(ms) ? sum + Math.max(0, ms) : sum;
-  }, 0);
+export function offlineMs(monitor, now, days = WINDOW_DAYS) {
+  const from = countFrom(monitor, now, days);
+  return (monitor.offline ?? []).reduce((sum, span) => sum + clippedMs(span, from, now), 0);
 }
 
 /**
  * Every monitor given a `total` field (ms) — the 90-day (or whatever window)
- * discharge total, clipped to the monitor's own record: if a spill was
- * already running when we first saw the monitor, only the part we actually
- * watched is counted, so the total never claims time the record doesn't
+ * discharge total, clipped by `countFrom`: a spill already running when we
+ * first saw the monitor, or when the window's first day began, is counted only
+ * from there, so the total never claims time the record or the window doesn't
  * cover. Shared by all three `rankBy*` functions below, since the card's own
  * 90-day figure is shown regardless of which one sorted the list. Input
  * monitors are not mutated.
  */
-function withTotal(monitors, now) {
-  return monitors.map((m) => ({
-    ...m,
-    total: m.events.reduce((sum, e) => {
-      const start = m.since == null ? e.start : Math.max(e.start, m.since);
-      const ms = spillMs({ start, end: e.end }, now);
-      return Number.isFinite(ms) ? sum + Math.max(0, ms) : sum;
-    }, 0),
-  }));
+function withTotal(monitors, now, days = WINDOW_DAYS) {
+  return monitors.map((m) => {
+    const from = countFrom(m, now, days);
+    return { ...m, total: m.events.reduce((sum, e) => sum + clippedMs(e, from, now), 0) };
+  });
 }
 
 // A monitor with no value for the field being sorted always sorts last,

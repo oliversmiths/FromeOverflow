@@ -14,8 +14,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  DAY, MINUTE, HOUR, DRY_RAIN_MM, DRY_WINDOW_HOURS, RAIN_METHOD,
-  fmtDuration, rainBefore, spillMs,
+  DAY, MINUTE, HOUR, DRY_RAIN_MM, DRY_WINDOW_HOURS, RAIN_METHOD, WINDOW_DAYS,
+  fmtDuration, overlapMs, rainBefore, spillMs,
 } from './docs/lib/format.js';
 
 // --- Configuration ---------------------------------------------------------
@@ -93,7 +93,12 @@ const WATERCOURSES = [
   'maiden bradley brook', 'marston brook', 'redford water', 'henhambridge brook',
 ];
 
-const EXPORT_DAYS = 90;
+// The page's window, from format.js so the two can't drift. The export reaches
+// one day further back (EXPORT_MARGIN_DAYS): this runs in UTC and can't know
+// where the viewer's local midnight falls, so it publishes a little more and
+// format.js `trimToWindow` cuts it to the exact first day on the page.
+const EXPORT_DAYS = WINDOW_DAYS;
+const EXPORT_MARGIN_DAYS = 1;
 
 // How long the raw poll log is kept. `events` and `offline` are the permanent
 // record and are never pruned; `snapshots` exists only so a recent stretch can
@@ -717,10 +722,45 @@ function dailyRain(readings) {
   return [...days.values()].map((d) => ({ ...d, mm: round2(d.mm) }));
 }
 
+/**
+ * This project's own per-year totals for one monitor: one row per calendar
+ * year (the EA's reporting year too) from the year we started watching it to
+ * now, oldest first —
+ *   { year, from, to, spills, spill_ms, offline_ms }
+ * `from`/`to` are what the row actually covers: the later of 1 January and
+ * first_seen, the earlier of the next 1 January and this poll. Spans are
+ * clipped to that, so a spill already running when we first saw the monitor
+ * counts only from then. A spill across New Year counts as one in each year
+ * it touched. UK midnight on 1 January is UTC midnight (GMT), so the bounds
+ * need no timezone maths.
+ *
+ * Published unwindowed, like annual_returns: once the 90-day window rolls past
+ * a spill this is the only place on the page it still counts. Raw activations,
+ * live-tracked — a floor, and *not* the EA's figure; never sum the two.
+ */
+function watchYears(events, offline, firstSeen, polledAt) {
+  if (firstSeen == null) return [];
+  const years = [];
+  for (let y = new Date(firstSeen).getUTCFullYear(); y <= new Date(polledAt).getUTCFullYear(); y++) {
+    const from = Math.max(Date.UTC(y, 0, 1), firstSeen);
+    const to = Math.min(Date.UTC(y + 1, 0, 1), polledAt);
+    const inYear = (e) => overlapMs(e, from, to, polledAt) > 0;
+    years.push({
+      year: y,
+      from,
+      to,
+      spills: events.filter(inYear).length,
+      spill_ms: events.reduce((t, e) => t + overlapMs(e, from, to, polledAt), 0),
+      offline_ms: offline.reduce((t, o) => t + overlapMs(o, from, to, polledAt), 0),
+    });
+  }
+  return years;
+}
+
 async function exportJson(db, rows, polledAt) {
   const liveStatus = new Map(rows.map((r) => [String(r.Id), r.Status]));
   const liveStart = new Map(rows.map((r) => [String(r.Id), sec(r.LatestEventStart)]));
-  const cutoff = polledAt - EXPORT_DAYS * DAY;
+  const cutoff = polledAt - (EXPORT_DAYS + EXPORT_MARGIN_DAYS) * DAY;
 
   // A "discharging" reading can't be taken at face value when its spill has
   // already been followed by a newer one: a later start proves it ended. The
@@ -742,18 +782,31 @@ async function exportJson(db, rows, polledAt) {
   // before. Publishing those put a lone red bar in a sea of hatching and implied
   // we had covered the whole stretch. Only events that reach into this monitor's
   // own record are published; the rest stay in the database, just off the page.
+  //
+  // Overlap, not start-within, for the window too: a spill that began before
+  // the cutoff but ran into it still belongs on the strip. Testing the start
+  // dropped such a spill whole the moment its start aged out, and its days
+  // inside the window were drawn dry. One bound covers both rules — the later
+  // of the cutoff and first_seen.
   const eventsFor = db.prepare(`
     SELECT start_ms, end_ms, source, end_source FROM events
-    WHERE monitor_id = ? AND start_ms >= ?
-      AND (end_ms IS NULL OR end_ms >= ?)
+    WHERE monitor_id = ? AND (end_ms IS NULL OR end_ms >= MAX(?, ?))
     ORDER BY start_ms`);
 
-  // Overlap, not start-within: a spell that began before the window but ran into
-  // it still belongs on the strip.
+  // Same overlap rule as events.
   const offlineFor = db.prepare(`
     SELECT start_ms, end_ms FROM offline
     WHERE monitor_id = ? AND (end_ms IS NULL OR end_ms >= ?)
     ORDER BY start_ms`);
+
+  // Our own yearly totals — see watchYears below. Every span since first_seen,
+  // not just the window's, since these are what keep the record on the page
+  // once the 90 days have rolled past it.
+  const allEventsFor = db.prepare(`
+    SELECT start_ms AS start, end_ms AS end FROM events
+    WHERE monitor_id = ? AND (end_ms IS NULL OR end_ms >= ?)`);
+  const allOfflineFor = db.prepare(
+    'SELECT start_ms AS start, end_ms AS end FROM offline WHERE monitor_id = ?');
 
   // The regulator-verified figures, oldest first — unlike events/offline this
   // isn't windowed by EXPORT_DAYS, since a year's return is meaningful on its
@@ -762,11 +815,18 @@ async function exportJson(db, rows, polledAt) {
     SELECT year, spill_count, duration_hours, long_term_avg_spills, data_start_year
     FROM annual_returns WHERE monitor_id = ? ORDER BY year`);
 
-  // Rain, for the dry-spill test and as daily context. Read once, with a day's
-  // lead before the window so the earliest published event has its 24h behind it.
+  // Rain, for the dry-spill test and as daily context. Read once, reaching back
+  // DRY_WINDOW_HOURS before the earliest published event — which, with the
+  // overlap rule above, can have started before the cutoff — so every one has
+  // its 24h behind it.
+  const earliestEvent = db.prepare(`
+    SELECT MIN(e.start_ms) AS start FROM events e JOIN monitors m ON m.id = e.monitor_id
+    WHERE m.last_seen >= ? AND (e.end_ms IS NULL OR e.end_ms >= MAX(?, COALESCE(m.first_seen, 0)))`)
+    .get(polledAt - 7 * DAY, cutoff)?.start;
+  const rainFrom = Math.min(cutoff, earliestEvent ?? cutoff) - DRY_WINDOW_HOURS * HOUR;
   const rainReadings = db
     .prepare('SELECT ts_ms AS ts, mm FROM rainfall WHERE station_id = ? AND ts_ms >= ? ORDER BY ts_ms')
-    .all(RAIN_STATION.id, cutoff - DRY_WINDOW_HOURS * HOUR);
+    .all(RAIN_STATION.id, rainFrom);
   const rainfall = {
     ...RAIN_STATION,
     method: RAIN_METHOD,
@@ -788,6 +848,7 @@ async function exportJson(db, rows, polledAt) {
   // Only publish monitors the filter has matched recently. A monitor that drops
   // out — because you narrowed the catchment, or Wessex stopped listing it —
   // ages off the page after a week but keeps its history in the database.
+  // (The 7-day bound is repeated in earliestEvent above.)
   const monitors = db
     .prepare(`SELECT id, label, site_name, latitude, longitude, watercourse, waterbody,
                      overflow_type, treatment, cause, first_seen
@@ -824,6 +885,9 @@ async function exportJson(db, rows, polledAt) {
         })),
       offline: offlineFor.all(m.id, cutoff)
         .map((o) => ({ start: o.start_ms, end: o.end_ms })),
+      watch_years: watchYears(
+        allEventsFor.all(m.id, m.first_seen ?? 0), allOfflineFor.all(m.id),
+        m.first_seen, polledAt),
       annual_returns: annualReturnsFor.all(m.id)
         .map((r) => ({
           year: r.year,

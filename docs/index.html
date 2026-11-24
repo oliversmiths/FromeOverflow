@@ -293,7 +293,7 @@
 <div class="scrim" id="scrim"></div>
 
 <script type="module">
-import { fmtRain, fmtWhen, mapStatusOf } from './lib/format.js';
+import { fmtRain, fmtWhen, mapStatusOf, trimToWindow } from './lib/format.js';
 import { GAUGE_ID, buildMap, renderLegend } from './lib/map.js';
 import { SORTS_BY_VIEW, renderCards, renderRainStrip } from './lib/cards.js';
 import { renderFactsheet } from './lib/factsheet.js';
@@ -574,7 +574,9 @@ legendWrap.addEventListener('toggle', () => {
 try {
   const res = await fetch(`data.json?${Date.now()}`);
   if (!res.ok) throw new Error(String(res.status));
-  const data = await res.json();
+  // Cut to the window's first local midnight before anything reads it — see
+  // trimToWindow in format.js.
+  const data = trimToWindow(await res.json());
 
   initTooltips();
   paintStatus(data);

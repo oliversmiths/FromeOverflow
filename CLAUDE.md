@@ -150,8 +150,15 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   last 90 — `nodata`/`spill`/`recent`/`offline`/`dry`, **checked in that order**:
   a day before the monitor's `since` is unknown and stays unknown, whatever the
   feed claims about it. `offlineMs` totals a monitor's offline time; `rankByTotal`
-  clips each spill to `since`, so a total never counts time the record doesn't
-  cover. **`windowPhrase` is permanent, not a launch-window patch** — while a
+  and `offlineMs` both clip each span to `countFrom` — the later of `since` and
+  `windowStart` (the strip's first local midnight) — so a total never counts
+  time the record or the window doesn't cover. **The window is set on the
+  page, not in poll.js:** `exportJson` publishes `WINDOW_DAYS` + 1 day of every
+  span that *overlaps* it (not just ones that start inside it — a long spill
+  across the window's start must still be drawn), and index.html runs
+  `trimToWindow` on `data.json` straight after fetch, cutting to the viewer's
+  own first midnight. Spans that cross it are kept whole (tooltips show the
+  real start) and clipped only when summed. **`windowPhrase` is permanent, not a launch-window patch** — while a
   monitor's *own* record is shallower than `window_days` the copy says
   "(watching since 30.08.26)" instead of "in the last 90 days". The "watching
   since" wording isn't a claim about history — a bare "since 30.08.26" sounds
@@ -572,7 +579,10 @@ Nine tables (schema in [poll.js](poll.js) `SCHEMA`):
   NULL OR end_ms >= first_seen`). The first reading hands over Wessex's latest
   event, which can be months old — 33 of 37 were, at cutover — and drawing those
   put a lone red bar in a field of hatching, implying we had covered the whole
-  stretch. They stay in the table, just off the page.
+  stretch. They stay in the table, just off the page. The same overlap test
+  applies to the window: a spill is published while any part of it is within
+  `EXPORT_DAYS` + `EXPORT_MARGIN_DAYS`, and the rain read reaches 24h before
+  the earliest one published so its dry/wet verdict survives.
   Two provenance columns, both NULL for plain feed data and published in
   `data.json` only when set: `source = 'history'` marks a spill the poller
   missed, added from Wessex's history; `end_source` is `'superseded'` (end never
@@ -598,6 +608,14 @@ Nine tables (schema in [poll.js](poll.js) `SCHEMA`):
   `npm run annual-returns`. Holds the Environment Agency's own regulator-verified
   figures for that monitor's year: `spill_count`, `duration_hours`,
   `long_term_avg_spills` and the `data_start_year` that average runs from.
+  Our own counterpart is **`watch_years`** on each monitor in `data.json`
+  (poll.js `watchYears`, not a table — derived each export from the full
+  `events`/`offline`): one row per calendar year since `first_seen`,
+  `{year, from, to, spills, spill_ms, offline_ms}`, unwindowed, so a spill
+  still counts on the page after it rolls off the 90-day strip. **Exported but
+  not yet shown** — the display (a text-only "Our live watch" section under a
+  card's History rows, never on the EA's axis) is parked on the
+  `rolling-window` branch for the UX overhaul.
   **This is not `poll.js`'s own count under another name** — the "Known
   undercount" below describes a live-tracked floor that can miss a spill
   between two polls; this is Wessex's official return, counted by EA's own

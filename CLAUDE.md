@@ -227,8 +227,8 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   `renderRainStrip` (a borderless weir-blue card above the list, white bars,
   one bar per day, aligned to the monitor strips' columns) and a red
   cross-hatched `.o-day--dryspill` bar + "N began after no rain" in a card's
-  summary (only when N > 0 — never "0 dry spills"). The explainer is the Info
-  tab's Reading the timeline → "Dry spills" and a Safety paragraph.
+  summary (only when N > 0 — never "0 dry spills"). The explainer is
+  about.html's Reading the timeline → "Dry spills" and a Safety paragraph.
   The splash also carries a bottom-right "💧 X mm rain in the last 24h" line
   (`.splash-rain`) from `rainfall.last_24h_mm`, which `exportJson` sets to null —
   hiding the line — when the gauge has been silent over 3h (`RAIN_STALE_MS`) or
@@ -328,24 +328,35 @@ Wessex ArcGIS feed ──▶ poll.js ──▶ overflows.db (node:sqlite)
   greedy box-overlap cull thins them; `RANK` sets the priority (town, village,
   road, waterway, suburb, hamlet — a street or brook name locates an outfall
   better than a district). The host is `#overflow-map`, *not* `id="map"`.
-- **`docs/index.html`** + **`docs/styles.css`** — the page: a full-viewport
-  `#overflow-map`. One floating button (top-right) opens a right-hand slide-in
-  drawer (`.panel`, 500px / 100% on mobile, deep-water-blue with white text)
-  with a tab strip — **Timeline** (the `cards.js` list), **Overview** (the
-  `factsheet.js` bento grid, left-aligned at up to 1180px, ending in a
-  `.fs-cta` "Take action" tile: the River Frome groups and the EA incident
-  hotline), and **Info** (what this is, then one-open-at-a-time `<details>`
-  accordions: Reading the map, Reading the timeline — with a "Dry spills"
-  subsection — **Safety**, which leads with the water-quality disclaimer, then
-  the interpretation caveats, and **Sources**, Data + Map provenance and the
-  CC BY attribution). **Overview widens the panel to the full viewport on
-  desktop** (`.panel--wide`, toggled in `selectTab`; a phone's panel is full
-  width already) and the other tabs shrink it back. Opens to Timeline;
-  tabs are `role="tab"` with arrow-key nav; the active tab is the URL hash
-  (`#timeline` / `#overview` / `#info`), and an accordion's own name opens Info
-  on it expanded (`#reading-the-map` / `#reading-the-timeline` / `#safety` /
-  `#sources`). `HASH_ALIASES` keeps moved names working — `#river-frome` opens
-  Overview, `#how-to-use` opens Reading the map. The Timeline tab leads with
+- **`docs/index.html`** + **`docs/styles.css`** — the page: a weir-blue
+  **`.topbar`** header (`--topbar-h`, 75px) over `#overflow-map`, which fills
+  the rest of the viewport. The header is one block: the mark (`.fl-mark`,
+  replays the intro), the **status line** (`.status` — the splash verdict kept
+  on screen once the splash fades, over a meta line: "N more in the last 48h"
+  when something's discharging, "N offline", "checked … ago" re-rendered every
+  minute by `paintStatusBar`, then an **About** link), and a worded
+  **Timeline** button (`.fab`) that opens a right-hand slide-in drawer
+  (`.panel`, 500px / 100% on mobile) with two tabs — **Timeline** (the
+  `cards.js` list) and **Overview** (the `factsheet.js` bento grid,
+  left-aligned at up to 1180px, ending in a `.fs-cta` "Take action" tile: the
+  River Frome groups and the EA incident hotline). **Overview widens the panel
+  to the full viewport on desktop** (`.panel--wide`, toggled in `selectTab`; a
+  phone's panel is full width already). Opens to Timeline; tabs are
+  `role="tab"` with arrow-key nav; the active tab is the URL hash
+  (`#timeline` / `#overview`). `HASH_ALIASES` keeps `#river-frome` opening
+  Overview.
+  **`docs/about.html`** is the old Info tab as its own page, same header
+  (mark and a "Map" button both link back): what this is, a contents line,
+  then plain `<section>`s — Reading the map, Reading the timeline (with "Dry
+  spills"), **Safety** (water-quality disclaimer first, then the
+  interpretation caveats), **Sources** (Data + Map provenance and the CC BY
+  attribution) and Take action (a copy of `.fs-cta`'s text). Old links still
+  work: `aboutTarget` in index.html sends `#info`, `#reading-the-map`,
+  `#reading-the-timeline`, `#safety`, `#sources` and `#how-to-use` to
+  `about.html` (or its matching section) before the splash starts. About's
+  links to a swim spot are `./#farleigh-hungerford`-style, back to the map.
+  `.page-about` undoes the map page's pinned `html, body` height so the blue
+  runs the full scroll. The Timeline tab leads with
   the "N monitors · last checked …" stamp, then `.overflows-controls` — a sort
   `<select>` whose options follow the view (`SORTS_BY_VIEW` in cards.js —
   90-Day: most recent discharge (the default), `rankByRecent`, ongoing
@@ -539,6 +550,7 @@ scripts/fetch-swim-spots.js one-off: swim spot readings → swim_spots table
 scripts/fetch-rainfall.js   every poll: EA gauge 531108 → rainfall table
 scripts/fetch-event-history.js every poll: Wessex verified events → events table
 docs/index.html         the page — full-screen map + slide-in panels
+docs/about.html         how to read it, safety, sources (was the Info tab)
 docs/styles.css         its stylesheet
 docs/lib/format.js      shared maths, imported by poll.js and the page modules
 docs/lib/cards.js       renderCards() — the per-monitor list + 90-day strip

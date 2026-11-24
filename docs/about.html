@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About · Frome Overflow Watch</title>
+<link rel="icon" href="assets/icon.png?v=2" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="assets/icon.png?v=2">
+<meta name="theme-color" content="#0666B5">
+<meta name="description" content="How Frome Overflow Watch works: reading the map and timeline, what the data can and can’t tell you about river safety, and where every figure comes from.">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Frome Overflow Watch">
+<meta property="og:title" content="About · Frome Overflow Watch">
+<meta property="og:description" content="How Frome Overflow Watch works, what it can and can’t tell you, and where the data comes from.">
+<meta property="og:url" content="https://frome.overflow.watch/about.html">
+<meta property="og:image" content="https://frome.overflow.watch/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Frome Overflow Watch: a live map of storm overflows around Frome">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://use.typekit.net" crossorigin>
+<link rel="preconnect" href="https://p.typekit.net" crossorigin>
+<link rel="stylesheet" href="https://use.typekit.net/hpb4tyd.css">
+<link rel="preload" href="assets/happy-times-NG_italic_master_web.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-about">
+
+<!-- The same header block as the map page (index.html .topbar): mark left,
+     title in the middle, a worded button right — here back to the map. -->
+<header class="topbar">
+  <a class="fl-mark" href="./" aria-label="Back to the map">
+    <svg width="65" height="65" viewBox="0 0 444 444" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M225.899 217.831H443.73V225.899H225.899V443.73H217.831V225.899H0V217.831H217.831V0H225.899V217.831Z" fill="currentColor" fill-opacity="0.4"/>
+      <rect x="156.196" y="156.22" width="131.338" height="131.338" fill="currentColor" fill-opacity="0.5"/>
+      <rect x="176.124" y="176.149" width="91.4814" height="91.4814" fill="currentColor"/>
+    </svg>
+  </a>
+  <div class="status">
+    <h1 class="status-verdict">About Overflow Watch</h1>
+  </div>
+  <a class="fab fab--word" href="./">Map</a>
+</header>
+
+<main class="about prose">
+  <p class="standfirst">Overflow Watch tracks combined sewer overflows (CSOs) on the River Frome
+    and its tributaries around Frome, Somerset. It checks Wessex Water’s live overflow data
+    every 15 minutes and keeps its own history. It also shows the Environment Agency’s official
+    yearly spill figures.</p>
+  <p>This watch covers the Frome catchment only and doesn’t try to replace the national
+    trackers. The aim is a hyperlocal window onto current and past sewage overflows.</p>
+
+  <nav class="about-toc" aria-label="On this page">
+    <a href="#reading-the-map">Reading the map</a>
+    <a href="#reading-the-timeline">Reading the timeline</a>
+    <a href="#safety">Safety</a>
+    <a href="#sources">Sources</a>
+    <a href="#take-action">Take action</a>
+  </nav>
+
+  <section id="reading-the-map">
+    <h2>Reading the map</h2>
+    <p>Each pin marks a CSO, a point where sewage can be released into the river. Each one
+      is watched by an event duration monitor (EDM), which reports when it starts and
+      stops discharging.</p>
+    <p><strong>Red</strong>: discharging now. <strong>Amber</strong>: discharged in
+      the last 48 hours. <strong>Green</strong>: no recent discharge.
+      <strong>Grey</strong>: monitor offline.</p>
+    <p><strong>Purple</strong> squares are swimming spots, with the latest water quality and river flow
+      readings where available.</p>
+  </section>
+
+  <section id="reading-the-timeline">
+    <h2>Reading the timeline</h2>
+    <p>The Timeline lists every CSO. Each has a strip showing the last 90 days,
+      one bar per day: red for a discharge, amber for the 48 hours after, green for none,
+      grey when the monitor was offline, and striped before we started watching.</p>
+    <p>A red bar with black cross-hatching is a discharge that began after no rain.
+      The blue bars above the list are daily rainfall (see below).</p>
+    <p>Switch to <strong>History</strong> for the Environment Agency’s official yearly
+      figures, from 2024 onwards. (Earlier years use an older ID system that can’t be
+      reliably matched to each CSO.)</p>
+    <p>Underneath are two averages. The first is the Environment Agency’s long-term
+      average number of spills a year. The second is our own average total discharge time
+      a year, since the EA doesn’t publish one.</p>
+
+    <h3>Dry spills</h3>
+    <p>A discharge is marked as beginning after no rain when the Frome rain gauge
+      recorded 0.25&nbsp;mm or less in the 24 hours before it started. That’s a
+      fraction of a millimetre, about what a heavy mist leaves behind. We look back
+      from the start, so the answer is known as soon as a discharge begins. Rain that
+      falls during it isn’t counted. A card’s summary line says how many of its
+      discharges began this way, and only when there are any.</p>
+    <p>The rain comes from one Environment Agency gauge in the town, in 15-minute
+      readings. A shower over Mells or Nunney can be missed, and if the gauge has too
+      many gaps in those 24 hours we don’t make the call at all. The daily totals above
+      the list are for the calendar day, so they can differ a little from the Environment
+      Agency’s own figures, which run from 9am to 9am.</p>
+    <p>This is a flag, not a finding. It points to a discharge that began without recent
+      rain at one gauge. It doesn’t show that a rule was broken.</p>
+  </section>
+
+  <section id="safety">
+    <h2>Safety</h2>
+    <p>This site shows when overflows discharge. It doesn’t measure water quality, and it
+      can’t tell you whether the river is safe to enter.</p>
+    <p><a href="./#farleigh-hungerford">Farleigh Hungerford</a> shows Wessex Water’s latest
+      water quality sample, taken about weekly in the swimming season, so it’s a recent
+      snapshot, not a live reading. <a href="./#tellisford-weir">Tellisford Weir</a> shows
+      river flow only.</p>
+    <p>No recent discharge doesn’t mean clean water. Rivers carry bacteria from farmland,
+      wildlife and roads all the time, and cold or fast water is a risk whatever the
+      overflows are doing. If you swim, paddle or let a dog in, judge each spot for
+      yourself.</p>
+    <p>For official bathing water ratings, see the Environment Agency’s
+      <a href="https://environment.data.gov.uk/bwq/" target="_blank" rel="noopener">Swimfo</a>.
+      For overflows and pollution alerts beyond the Frome, see Surfers Against Sewage’s
+      <a href="https://www.sas.org.uk/sewage-map/" target="_blank" rel="noopener">Sewage
+      Map</a>.</p>
+
+    <h3>What it can’t tell you</h3>
+    <p>Monitors record when an overflow starts and stops, not how much is released or
+      what’s in it. Debris can also set them off, so an alert suggests a discharge rather
+      than proving one.</p>
+    <p>The same goes for “began after no rain”. It compares a discharge’s start with one
+      rain gauge in the town. Groundwater, melting snow or a local shower the gauge
+      missed can all cause a discharge with no rain recorded, and whether a particular
+      discharge was permitted depends on things this site can’t see, such as the
+      works’ own flow. It’s a prompt to look closer, not proof of wrongdoing.</p>
+
+    <h3>Why our numbers differ</h3>
+    <p>If a CSO discharges twice between our checks, we only see the second,
+      so our totals are a minimum. They won’t match the Environment Agency’s yearly
+      figures, which are counted differently and published about a year later.</p>
+  </section>
+
+  <section id="sources">
+    <h2>Sources</h2>
+    <h3>Data</h3>
+    <ul>
+      <li><strong>Overflow activity</strong>: Wessex Water’s
+        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Storm_Overflow_Activity/FeatureServer"
+        target="_blank" rel="noopener">live data</a>, checked every 15 minutes and filtered
+        to the Frome catchment. Also on Water UK’s
+        <a href="https://www.streamwaterdata.co.uk/datasets/632885799ff946cd86200f07b7f175fb_0/explore"
+        target="_blank" rel="noopener">National Storm Overflow Hub</a>. © Wessex Water,
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+        rel="noopener">CC BY 4.0</a>.</li>
+      <li><strong>Event history</strong>: the live data shows only each overflow’s latest
+        spill, so one that ends between two checks can be replaced before we see it end.
+        Its timeline then reads “by” and “up to” – the latest it can have run to – until
+        Wessex Water’s verified
+        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2026_view2/FeatureServer"
+        target="_blank" rel="noopener">event history</a> (published about a month
+        behind) gives the real end, and adds any spill we missed entirely. © Wessex Water.</li>
+      <li><strong>Overflow details</strong> (name, river, type, cause): Wessex Water’s
+        <a href="https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/overflow_context/FeatureServer"
+        target="_blank" rel="noopener">overflow context</a> data. © Wessex Water.</li>
+      <li><strong>Yearly spill figures</strong>: the Environment Agency’s
+        <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/edm_annual_returns_all_years_public/FeatureServer"
+        target="_blank" rel="noopener">EDM Storm Overflow Annual Return</a>, also on their
+        <a href="https://experience.arcgis.com/experience/c9b8f3ba094c429aa30e0e2b6eaf43ac"
+        target="_blank" rel="noopener">Storm Overflow Explorer</a>. Contains Environment
+        Agency data © Environment Agency copyright and/or database right,
+        <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+        target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
+      <li><strong>Rainfall</strong>: 15-minute readings from the Environment Agency’s
+        Frome rain gauge (station 531108), via its
+        <a href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
+        target="_blank" rel="noopener">flood monitoring</a> and
+        <a href="https://environment.data.gov.uk/hydrology/doc/reference"
+        target="_blank" rel="noopener">hydrology</a> APIs. Unchecked readings. Contains
+        Environment Agency data © Environment Agency copyright and/or database right,
+        <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+        target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
+      <li><strong>Swim spot readings</strong>: from Wessex Water’s
+        <a href="https://www.arcgis.com/apps/dashboards/a058553168f44f02905dd0b9dd667875"
+        target="_blank" rel="noopener">Farleigh Hungerford Dashboard</a>. Water quality
+        © Wessex Water; river flow from the Environment Agency.</li>
+    </ul>
+
+    <h3>Map</h3>
+    <ul>
+      <li><strong>Streets and place names</strong>: ©
+        <a href="https://www.openstreetmap.org/copyright" target="_blank"
+        rel="noopener">OpenStreetMap</a> contributors, ODbL.</li>
+      <li><strong>Rivers and streams</strong>: the
+        <a href="https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/Statutory_Main_River_Map/FeatureServer"
+        target="_blank" rel="noopener">EA Statutory Main River Map</a> and
+        <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers" target="_blank"
+        rel="noopener">OS Open Rivers</a>. Contains OS and Environment Agency data © Crown
+        copyright and database right,
+        <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+        target="_blank" rel="noopener">Open Government Licence v3</a>.</li>
+    </ul>
+  </section>
+
+  <section id="take-action">
+    <h2>Take action</h2>
+    <p>Overflows are only one part of the River Frome’s health. To find out more and get
+      involved, visit
+      <a href="https://www.friendsoftheriverfrome.co.uk" target="_blank" rel="noopener">Friends
+      of the River Frome</a> and
+      <a href="https://fromefamiliesforthefuture.co.uk/river-vision-project/" target="_blank"
+      rel="noopener">Frome Families for the Future</a>.</p>
+    <p>Seen pollution in the river? Report it to the Environment Agency’s 24-hour incident
+      hotline on <a href="tel:08008070060" class="nowrap">0800 80 70 60</a>.</p>
+  </section>
+
+  <div class="credit">An independent project by <a href="https://www.smiths.studio/"
+    target="_blank" rel="noopener">Smiths.Studio</a></div>
+</main>
+
+</body>
+</html>

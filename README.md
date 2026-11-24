@@ -29,13 +29,16 @@ out to a rectangle shaped to the Frome catchment — long north–south, reachin
 west down the Mells (`CROP_KM` in `docs/lib/map.js`). Monitors outside that
 rectangle are hidden (set `SHOW_EDGE_MARKERS` to pin them to the edge instead).
 
-- A floating button (top-right) opens a drawer with three tabs:
+- A header bar keeps the verdict on screen ("No overflows discharging right
+  now", how many are offline, when it was last checked). Its **Timeline**
+  button opens a drawer with two tabs:
   - **Timeline** — the **last 90 days** for each monitor: one card each, a
     GitHub-status-style strip of one bar per day (red discharged, amber the 48h
     after, green clear, grey before monitoring began).
-  - **About** — what it is and what the data can't tell you.
-  - **Credits** — sources and map attribution.
-- The open tab is remembered in the URL (`#timeline` / `#about` / `#safety` / `#sources`).
+  - **Overview** — catchment-wide figures, ours and the Environment Agency's.
+- **About** (`about.html`) — how to read it, safety, what the data can't tell
+  you, and sources. Old `#safety` / `#sources` links redirect there.
+- The open tab is remembered in the URL (`#timeline` / `#overview`).
 
 The map has no library and no tile service. `scripts/build-basemap.js`
 (`npm run basemap`) pulls the roads, waterways, town/village/hamlet names and

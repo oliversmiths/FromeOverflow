@@ -45,7 +45,8 @@
   --body:  system-ui, sans-serif;
   --data:  ui-monospace, monospace;
 
-  --fab-icon-height: 34px;   /* the "i" mark's own height — see .fab svg */
+  --fab-icon-height: 34px;
+  --topbar-h: 75px;          /* the header block — the map starts below it */   /* the "i" mark's own height — see .fab svg */
 
   /* --display is self-hosted (see @font-face above). --body/--data come from one
      Adobe Fonts kit (hpb4tyd): monotype-grotesque 300 + 400, ibm-plex-mono.
@@ -78,7 +79,7 @@ b, strong { font-weight: 500; }
 
 #overflow-map {
   position: fixed;
-  inset: 0;
+  inset: var(--topbar-h) 0 0 0;
   background: #fff;
   overflow: hidden;
   touch-action: none;
@@ -496,59 +497,99 @@ b, strong { font-weight: 500; }
   background: currentColor;
 }
 
-/* Square, flush to the top-right corner — same 75px footprint as the panel's
-   close button, so opening the panel just extends the block leftward. */
-.fab {
-  position: fixed;
-  z-index: 20;
-  top: 0;
-  right: 0;
-  width: 75px;
-  height: 75px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: var(--weir);
-  color: var(--sewage);
-  cursor: pointer;
-  transition: opacity 0.2s, background 0.15s;
-}
+/* --- Header bar (index.html and about.html) ---
+   One weir-blue block across the top: the mark on the left, the status line
+   filling the middle, a worded button on the right. The button stays 75px
+   tall and flush to the corner, where the panel's own close button lands. */
 
-.fab:hover { background: var(--sewage); color: var(--weir); }
-.fab:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
-/* --fab-icon-height anchors the "i"'s own size — .panel-close svg (below)
-   derives its own height from this rather than a second hand-picked number,
-   at the two marks' actual relative proportion in the typeface they're cut
-   from (the "fl" sits at 69.33% of the "i"'s height there), so the pair
-   keeps reading as one alphabet if this ever changes. */
-.fab svg { display: block; height: var(--fab-icon-height, 34px); width: auto; }
-
-/* Brand mark, top-left corner — a map pin on a crosshair, the same artwork
-   as the app icon, echoing the map underneath. Transparent; clicking it
-   replays the intro splash. */
-.fl-mark {
+.topbar {
   position: fixed;
   z-index: 20;
   top: 0;
   left: 0;
-  width: 75px;
-  height: 75px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: none;
-  color: var(--weir);
-  cursor: pointer;
-  transition: opacity 0.2s, background 0.15s, color 0.15s;
+  right: 0;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: stretch;
+  background: var(--weir);
+  color: var(--sewage);
 }
 
-.fl-mark svg { display: block; height: 65px; width: 65px; }
+/* Brand mark: a map pin on a crosshair, the same artwork as the app icon.
+   Replays the intro on the map page; links back to the map on About. */
+.fl-mark {
+  flex: none;
+  width: var(--topbar-h);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sewage);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.fl-mark svg { display: block; height: 56px; width: 56px; }
 .fl-mark:hover { background: var(--sewage); color: var(--weir); }
-.fl-mark:focus-visible { outline: 2px solid var(--weir); outline-offset: -3px; }
+.fl-mark:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
 
-body.panel-open .fab,
-body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
+/* The splash verdict, kept on screen, over a line of counts + "checked". */
+.status {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px 0 6px;
+}
+.status-verdict {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 25px;
+  line-height: 1.1;
+  color: var(--sewage);
+}
+.status-meta {
+  margin: 3px 0 0;
+  font-family: var(--data);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.status-meta span:not(:empty)::after { content: ' · '; }
+.status-meta a { color: var(--sewage); text-underline-offset: 2px; }
+.status-meta a:hover { opacity: 0.8; }
+
+/* The worded button that opens the Timeline (or, on About, returns to the
+   map). Set in the display face, like the panel's own tabs. */
+.fab {
+  flex: none;
+  min-width: var(--topbar-h);
+  display: grid;
+  place-items: center;
+  padding: 0 22px;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--weir);
+  color: var(--sewage);
+  font-family: var(--display);
+  font-size: 25px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fab:hover { background: var(--sewage); color: var(--weir); }
+.fab:focus-visible { outline: 2px solid var(--sewage); outline-offset: -3px; }
+
+@media (max-width: 720px) {
+  .fl-mark { width: 60px; }
+  .fl-mark svg { width: 44px; height: 44px; }
+  .status { padding: 0 10px 0 2px; }
+  .status-verdict { font-size: 18px; }
+  .status-meta { font-size: 10px; }
+  .fab { padding: 0 14px; font-size: 20px; }
+}
 
 /* --- Slide-in panels --- */
 
@@ -675,12 +716,6 @@ body.panel-open .fl-mark { opacity: 0; pointer-events: none; }
 }
 
 .panel-body[hidden] { display: none; }
-
-/* Info tab: column layout so .credit can be pushed to the foot with margin-top:
-   auto — it sits at the bottom when the content is short, and just follows the
-   text when it's long enough to scroll. `:not([hidden])` so this does not
-   outrank `.panel-body[hidden] { display: none }` when the tab is inactive. */
-#tabpanel-info:not([hidden]) { display: flex; flex-direction: column; }
 
 .credit {
   margin-top: auto;
@@ -820,50 +855,52 @@ button.fs-bar-label:hover { opacity: 0.7; }
 .prose a { color: var(--sewage); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .prose a:hover { opacity: 0.8; }
 
-/* Info's reference sections (How to use / Safety / Sources / River Frome)
-   as <details> accordions below the intro, rather than tabs of their own — a
-   tab strip that grew with every reference section added up fast (see
-   index.html's ACC_SECTIONS for the hash-routing that lets a link jump
-   straight to one, expanded). All closed on arrival, and opening one closes
-   the rest (see index.html's `toggle` listener) so the list stays scannable.
-   Native <details>/<summary> rather than a JS-driven widget: expand/collapse,
-   keyboard toggling and the closed-state semantics all come for free. */
-.acc { margin-top: 8px; }
-/* Negative so index.html's own scrollIntoView({block:'start'}) (the toggle
-   listener, and the hash-routing for a direct #safety-style link) lands 2px
-   past a flush top — enough to tuck this border out of view instead of
-   scrolling to a position that puts it right at the visible edge. */
-.acc-item { border-top: 1px solid rgba(255, 255, 255, 0.1); scroll-margin-top: -2px; }
-.acc-item:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-.acc-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 2px;
+/* --- About page (about.html) ---
+   The old Info tab as a plain page: the same weir-blue reading surface as
+   the panel, one column, every section a plain heading so #safety-style
+   links, Back, and search all just work. */
+
+/* The map page pins html/body to the viewport (height: 100%, overflow:
+   hidden); a reading page has to grow with its content instead, or the blue
+   stops after one screen and white shows beneath on scroll. */
+html:has(> body.page-about) { height: auto; background: var(--weir); }
+.page-about {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  background: var(--weir);
+  color: var(--sewage);
+  font-weight: 300;
+}
+.page-about h1.status-verdict { font-size: 25px; }
+.about {
+  max-width: 680px;
+  padding: calc(var(--topbar-h) + 28px) 20px 60px;
+}
+.about h2 {
+  margin: 44px 0 12px;
   font-family: var(--display);
   font-weight: 400;
-   font-size: 21px;
-  cursor: pointer;
-  list-style: none;
+  font-size: 30px;
+  line-height: 1.1;
   color: var(--sewage);
 }
-.acc-summary::-webkit-details-marker { display: none; }
-.acc-summary::after {
-  content: '';
-  flex: none;
-  width: 8px;
-  height: 8px;
-  margin-top: -4px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
+.about section { scroll-margin-top: calc(var(--topbar-h) + 12px); }
+.about .nowrap { white-space: nowrap; }
+.about-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 22px 0 0;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: var(--data);
+  font-size: 12px;
+  text-transform: uppercase;
 }
-.acc-item[open] .acc-summary::after { margin-top: 2px; transform: rotate(-135deg); }
-.acc-summary:hover { opacity: 0.8; }
-.acc-summary:focus-visible { outline: 1px solid var(--sewage); outline-offset: 2px; }
-.acc-body { padding: 0 2px 18px; }
+.prose .about-toc a { text-decoration: none; }
+.page-about .credit { margin-top: 48px; }
 
 /* --- Overflow list (the timeline panel) --- */
 

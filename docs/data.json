@@ -1,5 +1,5 @@
 {
- "polled_at": 1795554949229,
+ "polled_at": 1795555858794,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -25,6 +25,16 @@
     {
      "start": 1791276330469,
      "end": 1792747847708
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 1644315209
     }
    ],
    "annual_returns": [
@@ -157,6 +167,16 @@
      "end": 1794885340563
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 18,
+     "spill_ms": 66600000,
+     "offline_ms": 51252353
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -200,6 +220,16 @@
     {
      "start": 1793892658818,
      "end": 1793896265104
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 27931015
     }
    ],
    "annual_returns": [
@@ -481,6 +511,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 48,
+     "spill_ms": 91320000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -694,6 +734,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 34,
+     "spill_ms": 572520000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -752,6 +802,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 5,
+     "spill_ms": 5040000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -891,6 +951,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 19,
+     "spill_ms": 39060000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -926,6 +996,16 @@
     {
      "start": 1790071253197,
      "end": 1790090134654
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 18881457
     }
    ],
    "annual_returns": [
@@ -1413,6 +1493,16 @@
     {
      "start": 1794584740475,
      "end": 1794585658810
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 81,
+     "spill_ms": 176820000,
+     "offline_ms": 45910478
     }
    ],
    "annual_returns": [
@@ -2399,6 +2489,16 @@
      "end": 1794585658810
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 175,
+     "spill_ms": 307260000,
+     "offline_ms": 45910478
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -2457,6 +2557,16 @@
      "end": 1794885340563
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 4,
+     "spill_ms": 600000,
+     "offline_ms": 58463677
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -2508,6 +2618,16 @@
     {
      "start": 1793177134721,
      "end": 1793202338542
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 293968475
     }
    ],
    "annual_returns": [
@@ -2621,6 +2741,16 @@
      "end": 1794583858098
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 10,
+     "spill_ms": 44819000,
+     "offline_ms": 454162494
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -2660,6 +2790,16 @@
     {
      "start": 1792740649809,
      "end": 1792791931789
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788262043425,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 58477943
     }
    ],
    "annual_returns": [
@@ -2824,6 +2964,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 24,
+     "spill_ms": 56520000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -2933,6 +3083,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 15,
+     "spill_ms": 64080000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -2965,6 +3125,16 @@
    "status": 0,
    "events": [],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3002,6 +3172,16 @@
      "end": 1791379849886
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 3602837
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3034,6 +3214,16 @@
    "status": 0,
    "events": [],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3095,6 +3285,16 @@
      "end": 1794933947558
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 3,
+     "spill_ms": 1080000,
+     "offline_ms": 1421969403
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3127,6 +3327,16 @@
    "status": 0,
    "events": [],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788262043425,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3168,6 +3378,16 @@
     {
      "start": 1795531546905,
      "end": 1795534278898
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 1,
+     "spill_ms": 360000,
+     "offline_ms": 2731993
     }
    ],
    "annual_returns": [
@@ -3383,6 +3603,16 @@
      "end": 1789040729808
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 32,
+     "spill_ms": 132960000,
+     "offline_ms": 3600555
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3424,6 +3654,16 @@
     {
      "start": 1793782861850,
      "end": 1793788251228
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788262043425,
+     "to": 1795555858794,
+     "spills": 1,
+     "spill_ms": 33540000,
+     "offline_ms": 5389378
     }
    ],
    "annual_returns": [
@@ -3474,6 +3714,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 3,
+     "spill_ms": 1320000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3511,6 +3761,16 @@
      "end": 1793804464884
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 2726794
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3543,6 +3803,16 @@
    "status": 0,
    "events": [],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3616,6 +3886,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 8,
+     "spill_ms": 82680000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3708,6 +3988,16 @@
      "end": 1790860530158
     }
    ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 10,
+     "spill_ms": 4320000,
+     "offline_ms": 7200856
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3751,6 +4041,16 @@
     {
      "start": 1792487742045,
      "end": 1792495844692
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 40514177
     }
    ],
    "annual_returns": [
@@ -3872,6 +4172,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 16,
+     "spill_ms": 144720000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3907,6 +4217,16 @@
     {
      "start": 1793367932381,
      "end": 1793369733509
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 1801128
     }
    ],
    "annual_returns": [
@@ -3952,6 +4272,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 2,
+     "spill_ms": 35220000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -3990,6 +4320,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 1,
+     "spill_ms": 120000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -4033,6 +4373,16 @@
     {
      "start": 1790934328706,
      "end": 1790936129326
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 0,
+     "spill_ms": 0,
+     "offline_ms": 11701368
     }
    ],
    "annual_returns": [
@@ -4119,6 +4469,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 10,
+     "spill_ms": 13800000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -4157,6 +4517,16 @@
     }
    ],
    "offline": [],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788256544235,
+     "to": 1795555858794,
+     "spills": 1,
+     "spill_ms": 24240000,
+     "offline_ms": 0
+    }
+   ],
    "annual_returns": [
     {
      "year": 2024,
@@ -4224,6 +4594,16 @@
     {
      "start": 1789133442212,
      "end": 1789145129653
+    }
+   ],
+   "watch_years": [
+    {
+     "year": 2026,
+     "from": 1788107728322,
+     "to": 1795555858794,
+     "spills": 6,
+     "spill_ms": 8160000,
+     "offline_ms": 11687441
     }
    ],
    "annual_returns": [
@@ -4312,7 +4692,7 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1795553100000,
+   "ts": 1795554000000,
    "mm": 0
   },
   "last_24h_mm": 0,
@@ -4760,7 +5140,7 @@
    {
     "date": "2026-11-24",
     "mm": 0,
-    "n": 82
+    "n": 83
    }
   ]
  }

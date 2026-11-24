@@ -612,10 +612,9 @@ Nine tables (schema in [poll.js](poll.js) `SCHEMA`):
   (poll.js `watchYears`, not a table — derived each export from the full
   `events`/`offline`): one row per calendar year since `first_seen`,
   `{year, from, to, spills, spill_ms, offline_ms}`, unwindowed, so a spill
-  still counts on the page after it rolls off the 90-day strip. **Exported but
-  not yet shown** — the display (a text-only "Our live watch" section under a
-  card's History rows, never on the EA's axis) is parked on the
-  `rolling-window` branch for the UX overhaul.
+  still counts on the page after it rolls off the 90-day strip. Shown in a
+  card's History view under "Our live watch" (`buildWatchYears`, cards.js),
+  below the EA rows, **text only, no bars** — never on the EA's axis.
   **This is not `poll.js`'s own count under another name** — the "Known
   undercount" below describes a live-tracked floor that can miss a spill
   between two polls; this is Wessex's official return, counted by EA's own

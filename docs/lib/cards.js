@@ -119,7 +119,7 @@ function joinRow(bits, itemClass, sepClass) {
  * match whatever the top row's own bars are already showing, since the
  * legend is illustrating this card's actual colours now, not a fixed example.
  */
-function buildHistoryView(monitor, maxSpills, maxDuration, severity) {
+function buildHistoryView(monitor, maxSpills, maxDuration, severity, now) {
   const wrap = document.createElement('div');
   wrap.className = 'o-view-history';
 
@@ -129,6 +129,8 @@ function buildHistoryView(monitor, maxSpills, maxDuration, severity) {
     p.className = 'o-history-empty';
     p.textContent = 'No Environment Agency annual return on record for this monitor yet.';
     wrap.append(p);
+    const watch = buildWatchYears(monitor, now);
+    if (watch) wrap.append(watch);
     return wrap;
   }
 
@@ -205,7 +207,72 @@ function buildHistoryView(monitor, maxSpills, maxDuration, severity) {
     wrap.append(avg);
   }
 
+  const watch = buildWatchYears(monitor, now);
+  if (watch) wrap.append(watch);
+
   return wrap;
+}
+
+/**
+ * The History view's second half: this project's own per-year totals
+ * (`watch_years`, from poll.js), most recent first. Kept in its own section
+ * under its own heading, and deliberately text only — no bars — so it can
+ * never be read off the same axis as the EA rows above it: theirs is the
+ * official return, counted by the 12/24h method a year in arrears; ours is
+ * raw activations, live, a floor. This is also what keeps our own record on
+ * the page once a spill has rolled out of the 90-day strip. A partial year
+ * says so ("watching since …", "so far"). `null` when there's nothing to show.
+ */
+function buildWatchYears(monitor, now) {
+  const years = monitor.watch_years ?? [];
+  if (!years.length) return null;
+
+  const section = document.createElement('div');
+  section.className = 'o-watch';
+  const head = document.createElement('p');
+  head.className = 'o-watch-head';
+  head.textContent = 'Our live watch';
+  const note = document.createElement('p');
+  note.className = 'o-watch-note';
+  note.textContent = 'From Wessex Water’s live data: counted differently from the ' +
+    'official figures above, and a floor.';
+  section.append(head, note);
+
+  const rows = document.createElement('div');
+  rows.className = 'o-history-rows';
+  for (const w of [...years].reverse()) {
+    const row = document.createElement('div');
+    row.className = 'o-history-row';
+
+    const year = document.createElement('span');
+    year.className = 'o-history-year';
+    year.textContent = w.year;
+
+    const figures = document.createElement('p');
+    figures.className = 'o-history-figures';
+    const n = document.createElement('strong');
+    n.textContent = `${w.spills} spill${w.spills === 1 ? '' : 's'}`;
+    figures.append(n);
+    if (w.spills) {
+      const d = document.createElement('strong');
+      d.textContent = fmtDuration(w.spill_ms);
+      figures.append(', total ', d);
+    }
+
+    const meta = document.createElement('p');
+    meta.className = 'o-watch-meta';
+    const bits = [];
+    if (w.from > Date.UTC(w.year, 0, 1)) bits.push(`watching since ${fmtDate(w.from)}`);
+    if (w.to >= now) bits.push('so far');
+    if (w.offline_ms > 0) bits.push(`offline for ${fmtDuration(w.offline_ms)}`);
+    meta.textContent = bits.join(' · ');
+
+    row.append(year, figures);
+    if (bits.length) row.append(meta);
+    rows.append(row);
+  }
+  section.append(rows);
+  return section;
 }
 
 // Shared by each card's own toggle and the panel-wide one (index.html) that
@@ -478,7 +545,7 @@ export function renderCards(container, data, onSeeOnMap, opts = {}) {
     view90day.className = 'o-view-90day';
     view90day.append(meta, strip, scale);
 
-    const viewHistory = buildHistoryView(monitor, maxSpills, maxDuration, histSeverity);
+    const viewHistory = buildHistoryView(monitor, maxSpills, maxDuration, histSeverity, now);
 
     card.append(head, view90day, viewHistory);
     applyView(card, view);

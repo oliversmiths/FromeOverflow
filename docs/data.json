@@ -1,5 +1,5 @@
 {
- "polled_at": 1795860955317,
+ "polled_at": 1795861859458,
  "window_days": 90,
  "place": "Frome",
  "monitors": [
@@ -31,7 +31,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 1644315209
@@ -66,7 +66,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788107728322,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1788144600000,
@@ -159,6 +159,11 @@
      "start": 1795041240000,
      "end": 1795043520000,
      "rain_mm": 5.77
+    },
+    {
+     "start": 1795858560000,
+     "end": null,
+     "rain_mm": 7.77
     }
    ],
    "offline": [
@@ -171,9 +176,9 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
-     "spills": 18,
-     "spill_ms": 66600000,
+     "to": 1795861859458,
+     "spills": 19,
+     "spill_ms": 69899458,
      "offline_ms": 51252353
     }
    ],
@@ -226,7 +231,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 27931015
@@ -261,7 +266,7 @@
    "treatment": "Diluted (sewage diluted by rainwater or groundwater)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 1,
+   "status": 0,
    "events": [
     {
      "start": 1791551640000,
@@ -521,8 +526,14 @@
     },
     {
      "start": 1795858080000,
-     "end": null,
-     "rain_mm": 8.07
+     "end": 1795859040000,
+     "rain_mm": 8.07,
+     "end_source": "superseded"
+    },
+    {
+     "start": 1795859040000,
+     "end": 1795859520000,
+     "rain_mm": 7.77
     }
    ],
    "offline": [],
@@ -530,9 +541,9 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
-     "spills": 51,
-     "spill_ms": 94675317,
+     "to": 1795861859458,
+     "spills": 52,
+     "spill_ms": 93240000,
      "offline_ms": 0
     }
    ],
@@ -565,7 +576,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "When the surrounding water table is high, this overflow is known to be affected by groundwater",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1791555300000,
@@ -746,6 +757,11 @@
      "start": 1795175340000,
      "end": 1795175400000,
      "rain_mm": 3.19
+    },
+    {
+     "start": 1795859340000,
+     "end": null,
+     "rain_mm": 8.14
     }
    ],
    "offline": [],
@@ -753,9 +769,9 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
-     "spills": 34,
-     "spill_ms": 572520000,
+     "to": 1795861859458,
+     "spills": 35,
+     "spill_ms": 575039458,
      "offline_ms": 0
     }
    ],
@@ -821,7 +837,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 5,
      "spill_ms": 5040000,
      "offline_ms": 0
@@ -970,7 +986,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 19,
      "spill_ms": 39060000,
      "offline_ms": 0
@@ -1017,7 +1033,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 18881457
@@ -1525,9 +1541,9 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 83,
-     "spill_ms": 181675317,
+     "spill_ms": 182579458,
      "offline_ms": 45910478
     }
    ],
@@ -1560,7 +1576,7 @@
    "treatment": "Diluted and partially treated (e.g. sewage diluted by rainwater or groundwater, and settled in storage tanks prior to discharge)",
    "cause": "This overflow discharges primarily in response to rainwater entering the sewer",
    "since": 1788256544235,
-   "status": 0,
+   "status": 1,
    "events": [
     {
      "start": 1792565640000,
@@ -2499,6 +2515,11 @@
      "start": 1795127820000,
      "end": 1795128360000,
      "rain_mm": 5.21
+    },
+    {
+     "start": 1795859160000,
+     "end": null,
+     "rain_mm": 8.14
     }
    ],
    "offline": [
@@ -2519,9 +2540,9 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
-     "spills": 175,
-     "spill_ms": 307260000,
+     "to": 1795861859458,
+     "spills": 176,
+     "spill_ms": 309959458,
      "offline_ms": 45910478
     }
    ],
@@ -2587,7 +2608,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 4,
      "spill_ms": 600000,
      "offline_ms": 58463677
@@ -2650,7 +2671,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 293968475
@@ -2771,7 +2792,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 10,
      "spill_ms": 44819000,
      "offline_ms": 454162494
@@ -2822,7 +2843,7 @@
     {
      "year": 2026,
      "from": 1788262043425,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 58477943
@@ -2994,7 +3015,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 24,
      "spill_ms": 56520000,
      "offline_ms": 0
@@ -3106,6 +3127,11 @@
      "start": 1795041600000,
      "end": 1795043280000,
      "rain_mm": 5.77
+    },
+    {
+     "start": 1795858920000,
+     "end": 1795860000000,
+     "rain_mm": 7.77
     }
    ],
    "offline": [],
@@ -3113,9 +3139,9 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
-     "spills": 15,
-     "spill_ms": 64080000,
+     "to": 1795861859458,
+     "spills": 16,
+     "spill_ms": 65160000,
      "offline_ms": 0
     }
    ],
@@ -3155,7 +3181,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 0
@@ -3202,7 +3228,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 3602837
@@ -3244,7 +3270,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 0
@@ -3315,7 +3341,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 3,
      "spill_ms": 1080000,
      "offline_ms": 1421969403
@@ -3357,7 +3383,7 @@
     {
      "year": 2026,
      "from": 1788262043425,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 0
@@ -3410,7 +3436,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 1,
      "spill_ms": 360000,
      "offline_ms": 2731993
@@ -3633,7 +3659,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 32,
      "spill_ms": 132960000,
      "offline_ms": 3600555
@@ -3686,7 +3712,7 @@
     {
      "year": 2026,
      "from": 1788262043425,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 1,
      "spill_ms": 33540000,
      "offline_ms": 5389378
@@ -3744,7 +3770,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 3,
      "spill_ms": 1320000,
      "offline_ms": 0
@@ -3791,7 +3817,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 2726794
@@ -3833,7 +3859,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 0
@@ -3916,7 +3942,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 8,
      "spill_ms": 82680000,
      "offline_ms": 0
@@ -4018,7 +4044,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 10,
      "spill_ms": 4320000,
      "offline_ms": 7200856
@@ -4073,7 +4099,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 40514177
@@ -4202,7 +4228,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 16,
      "spill_ms": 144720000,
      "offline_ms": 0
@@ -4249,7 +4275,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 1801128
@@ -4302,7 +4328,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 2,
      "spill_ms": 35220000,
      "offline_ms": 0
@@ -4350,7 +4376,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 1,
      "spill_ms": 120000,
      "offline_ms": 0
@@ -4405,7 +4431,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 0,
      "spill_ms": 0,
      "offline_ms": 11701368
@@ -4499,7 +4525,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 10,
      "spill_ms": 13800000,
      "offline_ms": 0
@@ -4547,7 +4573,7 @@
     {
      "year": 2026,
      "from": 1788256544235,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 1,
      "spill_ms": 24240000,
      "offline_ms": 0
@@ -4626,7 +4652,7 @@
     {
      "year": 2026,
      "from": 1788107728322,
-     "to": 1795860955317,
+     "to": 1795861859458,
      "spills": 6,
      "spill_ms": 8160000,
      "offline_ms": 11687441
@@ -4718,15 +4744,15 @@
   "dry_mm": 0.25,
   "window_hours": 24,
   "latest": {
-   "ts": 1795859100000,
-   "mm": 1.09
+   "ts": 1795860000000,
+   "mm": 0.29
   },
-  "last_24h_mm": 8.14,
+  "last_24h_mm": 7.92,
   "days": [
    {
     "date": "2026-08-29",
     "mm": 17.7,
-    "n": 51
+    "n": 50
    },
    {
     "date": "2026-08-30",
@@ -5180,8 +5206,8 @@
    },
    {
     "date": "2026-11-28",
-    "mm": 4,
-    "n": 39
+    "mm": 4.29,
+    "n": 40
    }
   ]
  }
